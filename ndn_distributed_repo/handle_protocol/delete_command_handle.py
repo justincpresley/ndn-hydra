@@ -28,7 +28,7 @@ class DeleteCommandHandle(ProtocolHandle):
         super(DeleteCommandHandle, self).__init__(app, storage, pb, config)
         self.m_read_handle = read_handle
         self.prefix = None
-        self.register_root = config['repo_config']['register_root']
+        #self.register_root = config['repo_config']['register_root']
 
     async def listen(self, prefix: NonStrictName):
         """
