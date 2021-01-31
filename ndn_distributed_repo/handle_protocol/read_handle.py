@@ -17,9 +17,9 @@ class ReadHandle(object):
         """
         self.app = app
         self.storage = storage
-        self.register_root = config['repo_config']['register_root']
-        if self.register_root:
-            self.listen(Name.from_str('/'))
+        #self.register_root = config['repo_config']['register_root']
+        #if self.register_root:
+        #    self.listen(Name.from_str('/'))
 
     def listen(self, prefix):
         """

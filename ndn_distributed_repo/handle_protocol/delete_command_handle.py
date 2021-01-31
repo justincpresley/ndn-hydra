@@ -4,7 +4,7 @@ import random
 import sys
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
-from . import ReadHandle, CommandHandle
+from . import ReadHandle, ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
 from ..storage import Storage
 from ..utils import PubSub
@@ -39,10 +39,10 @@ class DeleteCommandHandle(ProtocolHandle):
         self.prefix = prefix
 
         # subscribe to delete messages
-        self.pb.subscribe(self.prefix + ['delete'], self._on_insert_msg)
+        self.pb.subscribe(self.prefix + ['delete'], self._on_delete_msg)
 
         # start to announce process status
-        await self._schedule_announce_process_status(period=3)
+        # await self._schedule_announce_process_status(period=3)
 
     def _on_delete_msg(self, msg):
         try:

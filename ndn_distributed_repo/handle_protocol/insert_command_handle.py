@@ -4,7 +4,7 @@ import random
 import sys
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
-from . import ReadHandle, CommandHandle
+from . import ReadHandle, ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
 from ..storage import Storage
 from ..utils import PubSub
@@ -42,13 +42,13 @@ class InsertCommandHandle(ProtocolHandle):
         self.pb.subscribe(self.prefix + ['insert'], self._on_insert_msg)
 
         # start to announce process status
-        await self._schedule_announce_process_status(period=3)
+        # await self._schedule_announce_process_status(period=3)
 
     def _on_insert_msg(self, msg):
         try:
             cmd = RepoCommand.parse(msg)
-            if cmd.name == None:
-                raise DecodeError()
+            #if cmd.file == None:
+            #    raise DecodeError()
         except (DecodeError, IndexError) as exc:
             logging.warning('Parameter interest decoding failed')
             return
@@ -58,4 +58,6 @@ class InsertCommandHandle(ProtocolHandle):
         """
         Process insert command.
         Return to client with status code 100 immediately, and then start data fetching process.
-        """ 
+        """
+        print("Process Insert Command for File: ")
+        print(cmd.file.name)

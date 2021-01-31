@@ -32,13 +32,16 @@ def process_cmd_opts():
         return args
 
     args = parse_cmd_opts()
+    """
     if args.version:
         print_version()
         exit(0)
+    """
     return args
 
 def main() -> int:
     cmdline_args = process_cmd_opts()
+    config = {}
     #config = process_config(cmdline_args)
     #print(config)
 

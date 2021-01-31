@@ -3,7 +3,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name
 
 from .storage import *
-from .handle import *
+from .handle_protocol import *
 
 
 class RepoNode(object):
@@ -12,10 +12,11 @@ class RepoNode(object):
         """
         An NDN repo instance.
         """
-        self.prefix = Name.from_str(config['repo_config']['repo_name'])
+        #self.prefix = Name.from_str(config['repo_config']['repo_name'])
+        self.prefix = Name.from_str("/testrepo/")
         self.app = app
         self.storage = storage
-        self.write_handle = write_handle
+        self.insert_handle = insert_handle
         self.read_handle = read_handle
         self.delete_handle = delete_handle
 
@@ -38,7 +39,7 @@ class RepoNode(object):
         self.insert_handle.pb.set_publisher_prefix(self.prefix)
         await self.insert_handle.pb.wait_for_ready()
 
-        await self.write_handle.listen(self.prefix)
+        await self.insert_handle.listen(self.prefix)
         await self.delete_handle.listen(self.prefix)
 
     '''
