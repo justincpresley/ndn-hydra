@@ -5,11 +5,11 @@ from ndn.encoding import Name
 from ndn.security import KeychainDigest
 
 async def run_insert_client(app: NDNApp):
-  repo_name = Name.from_str("/testrepo/")
+  repo_name = Name.from_str("/group")
   prefix = Name.from_str("/client/")
   insertClient = InsertClient(app, prefix, repo_name)
 
-  file_name = Name.from_str("~/ndn-distributed-repo/client/example/test.txt")
+  file_name = Name.from_str("/home/ndn/repo/client/example/test.txt")
   total_blocks = 1
   publisher_id = b'\x01\x02\x03\x04'
   fetch_prefix = Name.from_str("/client/") 

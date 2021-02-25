@@ -18,6 +18,7 @@ class ProtocolHandle(object):
         self.app = app
         self.storage = storage
         self.pb = pb
+        self.config = config
 
     async def listen(self, prefix: Name):
         raise NotImplementedError

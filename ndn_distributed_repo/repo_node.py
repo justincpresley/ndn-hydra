@@ -13,8 +13,9 @@ class RepoNode(object):
         An NDN repo instance.
         """
         #self.prefix = Name.from_str(config['repo_config']['repo_name'])
-        self.prefix = Name.from_str("/testrepo/")
         self.app = app
+        self.group_prefix = Name.from_str(config['group_prefix'])
+        
         self.storage = storage
         self.insert_handle = insert_handle
         self.read_handle = read_handle
@@ -36,11 +37,11 @@ class RepoNode(object):
         """
 
         # Init PubSub
-        self.insert_handle.pb.set_publisher_prefix(self.prefix)
+        self.insert_handle.pb.set_publisher_prefix(self.group_prefix)
         await self.insert_handle.pb.wait_for_ready()
 
-        await self.insert_handle.listen(self.prefix)
-        await self.delete_handle.listen(self.prefix)
+        await self.insert_handle.listen(self.group_prefix)
+        await self.delete_handle.listen(self.group_prefix)
 
     '''
     def recover_registered_prefixes(self):
