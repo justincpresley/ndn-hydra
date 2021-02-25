@@ -75,7 +75,7 @@ def main() -> int:
 
     svs_storage = SqliteStorage(config['svs_storage_path'])
     file_storage = None
-    global_view = None
+    global_view = GlobalView()
 
     # svs
     message_handle = MessageHandle(app, svs_storage, config['group_prefix'], config['node_id'], config['cache_others'])
