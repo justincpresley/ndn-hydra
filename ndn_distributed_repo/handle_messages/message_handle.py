@@ -15,8 +15,20 @@ class MessageHandle:
         self.svs = None
         self.global_view = None
 
+    def periodic(self):
+        pass
+        # print('periodic')
+        # periodic tasks:
+        # 1. I am Alive
+        # 2. check expired nodes
+        # 3. make possible claims
+            
+    # the main coroutine
     async def start(self):
-        self.svs = SVSync(self.app, self.storage, self.group_prefix, self.node_id, self.missing_callback, self.cache_others)
+        self.svs = SVSync(self.app, self.group_prefix, self.node_id, self.missing_callback, storage=self.storage)
+        while True:
+            self.periodic()
+            await aio.sleep(1)
 
     def missing_callback(self, missing_list):
         aio.ensure_future(self.on_missing_messages(missing_list))

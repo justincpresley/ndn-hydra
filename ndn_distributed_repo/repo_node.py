@@ -14,7 +14,7 @@ class RepoNode(object):
         """
         #self.prefix = Name.from_str(config['repo_config']['repo_name'])
         self.app = app
-        self.group_prefix = Name.from_str(config['group_prefix'])
+        self.repo_prefix = Name.from_str(config['repo_prefix'])
 
         self.storage = storage
         self.insert_handle = insert_handle
@@ -37,11 +37,11 @@ class RepoNode(object):
         """
 
         # Init PubSub
-        self.insert_handle.pb.set_publisher_prefix(self.group_prefix)
+        self.insert_handle.pb.set_publisher_prefix(self.repo_prefix)
         await self.insert_handle.pb.wait_for_ready()
 
-        await self.insert_handle.listen(self.group_prefix)
-        await self.delete_handle.listen(self.group_prefix)
+        await self.insert_handle.listen(self.repo_prefix)
+        await self.delete_handle.listen(self.repo_prefix)
 
     '''
     def recover_registered_prefixes(self):

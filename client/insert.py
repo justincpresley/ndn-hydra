@@ -57,6 +57,7 @@ class InsertClient(object):
 
       # publish msg to repo's insert topic
       await self.pb.wait_for_ready()
+      print(Name.to_str(self.repo_name + ['insert']))
       is_success = await self.pb.publish(self.repo_name + ['insert'], cmd_bytes)
       if is_success:
           logging.info('Published an insert msg and was acknowledged by a subscriber')
