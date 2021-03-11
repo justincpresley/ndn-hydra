@@ -25,7 +25,7 @@ class MessageHandle:
         for i in missing_list:
             while i.lowSeqNum <= i.highSeqNum:
                 # print('{}:{}, {}'.format(i.nid, i.lowSeqNum, i.highSeqNum))
-                message_bytes = await self.svs.fetchData(i.nid, i.lowSeqNum)
+                message_bytes = await self.svs.fetchData(Name.from_str(i.nid), i.lowSeqNum)
                 if message_bytes == None:
                     continue
                 nid = i.nid
