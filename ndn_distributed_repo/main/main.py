@@ -28,16 +28,16 @@ def process_cmd_opts():
         informationArgs = parser.add_argument_group("information arguments")
         # Adding all Command Line Arguments
         requiredArgs.add_argument("-n", "--nodeid",action="store",dest="node_id",required=True,help="id of this repo node. Example: \"node01\"")
-        requiredArgs.add_argument("-gp","--groupprefix",action="store",dest="group_prefix",required=True,help="group prefix of this repo system. Example: \"/sample/repo\"")
+        requiredArgs.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True,help="repo (group) prefix. Example: \"/sample/repo\"")
         # Getting all Arguments
         vars = parser.parse_args()
         args = {}
         # Process args
-        if vars.group_prefix[-1] == "/":
-            vars.group_prefix = vars.group_prefix[:-1]
-        if vars.group_prefix[0] != "/":
-            vars.group_prefix = "/" + vars.group_prefix
-        args["group_prefix"] = vars.group_prefix
+        if vars.repo_prefix[-1] == "/":
+            vars.repo_prefix = vars.repo_prefix[:-1]
+        if vars.repo_prefix[0] != "/":
+            vars.repo_prefix = "/" + vars.repo_prefix
+        args["repo_prefix"] = vars.repo_prefix
         if vars.node_id[-1] == "/":
             vars.node_id = vars.node_id[:-1]
         if vars.node_id[0] != "/":
@@ -56,11 +56,14 @@ def process_cmd_opts():
 def main() -> int:
 
     default_config = {
-        'node_id':None,
-        'group_prefix':None,
-        'cache_others':False,
-        'svs_storage_path':'~/.ndn/repo/svs.db',
-        'file_storage_path':'~/.ndn/repo/file.db',
+        'node_id': None,
+        'repo_prefix': None,
+        'file_storage_path': '~/.ndn/repo/file.db',
+        'svs': {
+            'cache_others': False,
+            'group_prefix': '/group',
+            'storage_path': '~/.ndn/repo/svs.db',
+        }
     }
     cmd_args = process_cmd_opts()
     config = default_config.copy()
@@ -74,16 +77,16 @@ def main() -> int:
 
     app = NDNApp()
 
-    svs_storage = SqliteStorage(config['svs_storage_path'])
+    svs_storage = SqliteStorage(config['svs']['storage_path'])
     file_storage = None
     global_view = GlobalView()
 
     # svs
-    message_handle = MessageHandle(app, svs_storage, config['group_prefix'], config['node_id'], config['cache_others'])
+    message_handle = MessageHandle(app, svs_storage, config['svs']['group_prefix'], config['node_id'], config['svs']['cache_others'])
 
     # protocol (commands & queries)
     pb = PubSub(app)
-    read_handle = ReadHandle(app, storage, config)
+    read_handle = ReadHandle(app, file_storage, config)
     insert_handle = InsertCommandHandle(app, file_storage, pb, read_handle, config, message_handle)
     delete_handle = DeleteCommandHandle(app, file_storage, pb, read_handle, config)
 
