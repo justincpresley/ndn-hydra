@@ -2,14 +2,14 @@ from threading import Lock
 from typing import List
 from .file_metadata import FileMetadata
 from .node_metadata import NodeMetadata
-from ..svs.version_vector import VersionVector
+from ndn.svs import StateVector
 
 class GlobalView:
 
   def __init__(self):
-    self.state_vector = VersionVector()
+    self.state_vector = StateVector()
     self.file_metadata_dict = {}
-    self.node_metadata_dict = {} 
+    self.node_metadata_dict = {}
     self.lock = Lock()
     #add active insertion id per file
     #store outdated insertion id per file
@@ -35,7 +35,7 @@ class GlobalView:
         #Check file is deleted
         if not file_metadata.is_file_deleted():
             raise Exception('Unable to insert {}. Have not heard delete for previous insertion id {}'.format(file_name, active_insertion_id))
-        
+
         #reinsert file
         file_metadata.reinsert_file(insertion_id, node_id, on_list, backup_list)
 
@@ -65,17 +65,17 @@ class GlobalView:
         active_insertion_id = file_metadata.get_active_insertion_id()
         if active_insertion_id != insertion_id:
           raise Exception('Unable to delete {}. Insertion id {} is not equal to active insertion id {}'.format(file_name, insertion_id, active_insertion_id))
-        
+
         for node in file_metadata.get_on_list():
           if node in self.node_metadata_dict:
             self.node_metadata_dict[node].remove_file_from_on_list(file_name)
         for node in file_metadata.get_backup_list():
           if node in self.node_metadata_dict:
             self.node_metadata_dict[node].remove_file_from_backup_list(file_name)
-        
+
         #mark file as deleted
         file_metadata.delete_file(insertion_id)
-      
+
       else:
         raise Exception('Unable to delete {}. File not known.'.format(file_name))
 
@@ -149,7 +149,7 @@ class GlobalView:
           self.file_metadata_dict[file_name].remove_node_from_backup_list(node_id_to_remove)
         for file_name in node_metadata.get_on_list_file_set():
           self.file_metadata_dict[file_name].remove_node_from_on_list(node_id_to_remove)
-        
+
         self.node_metadata_dict.pop(node_id_to_remove)
 
       self.state_vector.set(node_id, seqNo)

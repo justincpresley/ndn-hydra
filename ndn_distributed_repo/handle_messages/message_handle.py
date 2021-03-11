@@ -1,9 +1,9 @@
 import asyncio as aio
 from ndn.app import NDNApp
 from ndn.encoding import Name
-from ..svs import SVS_Socket
+from ndn.svs import SVSync
+from ndn_python_repo import Storage
 from ..repo_messages import *
-from ..storage import *
 
 class MessageHandle:
     def __init__(self, app:NDNApp, storage:Storage, group_prefix:str, node_id:str, cache_others:bool):
@@ -12,11 +12,23 @@ class MessageHandle:
         self.group_prefix = Name.from_str(group_prefix)
         self.node_id = Name.from_str(node_id)
         self.cache_others = cache_others
-        self.svs_socket = None
+        self.svs = None
         self.global_view = None
 
+    def periodic(self):
+        pass
+        # print('periodic')
+        # periodic tasks:
+        # 1. I am Alive
+        # 2. check expired nodes
+        # 3. make possible claims
+            
+    # the main coroutine
     async def start(self):
-        self.svs_socket = SVS_Socket(self.app, self.storage, self.group_prefix, self.node_id, self.missing_callback, self.cache_others)
+        self.svs = SVSync(self.app, self.group_prefix, self.node_id, self.missing_callback, storage=self.storage)
+        while True:
+            self.periodic()
+            await aio.sleep(1)
 
     def missing_callback(self, missing_list):
         aio.ensure_future(self.on_missing_messages(missing_list))
@@ -25,7 +37,7 @@ class MessageHandle:
         for i in missing_list:
             while i.lowSeqNum <= i.highSeqNum:
                 # print('{}:{}, {}'.format(i.nid, i.lowSeqNum, i.highSeqNum))
-                message_bytes = await self.svs_socket.fetchData(i.nid, i.lowSeqNum)
+                message_bytes = await self.svs.fetchData(Name.from_str(i.nid), i.lowSeqNum)
                 if message_bytes == None:
                     continue
                 nid = i.nid

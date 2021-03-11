@@ -4,7 +4,7 @@
 
 ```
 pip install pytest
-pip install python-ndn
+pip install python-ndn ndn-svs ndn-python-repo
 ```
 
 Go to [python-ndn repo](https://github.com/zjkmxy/python-ndn) if you have issues installing

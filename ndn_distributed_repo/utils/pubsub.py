@@ -201,6 +201,7 @@ class PubSub(object):
         msg = None
         while n_retries > 0:
             try:
+                print(Name.to_str(msg_int_name))
                 logging.debug(f'sending msg interest: {Name.to_str(msg_int_name)}')
                 data_name, meta_info, msg = await self.app.express_interest(
                     msg_int_name, int_param=int_param)
