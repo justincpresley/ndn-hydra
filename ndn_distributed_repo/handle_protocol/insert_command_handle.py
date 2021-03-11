@@ -7,9 +7,9 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
 from . import ReadHandle, ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
-from ..storage import Storage
+from ndn_python_repo import Storage
 from ..utils import PubSub
-from ..svs import SVS_Socket
+from ndn.svs import SVSync
 from ..repo_messages.add import FileTlv, FileOriginalPathTlv, AddMessageBodyTlv
 from ..repo_messages.message import MessageTlv, MessageTypes
 from ..handle_messages import MessageHandle
@@ -78,11 +78,11 @@ class InsertCommandHandle(ProtocolHandle):
         add_message_body.file.blocks = 2
         add_message_body.file_original_path = FileOriginalPathTlv()
         add_message_body.file_original_path.name = Name.from_str('/client/upload/foo/bar.txt')
-        add_message_body.file_seq = 1 
+        add_message_body.file_seq = 1
         add_message = MessageTlv()
         add_message.header = MessageTypes.ADD
         add_message.body = add_message_body.encode()
         raw = add_message.encode()
         # print(raw)
         print('produce GM {}'.format(self.config['node_id']))
-        self.message_handle.svs_socket.publishData(raw)
+        self.message_handle.svs.publishData(raw)

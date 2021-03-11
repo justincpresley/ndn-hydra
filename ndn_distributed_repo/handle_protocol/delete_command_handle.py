@@ -6,7 +6,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
 from . import ReadHandle, ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
-from ..storage import Storage
+from ndn_python_repo import Storage
 from ..utils import PubSub
 
 
@@ -58,4 +58,4 @@ class DeleteCommandHandle(ProtocolHandle):
         """
         Process delete command.
         Return to client with status code 100 immediately, and then start data fetching process.
-        """ 
+        """

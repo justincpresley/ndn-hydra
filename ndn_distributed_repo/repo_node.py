@@ -2,7 +2,7 @@ import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name
 
-from .storage import *
+from ndn_python_repo import Storage
 from .handle_protocol import *
 
 
@@ -15,7 +15,7 @@ class RepoNode(object):
         #self.prefix = Name.from_str(config['repo_config']['repo_name'])
         self.app = app
         self.group_prefix = Name.from_str(config['group_prefix'])
-        
+
         self.storage = storage
         self.insert_handle = insert_handle
         self.read_handle = read_handle

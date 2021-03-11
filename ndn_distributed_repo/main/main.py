@@ -6,6 +6,7 @@ import sys
 from ndn.app import NDNApp
 from ndn.encoding import Name
 from ndn_distributed_repo import *
+from ndn_python_repo import SqliteStorage
 # from handle_messages import MessageHandle
 # from . import *
 
@@ -53,7 +54,7 @@ def process_cmd_opts():
     return args
 
 def main() -> int:
-    
+
     default_config = {
         'node_id':None,
         'group_prefix':None,
@@ -85,7 +86,7 @@ def main() -> int:
     read_handle = ReadHandle(app, storage, config)
     insert_handle = InsertCommandHandle(app, file_storage, pb, read_handle, config, message_handle)
     delete_handle = DeleteCommandHandle(app, file_storage, pb, read_handle, config)
-    
+
     repo = RepoNode(app, None, read_handle, insert_handle, delete_handle, config)
     aio.ensure_future(repo.listen())
 

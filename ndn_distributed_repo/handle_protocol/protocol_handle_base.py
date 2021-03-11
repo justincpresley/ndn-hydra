@@ -6,7 +6,7 @@ from ndn.encoding.tlv_model import DecodeError
 from typing import List
 
 from ..protocol.repo_commands import RepoCommand
-from ..storage import Storage
+from ndn_python_repo import Storage
 from ..utils import PubSub
 
 
