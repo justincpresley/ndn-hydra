@@ -1,4 +1,4 @@
-from .global_view import *
+from .global_view_2 import *
 from .handle_messages import *
 from .handle_protocol import *
 from .main import *

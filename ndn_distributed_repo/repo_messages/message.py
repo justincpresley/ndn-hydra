@@ -30,7 +30,7 @@ class Message:
 
     def get_message_body(self):
         message_type = self.message.header
-        raw_bytes = self.message.body
+        raw_bytes = self.message.body.tobytes()
         if message_type == MessageTypes.ADD:
             return AddMessageBody(self.nid, self.seq, raw_bytes)
         elif message_type == MessageTypes.REMOVE:
