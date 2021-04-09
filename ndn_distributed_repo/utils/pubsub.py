@@ -28,6 +28,7 @@ class PubSub(object):
         Initialize a ``PubSub`` instance with identity ``prefix`` and can be reached at \
             ``forwarding_hint``.
         TODO: support msg larger than MTU
+
         :param app: NDNApp.
         :param prefix: NonStrictName. The identity of this ``PubSub`` instance. The publisher needs\
             a prefix under which can publish data. Note that you cannot initialize two ``PubSub``\
@@ -48,6 +49,7 @@ class PubSub(object):
         """
         Set the identify of the publisher after initialization.
         Need to be called before ``_wait_for_ready()``.
+
         :param prefix: NonStrictName. The identity of this ``PubSub`` instance.
         """
         self.publisher_prefix = prefix
@@ -58,6 +60,7 @@ class PubSub(object):
         under ``prefix`` will be registered with interest filters, and will not have to be\
         registered with NFD.
         Need to be called before ``_wait_for_ready()``.
+
         :param prefix: NonStrictName. The base prefix to register.
         """
         self.base_prefix = prefix
@@ -69,22 +72,27 @@ class PubSub(object):
         # Wait until app connected, otherwise app.register() throws an NetworkError
         while not self.app.face.running:
             await aio.sleep(0.1)
-        try:
-            await self.app.register(self.publisher_prefix + ['msg'], self._on_msg_interest)
-        except ValueError as esc:
-            # duplicate registration
-            logging.error('Pubsub duplicate registration error')
-            pass
 
         if self.base_prefix != None:
             try:
                 await self.app.register(self.base_prefix, func=None)
             except ValueError as esc:
                 pass
+        
+        try:
+            if self.base_prefix != None and Name.is_prefix(self.base_prefix, self.publisher_prefix + ['msg']):
+                self.app.set_interest_filter(self.publisher_prefix + ['msg'], self._on_msg_interest)
+            else:
+                    await self.app.register(self.publisher_prefix + ['msg'], self._on_msg_interest)
+        except ValueError as esc:
+            # duplicate registration
+            pass
+
 
     def subscribe(self, topic: NonStrictName, cb: callable):
         """
         Subscribe to ``topic`` with ``cb``.
+
         :param topic: NonStrictName. The topic to subscribe to.
         :param cb: callable. A callback that will be called when a message under ``topic`` is\
             received. This function takes one ``bytes`` argument.
@@ -94,6 +102,7 @@ class PubSub(object):
     def unsubscribe(self, topic: NonStrictName):
         """
         Unsubscribe from ``topic``.
+
         :param topic: NonStrictName. The topic to unsubscribe from.
         """
         logging.info(f'unsubscribing topic: {Name.to_str(topic)}')
@@ -104,6 +113,7 @@ class PubSub(object):
         """
         Publish ``msg`` to ``topic``. Make several attempts until the subscriber returns a\
             response.
+
         :param topic: NonStrictName. The topic to publish ``msg`` to.
         :param msg: bytes. The message to publish. The pub-sub API does not make any assumptions on\
             the format of this message.
@@ -201,7 +211,6 @@ class PubSub(object):
         msg = None
         while n_retries > 0:
             try:
-                print(Name.to_str(msg_int_name))
                 logging.debug(f'sending msg interest: {Name.to_str(msg_int_name)}')
                 data_name, meta_info, msg = await self.app.express_interest(
                     msg_int_name, int_param=int_param)
