@@ -11,7 +11,6 @@ from ndn_python_repo import SqliteStorage
 # from handle_messages import MessageHandle
 # from . import *
 
-
 def process_cmd_opts():
     """
     Parse, process, and return cmd options.
@@ -91,7 +90,8 @@ def main() -> int:
         'global_view_storage': None,
         'svs_storage': None,
         'svs_group_prefix': None,
-        'svs_cache_others': False
+        'svs_cache_others': True,
+		'period': 5
     }
     cmd_args = process_cmd_opts()
     config = default_config.copy()

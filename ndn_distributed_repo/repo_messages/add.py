@@ -74,7 +74,7 @@ class AddMessageBody(MessageBodyBase):
         for backup in backups:
             backup_list.append((backup.session_id.tobytes().decode(), backup.nonce.tobytes().decode()))
             bak = bak + backup.session_id.tobytes().decode() + ","
-        val = "[MSG][ADD] sid={sid};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};seq={seq};slf={slf};bak={bak}".format(
+        val = "[MSG][ADD]     sid={sid};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};seq={seq};slf={slf};bak={bak}".format(
             sid=session_id,
             iid=insertion_id,
             fil=Name.to_str(file_name),
@@ -100,9 +100,11 @@ class AddMessageBody(MessageBodyBase):
         if is_stored_by_origin:
             global_view.store_file(insertion_id, session_id)
         global_view.set_backups(insertion_id, backup_list)
+
+        # TODO: pending stores
         
         # if I need to store this file
-        copies_needed = desired_copies
+        copies_needed = desired_copies # TODO: update this after implementing pending stores
         if is_stored_by_origin:
             copies_needed -= 1
         need_to_store = False
@@ -115,7 +117,7 @@ class AddMessageBody(MessageBodyBase):
             from .message import MessageTlv, MessageTypes
             # generate store msg and send
             # store tlv
-            expire_at = int(time.time()+600)
+            expire_at = int(time.time()+(config['period']*2))
             favor = 1.85
             store_message_body = StoreMessageBodyTlv()
             store_message_body.session_id = config['session_id'].encode()
@@ -131,6 +133,11 @@ class AddMessageBody(MessageBodyBase):
             # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
             global_view.store_file(insertion_id, config['session_id'])
             svs.publishData(store_message.encode())
+            val = "[MSG][STORE]*  sid={sid};iid={iid}".format(
+                sid=config['session_id'],
+                iid=insertion_id
+            )
+            print(val)
         # update session
         global_view.update_session(session_id, node_name, expire_at, favor, self.seq)
         return

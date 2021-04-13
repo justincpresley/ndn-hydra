@@ -27,10 +27,15 @@ class StoreMessageBody(MessageBodyBase):
         expire_at = self.message_body.expire_at
         favor = float(self.message_body.favor.tobytes().decode())
         insertion_id = self.message_body.insertion_id.tobytes().decode()
+        val = "[MSG][STORE]   sid={sid};iid={iid}".format(
+            sid=session_id,
+            iid=insertion_id
+        )
+        print(val)
         # if insertion 
         insertion = global_view.get_insertion(insertion_id)
         if (insertion == None) or (insertion['is_deleted'] == True):
-            # TODO:add store to pending 
+            # TODO: add store to pending 
             print('add to pending store')
         else:
             global_view.store_file(insertion_id, session_id)
