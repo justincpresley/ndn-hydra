@@ -71,6 +71,7 @@ class GlobalView:
         return conn
 
     def __execute_sql(self, sql):
+        # print(sql)
         result = None
         conn = self.__get_connection()
         if conn is not None:
@@ -283,8 +284,8 @@ class GlobalView:
                 'fetch_path': result[0][7],
                 'state_vector': result[0][8],
                 'is_deleted': False if (result[0][9] == 0) else True,
-                'stored_bys': self.get_stored_bys(result[0]),
-                'backuped_bys': self.get_backuped_bys(result[0])
+                'stored_bys': self.get_stored_bys(result[0][0]),
+                'backuped_bys': self.get_backuped_bys(result[0][0])
             }
 
     def get_insertions(self, including_deleted: bool = False):
@@ -305,6 +306,8 @@ class GlobalView:
                 is_deleted = 0
             """
         results = self.__execute_sql(sql)
+        if results == None:
+            return []
         insertions = []
         for result in results:
             insertions.append({
@@ -322,6 +325,14 @@ class GlobalView:
                 'backuped_bys': self.get_backuped_bys(result[0])
             })
         return insertions
+
+    def get_underreplicated_insertions(self):
+        insertions = self.get_insertions()
+        underreplicated_insertions = []
+        for insertion in insertions:
+            if len(insertion['stored_bys']) < insertion['desired_copies']:
+                underreplicated_insertions.append(insertion)
+        return underreplicated_insertions
 
     def get_backupable_insertions(self):
         insertions = self.get_insertions()

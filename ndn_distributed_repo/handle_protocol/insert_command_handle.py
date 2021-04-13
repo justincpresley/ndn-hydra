@@ -77,7 +77,7 @@ class InsertCommandHandle(ProtocolHandle):
         sequence_number = cmd.sequence_number
         fetch_path = cmd.fetch_path.prefix
 
-        print("[CMD] receive INSERT CMD for file {}".format(file_name))
+        print("[cmd][INSERT] file {}".format(Name.to_str(file_name)))
 
         # TODO: check duplicate sequence number
 
@@ -87,6 +87,8 @@ class InsertCommandHandle(ProtocolHandle):
             return
 
         sessions = self.global_view.get_sessions()
+
+        # print("{0} sessions".format(len(sessions)))
 
         if len(sessions) < (desired_copies * 2):
             print("not enough node sessions") # TODO: notify the client?
@@ -98,22 +100,21 @@ class InsertCommandHandle(ProtocolHandle):
             insertion_id = secrets.token_hex(8)
 
         # select sessions
-        needed = desired_copies * 2
-        #   itself?
-        rdm = random.random()
-        pickself = (rdm >= 0.50)
-        
+        random.shuffle(sessions)
+        picked_sessions = random.sample(sessions, (desired_copies * 2))
+
+        pickself = False
+        for i in range(desired_copies):
+            if picked_sessions[i]['id'] == self.config['session_id']:
+                pickself = True
+                break
         
         if pickself:
             # TODO: fetch and store this file
-            print("pick myself")
-            needed -= 1
-            sessions = list(filter(lambda x: x['id'] != self.config['session_id'], sessions))
+            # print("pick myself")
+            picked_sessions = list(filter(lambda x: x['id'] != self.config['session_id'], sessions))
 
 
-        picked_sessions = random.sample(sessions, needed)
-        
-        random.shuffle(picked_sessions)
         backups = []
         backup_list = []
         for picked_session in picked_sessions:
@@ -127,7 +128,7 @@ class InsertCommandHandle(ProtocolHandle):
 
 
         # add tlv
-        expire_at = int(time.time()+600)
+        expire_at = int(time.time()+(self.config['period']*2))
         favor = 1.85
         add_message_body = AddMessageBodyTlv()
         add_message_body.session_id = self.config['session_id'].encode()
@@ -166,6 +167,21 @@ class InsertCommandHandle(ProtocolHandle):
             self.global_view.store_file(insertion_id, self.config['session_id'])
         self.global_view.set_backups(insertion_id, backup_list)
         self.message_handle.svs.publishData(add_message.encode())
+        bak = ""
+        for backup in backup_list:
+            bak = bak + backup[0] + ","
+        val = "[MSG][ADD]*    sid={sid};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};seq={seq};slf={slf};bak={bak}".format(
+            sid=self.config['session_id'],
+            iid=insertion_id,
+            fil=Name.to_str(file_name),
+            cop=desired_copies,
+            pck=packets,
+            siz=size,
+            seq=sequence_number,
+            slf=1 if pickself else 0,
+            bak=bak
+        )
+        print(val)
         
         
 
