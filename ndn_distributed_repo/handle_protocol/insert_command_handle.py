@@ -19,7 +19,6 @@ class InsertCommandHandle(ProtocolHandle):
     """
     InsertCommandHandle processes insert command handles, and deletes corresponding data stored
     in the database.
-    TODO: Add validator
     """
     def __init__(self, app: NDNApp, storage: Storage, pb: PubSub, read_handle: ReadHandle,
                  config: dict, message_handle: MessageHandle, global_view: GlobalView):
@@ -112,7 +111,7 @@ class InsertCommandHandle(ProtocolHandle):
         if pickself:
             # TODO: fetch and store this file
             # print("pick myself")
-            picked_sessions = list(filter(lambda x: x['id'] != self.config['session_id'], sessions))
+            picked_sessions = list(filter(lambda x: x['id'] != self.config['session_id'], picked_sessions))
 
 
         backups = []

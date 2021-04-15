@@ -139,7 +139,12 @@ class GlobalView:
 
     def get_sessions(self, including_expired: bool = False):
         if including_expired:
-            sql = """SELECT DISTINCT id, node_name, expire_at, favor, state_vector, is_expired FROM sessions"""
+            sql = """
+            SELECT DISTINCT 
+                id, node_name, expire_at, favor, state_vector, is_expired
+            FROM 
+                sessions
+            """
         else:
             sql = """
             SELECT DISTINCT 
@@ -326,6 +331,36 @@ class GlobalView:
             })
         return insertions
 
+    def get_insertion_by_file_name(self, file_name: str):
+        ps = """
+        SELECT DISTINCT
+            id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted
+        FROM 
+            insertions
+        WHERE
+            file_name = '{file_name}' AND
+            is_deleted = 0
+        """
+        sql = ps.format(file_name=file_name)
+        result = self.__execute_sql(sql)
+        if len(result) != 1:
+            return None
+        else:
+            return {
+                'id': result[0][0],
+                'file_name': result[0][1],
+                'sequence_number': result[0][2],
+                'desired_copies': result[0][3],
+                'packets': result[0][4],
+                'size': result[0][5],
+                'origin_session_id': result[0][6],
+                'fetch_path': result[0][7],
+                'state_vector': result[0][8],
+                'is_deleted': False if (result[0][9] == 0) else True,
+                'stored_bys': self.get_stored_bys(result[0][0]),
+                'backuped_bys': self.get_backuped_bys(result[0][0])
+            }
+
     def get_underreplicated_insertions(self):
         insertions = self.get_insertions()
         underreplicated_insertions = []
@@ -482,6 +517,7 @@ class GlobalView:
         SELECT DISTINCT insertion_id, session_id
         FROM stored_by
         WHERE insertion_id = '{insertion_id}'
+        ORDER BY session_id ASC
         """
         sql = ps.format(insertion_id=insertion_id)
         results = self.__execute_sql(sql)
@@ -525,4 +561,14 @@ class GlobalView:
         pending_stores = []
         for result in results:
             pending_stores.append(result[1])
-        return pending_stores   
+        return pending_stores
+
+    def add_pending_store(self, insertion_id: str, session_id: str):
+        ps = """
+        INSERT OR IGNORE INTO pending_stores
+            (insertion_id, session_id)
+        VALUES
+            ('{insertion_id}', '{session_id}')
+        """
+        sql = ps.format(insertion_id=insertion_id, session_id=session_id)
+        self.__execute_sql(sql)

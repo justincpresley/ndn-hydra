@@ -56,9 +56,9 @@ def process_cmd_opts():
         args["repo_prefix"] = process_prefix(vars.repo_prefix)
         args["node_name"] = process_others(vars.node_name)
         args["session_id"] = process_others(vars.session_id)
-        args["file_storage"] = "~/.ndn/repo/{repo_prefix}/{session_id}/file.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
-        args["global_view_storage"] = "~/.ndn/repo/{repo_prefix}/{session_id}/global_view.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
-        args["svs_storage"] = "~/.ndn/repo/{repo_prefix}/{session_id}/svs.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
+        args["file_storage"] = "~/.ndn/repo{repo_prefix}/{session_id}/file.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
+        args["global_view_storage"] = "~/.ndn/repo{repo_prefix}/{session_id}/global_view.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
+        args["svs_storage"] = "~/.ndn/repo{repo_prefix}/{session_id}/svs.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
         args["svs_group_prefix"] = process_prefix(vars.svs_group_prefix)
         
         return args
@@ -123,7 +123,7 @@ def main() -> int:
     pb = PubSub(app)
     read_handle = ReadHandle(app, file_storage, config)
     insert_handle = InsertCommandHandle(app, file_storage, pb, read_handle, config, message_handle, global_view)
-    delete_handle = DeleteCommandHandle(app, file_storage, pb, read_handle, config)
+    delete_handle = DeleteCommandHandle(app, file_storage, pb, read_handle, config, message_handle, global_view)
 
     # repo = RepoNode(app, None, read_handle, insert_handle, delete_handle, config)
     # aio.ensure_future(repo.listen())

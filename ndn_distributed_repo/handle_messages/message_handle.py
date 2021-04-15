@@ -1,13 +1,16 @@
 import asyncio as aio
+import secrets
 import time
+import random
 from ndn.app import NDNApp
 from ndn.encoding import Name
 from ndn.svs import SVSync
 from ndn_python_repo import Storage
+from ..global_view_2.global_view import GlobalView
 from ..repo_messages import *
 
 class MessageHandle:
-    def __init__(self, app:NDNApp, svs_storage:Storage, svs_group_prefix:str, session_id:str, node_name:str, svs_cache_others:bool, global_view, config):
+    def __init__(self, app:NDNApp, svs_storage:Storage, svs_group_prefix:str, session_id:str, node_name:str, svs_cache_others:bool, global_view: GlobalView, config):
         self.app = app
         self.svs_storage = svs_storage
         self.svs_group_prefix = svs_group_prefix
@@ -17,10 +20,13 @@ class MessageHandle:
         self.svs = None
         self.global_view = global_view
         self.config = config
+        self.expire_at = 0
 
     def heartbeat(self):
+        # TODO: skip if expire_at value is big enough
         # hb tlv
         expire_at = int(time.time()+(self.config['period']*2))
+        self.expire_at = expire_at
         favor = 1.85
         heartbeat_message_body = HeartbeatMessageBodyTlv()
         heartbeat_message_body.session_id = self.svs_node_id.encode()
@@ -96,15 +102,68 @@ class MessageHandle:
                     )
                     print(val)
 
+    def claim(self):
+        # TODO: possibility based on # active sessions and period
+        if random.random() < 0.618:
+            return
+        backupable_insertions = self.global_view.get_backupable_insertions()
+        for backupable_insertion in backupable_insertions:
+            if random.random() < 0.618:
+                continue
+            already_in = False
+            for stored_by in backupable_insertion['stored_bys']:
+                if stored_by == self.config['session_id']:
+                    already_in = True
+                    break
+            for backuped_by in backupable_insertion['backuped_bys']:
+                if backuped_by['session_id'] == self.config['session_id']:
+                    already_in = True
+                    break
+            if already_in == True:
+                continue
+            if len(backupable_insertion['backuped_bys']) == 0 and len(backupable_insertion['stored_bys']) == 0:
+                continue
+            authorizer = None
+            if len(backupable_insertion['backuped_bys']) == 0:
+                authorizer = {
+                    'session_id': backupable_insertion['stored_bys'][-1],
+                    'rank': -1,
+                    'nonce': backupable_insertion['id']
+                }
+            else:
+                authorizer = backupable_insertion['backuped_bys'][-1]
+            # generate claim (request) msg and send
+            # claim tlv
+            expire_at = int(time.time()+(self.config['period']*2))
+            favor = 1.85
+            claim_message_body = ClaimMessageBodyTlv()
+            claim_message_body.session_id = self.config['session_id'].encode()
+            claim_message_body.node_name = self.config['node_name'].encode()
+            claim_message_body.expire_at = expire_at
+            claim_message_body.favor = str(favor).encode()
+            claim_message_body.insertion_id = backupable_insertion['id'].encode()
+            claim_message_body.type = ClaimMessageTypes.REQUEST
+            claim_message_body.claimer_session_id = self.config['session_id'].encode()
+            claim_message_body.claimer_nonce = secrets.token_hex(4).encode()
+            claim_message_body.authorizer_session_id = authorizer['session_id'].encode()
+            claim_message_body.authorizer_nonce = authorizer['nonce'].encode()
+            # claim msg
+            claim_message = MessageTlv()
+            claim_message.header = MessageTypes.CLAIM
+            claim_message.body = claim_message_body.encode()
+            self.svs.publishData(claim_message.encode())
+            val = "[MSG][CLAIM.R]*sid={sid};iid={iid}".format(
+                sid=self.config['session_id'],
+                iid=backupable_insertion['id']
+            )
+            print(val)
 
     def periodic(self):
         # print('periodic')
         # periodic tasks:
-        # 1. I am Alive
-        # 2. check expired nodes
-        # 3. make possible claims
         self.heartbeat()
         self.detect_expired_sessions()
+        self.claim()
 
         sessions = self.global_view.get_sessions()
         insertions = self.global_view.get_insertions()
@@ -122,15 +181,12 @@ class MessageHandle:
                 on=on,
                 bck=bck
             )
-            print(val)
+            # print(val)
         # print("--")
      
     # the main coroutine
     async def start(self):
         self.svs = SVSync(self.app, Name.from_str(self.svs_group_prefix), Name.from_str(self.svs_node_id), self.svs_missing_callback, storage=self.svs_storage)
-        #publish first heartbeat
-
-
         while True:
             await aio.sleep(self.config['period'])
             self.periodic()
@@ -153,3 +209,7 @@ class MessageHandle:
                 aio.ensure_future(message_body.apply(self.global_view, self.svs, self.config))
                 # print('fetched GM {}:{}'.format(nid, seq))
                 i.lowSeqNum = i.lowSeqNum + 1
+
+    def svs_sending_callback(self, expire_at: int):
+        self.expire_at = expire_at
+

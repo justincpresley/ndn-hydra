@@ -1,3 +1,4 @@
+from ndn_distributed_repo.global_view_2.global_view import GlobalView
 from ndn.encoding import *
 from .message_base import MessageBodyBase
 from .store import StoreMessageBodyTlv
@@ -54,7 +55,7 @@ class AddMessageBody(MessageBodyBase):
         super(AddMessageBody, self).__init__(nid, seq)
         self.message_body = AddMessageBodyTlv.parse(raw_bytes)
 
-    async def apply(self, global_view, svs, config):
+    async def apply(self, global_view: GlobalView, svs, config):
         session_id = self.message_body.session_id.tobytes().decode()
         node_name = self.message_body.node_name.tobytes().decode()
         expire_at = self.message_body.expire_at
@@ -101,10 +102,14 @@ class AddMessageBody(MessageBodyBase):
             global_view.store_file(insertion_id, session_id)
         global_view.set_backups(insertion_id, backup_list)
 
-        # TODO: pending stores
-        
+        # get pending stores
+        copies_needed = desired_copies
+        pending_stores = global_view.get_pending_stores(insertion_id)
+        for pending_store in pending_stores:
+            global_view.store_file(insertion_id, pending_store)
+            copies_needed -= 1
+
         # if I need to store this file
-        copies_needed = desired_copies # TODO: update this after implementing pending stores
         if is_stored_by_origin:
             copies_needed -= 1
         need_to_store = False
