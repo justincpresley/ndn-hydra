@@ -5,3 +5,9 @@ __pycache__/
 
 # C extensions
 *.so
+
+# PhpStorm
+.idea
+
+# VSCode
+.vscode
