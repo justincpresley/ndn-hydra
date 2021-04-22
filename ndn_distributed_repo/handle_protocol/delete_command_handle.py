@@ -1,13 +1,12 @@
 import asyncio as aio
 import logging
 import time
-from ndn_distributed_repo.global_view_2 import global_view
-from ndn_distributed_repo.global_view_2.global_view import GlobalView
+from ..data_storage import DataStorage
+from ..global_view_2 import GlobalView
 import random
 import sys
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
-from ndn_python_repo import Storage
 from . import ReadHandle, ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
 from ..repo_messages.remove import RemoveMessageBodyTlv
@@ -23,7 +22,7 @@ class DeleteCommandHandle(ProtocolHandle):
     in the database.
     TODO: Add validator
     """
-    def __init__(self, app: NDNApp, storage: Storage, pb: PubSub, read_handle: ReadHandle,
+    def __init__(self, app: NDNApp, data_storage: DataStorage, pb: PubSub, read_handle: ReadHandle,
                  config: dict, message_handle: MessageHandle, global_view: GlobalView):
         """
         Read handle need to keep a reference to write handle to register new prefixes.
@@ -32,7 +31,7 @@ class DeleteCommandHandle(ProtocolHandle):
         :param read_handle: ReadHandle. This param is necessary because DeleteCommandHandle need to
             unregister prefixes.
         """
-        super(DeleteCommandHandle, self).__init__(app, storage, pb, config)
+        super(DeleteCommandHandle, self).__init__(app, data_storage, pb, config)
         self.m_read_handle = read_handle
         self.prefix = None
         self.message_handle = message_handle

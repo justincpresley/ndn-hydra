@@ -17,7 +17,7 @@ while True:
         bck = ""
         for backuped_by in insertion['backuped_bys']:
             bck = bck + backuped_by['session_id'] + ","
-        val = '[File]           iid={iid}; name={name}; on={on}; bck={bck}'.format(
+        val = 'iid={iid}; name={name}; on={on}; bck={bck}'.format(
             iid=insertion['id'],
             name=insertion['file_name'],
             on=on,

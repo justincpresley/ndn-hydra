@@ -1,3 +1,4 @@
+from ndn_distributed_repo.data_storage.data_storage import DataStorage
 from ndn_distributed_repo.global_view_2.global_view import GlobalView
 from ndn.encoding import *
 from .message_base import MessageBodyBase
@@ -22,7 +23,7 @@ class StoreMessageBody(MessageBodyBase):
         super(StoreMessageBody, self).__init__(nid, seq)
         self.message_body = StoreMessageBodyTlv.parse(raw_bytes)
 
-    async def apply(self, global_view: GlobalView, svs, config):
+    async def apply(self, global_view: GlobalView, data_storage: DataStorage, svs, config):
         session_id = self.message_body.session_id.tobytes().decode()
         node_name = self.message_body.node_name.tobytes().decode()
         expire_at = self.message_body.expire_at

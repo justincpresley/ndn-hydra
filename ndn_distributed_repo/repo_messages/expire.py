@@ -1,3 +1,5 @@
+from ndn_distributed_repo.global_view_2.global_view import GlobalView
+from ndn_distributed_repo.data_storage.data_storage import DataStorage
 from ndn.encoding import *
 from .message_base import MessageBodyBase
 from .store import StoreMessageBodyTlv
@@ -23,7 +25,7 @@ class ExpireMessageBody(MessageBodyBase):
         super(ExpireMessageBody, self).__init__(nid, seq)
         self.message_body = ExpireMessageBodyTlv.parse(raw_bytes)
 
-    async def apply(self, global_view, svs, config):
+    async def apply(self, global_view: GlobalView, data_storage: DataStorage, svs, config):
         session_id = self.message_body.session_id.tobytes().decode()
         node_name = self.message_body.node_name.tobytes().decode()
         expire_at = self.message_body.expire_at
@@ -42,29 +44,37 @@ class ExpireMessageBody(MessageBodyBase):
             deficit = underreplicated_insertion['desired_copies'] - len(underreplicated_insertion['stored_bys'])
             for backuped_by in underreplicated_insertion['backuped_bys']:
                 if (backuped_by['session_id'] == config['session_id']) and (backuped_by['rank'] < deficit):
-                    # generate store msg and send
-                    # store tlv
-                    expire_at = int(time.time()+(config['period']*2))
-                    favor = 1.85
-                    store_message_body = StoreMessageBodyTlv()
-                    store_message_body.session_id = config['session_id'].encode()
-                    store_message_body.node_name = config['node_name'].encode()
-                    store_message_body.expire_at = expire_at
-                    store_message_body.favor = str(favor).encode()
-                    store_message_body.insertion_id = underreplicated_insertion['id'].encode()
-                    # store msg
-                    store_message = MessageTlv()
-                    store_message.header = MessageTypes.STORE
-                    store_message.body = store_message_body.encode()
-                    # apply globalview and send msg thru SVS
-                    # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
-                    global_view.store_file(underreplicated_insertion['id'], config['session_id'])
-                    svs.publishData(store_message.encode())
-                    val = "[MSG][STORE]+  sid={sid};iid={iid}".format(
-                        sid=config['session_id'],
-                        iid=underreplicated_insertion['id']
-                    )
-                    print(val)
+
+                    digests = underreplicated_insertion['digests']
+                    print(type(digests[0]))
+
+                    data_storage.add_metainfos(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
+                    
+
+
+                    # # generate store msg and send
+                    # # store tlv
+                    # expire_at = int(time.time()+(config['period']*2))
+                    # favor = 1.85
+                    # store_message_body = StoreMessageBodyTlv()
+                    # store_message_body.session_id = config['session_id'].encode()
+                    # store_message_body.node_name = config['node_name'].encode()
+                    # store_message_body.expire_at = expire_at
+                    # store_message_body.favor = str(favor).encode()
+                    # store_message_body.insertion_id = underreplicated_insertion['id'].encode()
+                    # # store msg
+                    # store_message = MessageTlv()
+                    # store_message.header = MessageTypes.STORE
+                    # store_message.body = store_message_body.encode()
+                    # # apply globalview and send msg thru SVS
+                    # # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
+                    # global_view.store_file(underreplicated_insertion['id'], config['session_id'])
+                    # svs.publishData(store_message.encode())
+                    # val = "[MSG][STORE]+  sid={sid};iid={iid}".format(
+                    #     sid=config['session_id'],
+                    #     iid=underreplicated_insertion['id']
+                    # )
+                    # print(val)
         # update session
         global_view.update_session(session_id, node_name, expire_at, favor, self.seq)
         return

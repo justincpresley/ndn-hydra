@@ -13,11 +13,12 @@ class RepoTypeNumber:
   FILE = 202
   DESIRED_COPIES = 204
   PACKETS = 205
-  SIZE = 206
-  FETCH_PATH = 207
+  DIGEST = 206
+  SIZE = 207
+  FETCH_PATH = 208
   SEQUENCE_NUMBER = 210
-  PUBLISHER_PREFIX = 211
-  NOTIFY_NONCE = 212
+  # PUBLISHER_PREFIX = 211
+  # NOTIFY_NONCE = 212
 
 class FetchPath(TlvModel):
   prefix = NameField()
@@ -26,6 +27,7 @@ class File(TlvModel):
   file_name = NameField()
   desired_copies = UintField(RepoTypeNumber.DESIRED_COPIES)
   packets = UintField(RepoTypeNumber.PACKETS)
+  digests = RepeatedField(BytesField(RepoTypeNumber.DIGEST))
   size = UintField(RepoTypeNumber.SIZE)
 
 class RepoCommand(TlvModel):

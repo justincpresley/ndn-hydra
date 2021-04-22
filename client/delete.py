@@ -42,7 +42,8 @@ class DeleteClient(object):
       file = File()
       file.file_name = file_name
       file.desired_copies = desired_copies
-      file.packets = packets 
+      file.packets = packets
+      file.digests = []
       file.size = size
       fetch_path = FetchPath()
       fetch_path.prefix = fetch_prefix
