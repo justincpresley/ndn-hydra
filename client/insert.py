@@ -8,9 +8,13 @@
 
 import os
 import sys
+
+from ndn.encoding.ndn_format_0_3 import InterestParam
+from ndn.encoding.tlv_type import BinaryStr
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 import argparse
+from hashlib import blake2b
 import asyncio as aio
 from ndn_distributed_repo.protocol import RepoCommand, File, FetchPath
 from ndn_distributed_repo.utils import PubSub
@@ -21,6 +25,7 @@ from ndn.types import InterestNack, InterestTimeout
 from ndn.utils import gen_nonce
 from typing import Optional
 
+SEGMENT_SIZE = 8192
 
 class InsertClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName):
@@ -33,16 +38,56 @@ class InsertClient(object):
       self.client_prefix = client_prefix
       self.repo_prefix = repo_prefix
       self.pb = PubSub(self.app, self.client_prefix)
+      self.packets = []
 
-    async def insert_file(self, file_name: FormalName, desired_copies: int, packets: int, size: int, fetch_prefix: FormalName):
+
+
+
+
+    async def insert_file(self, file_name: FormalName, desired_copies: int, packets: int, size: int, fetch_prefix: FormalName, path: str):
       """
       Insert file with file name file_name from repo 
       """
       # send command interest
+
+      test_name = file_name + [Component.from_version(3)] + [Component.from_segment(1)]
+      print(Name.to_str(test_name))
+
+      size = 0
+
+      with open(path, "rb") as f:
+        data = f.read()
+        size = len(data)
+        print("size: {0}".format(size))
+        seg_cnt = (len(data) + SEGMENT_SIZE - 1) // SEGMENT_SIZE
+        packets = seg_cnt
+        self.packets = [self.app.prepare_data(fetch_prefix + [Component.from_segment(i)],
+                                              data[i*SEGMENT_SIZE:(i+1)*SEGMENT_SIZE],
+                                              freshness_period=10000,
+                                              final_block_id=Component.from_segment(seg_cnt - 1))
+                        for i in range(seg_cnt)]
+        
+        self.digests = [bytes(blake2b(data[i*SEGMENT_SIZE:(i+1)*SEGMENT_SIZE]).digest()[:2]) for i in range(seg_cnt)]
+        print(self.digests[0].hex())
+      
+      print(f'Created {seg_cnt} chunks under name {Name.to_str(fetch_prefix)}')
+
+      @self.app.route(fetch_prefix)
+      def on_interest(int_name, _int_param, _app_param):
+        if Component.get_type(int_name[-1]) == Component.TYPE_SEGMENT:
+            seg_no = Component.to_number(int_name[-1])
+        else:
+            seg_no = 0
+        if seg_no < seg_cnt:
+            self.app.put_raw_packet(self.packets[seg_no])
+
+
+
       file = File()
       file.file_name = file_name
       file.desired_copies = desired_copies
-      file.packets = packets 
+      file.packets = packets
+      file.digests = self.digests
       file.size = size
       fetch_path = FetchPath()
       fetch_path.prefix = fetch_prefix

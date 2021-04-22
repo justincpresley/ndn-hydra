@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS insertions (
     sequence_number INTEGER NOT NULL,
     desired_copies INTEGER NOT NULL DEFAULT 3,
     packets INTEGER NOT NULL DEFAULT 1,
+    digests BLOB NOT NULL DEFAULT 0,
     size INTEGER NOT NULL,
     origin_session_id TEXT NOT NULL,
     fetch_path TEXT NOT NULL,
@@ -60,6 +61,8 @@ class GlobalView:
                 os.makedirs(os.path.dirname(self.db))
             except PermissionError:
                 raise PermissionError(f'Could not create database directory: {self.db}') from None
+            except FileExistsError:
+                pass
         self.__create_tables()
 
     def __get_connection(self):
@@ -70,14 +73,29 @@ class GlobalView:
             print(e)
         return conn
 
-    def __execute_sql(self, sql):
+    def __execute_sql(self, sql: str):
         # print(sql)
-        result = None
+        result = []
         conn = self.__get_connection()
         if conn is not None:
             try:
                 c = conn.cursor()
                 c.execute(sql)
+                conn.commit()
+                result = c.fetchall()
+            except Error as e:
+                print(e)
+            conn.close()
+        return result
+
+    def __execute_sql_qmark(self, sql: str, par: Tuple):
+        # print(sql)
+        result = []
+        conn = self.__get_connection()
+        if conn is not None:
+            try:
+                c = conn.cursor()
+                c.execute(sql, par)
                 conn.commit()
                 result = c.fetchall()
             except Error as e:
@@ -94,37 +112,34 @@ class GlobalView:
 
     def __rerank_backuped_by(self, insertion_id: str, session_id: str):
         # check rank
-        ps_get_backup = """
+        sql_get_backup = """
         SELECT DISTINCT insertion_id, session_id, rank
         FROM backuped_by
-        WHERE (insertion_id = '{insertion_id}') AND (session_id = '{session_id}')
+        WHERE (insertion_id = ?) AND (session_id = ?)
         """
-        sql_get_backup = ps_get_backup.format(insertion_id=insertion_id, session_id=session_id)
-        result = self.__execute_sql(sql_get_backup)
+        result = self.__execute_sql_qmark(sql_get_backup, (insertion_id, session_id))
         # return result
         rank = -1
         if len(result) == 1:
             rank = result[0][2]
         if rank != -1:
-            ps_rerank = """
+            sql_rerank = """
             UPDATE backuped_by
             SET rank = rank - 1
-            WHERE (insertion_id = '{insertion_id}') AND (rank > {rank})
+            WHERE (insertion_id = ?) AND (rank > ?)
             """
-            sql_rerank = ps_rerank.format(insertion_id=insertion_id, rank=rank)
-            self.__execute_sql(sql_rerank)
+            self.__execute_sql_qmark(sql_rerank, (insertion_id, rank))
 
     def get_session(self, session_id: str):
-        ps = """
+        sql = """
         SELECT DISTINCT 
             id, node_name, expire_at, favor, state_vector, is_expired 
         FROM 
             sessions
         WHERE
-            id = '{session_id}'
+            id = ?
         """
-        sql = ps.format(session_id=session_id)
-        result = self.__execute_sql(sql)
+        result = self.__execute_sql_qmark(sql, (session_id, ))
         if len(result) != 1:
             return None
         else:
@@ -139,7 +154,12 @@ class GlobalView:
 
     def get_sessions(self, including_expired: bool = False):
         if including_expired:
-            sql = """SELECT DISTINCT id, node_name, expire_at, favor, state_vector, is_expired FROM sessions"""
+            sql = """
+            SELECT DISTINCT 
+                id, node_name, expire_at, favor, state_vector, is_expired
+            FROM 
+                sessions
+            """
         else:
             sql = """
             SELECT DISTINCT 
@@ -163,17 +183,16 @@ class GlobalView:
         return sessions
 
     def get_sessions_expired_by(self, timestamp: int):
-        ps = """
+        sql = """
         SELECT DISTINCT 
             id, node_name, expire_at, favor, state_vector, is_expired 
         FROM
             sessions
         WHERE
             is_expired = 0 AND
-            expire_at <= {timestamp}
+            expire_at <= ?
         """
-        sql = ps.format(timestamp=timestamp)
-        results = self.__execute_sql(sql)
+        results = self.__execute_sql_qmark(sql, (timestamp, ))
         sessions = []
         for result in results:
             sessions.append({
@@ -188,88 +207,79 @@ class GlobalView:
 
     def __add_session(self, session_id: str, node_name: str, expire_at: int, favor: float, state_vector: int):
         # start session
-        ps = """
+        sql = """
         INSERT OR IGNORE INTO sessions
             (id, node_name, expire_at, favor, state_vector, is_expired)
         VALUES
-            ('{id}', '{node_name}', {expire_at}, {favor:.4f}, {state_vector}, 0)
+            (?, ?, ?, ?, ?, 0)
         """
-        sql = ps.format(
-            id=session_id,
-            node_name=node_name,
-            expire_at=expire_at,
-            favor=favor,
-            state_vector=state_vector
-        )
-        self.__execute_sql(sql)
+        self.__execute_sql_qmark(sql, (session_id, node_name, expire_at, favor, state_vector))
 
     def update_session(self, session_id: str, node_name: str, expire_at: int, favor: float, state_vector: int):
         self.__add_session(session_id, node_name, expire_at, favor, state_vector)
-        ps = """
+        sql = """
         UPDATE sessions
-        SET expire_at = {expire_at},
-            favor = {favor},
-            state_vector = {state_vector}
+        SET expire_at = ?,
+            favor = ?,
+            state_vector = ?
         WHERE
-            id = '{session_id}'
+            id = ?
         """
-        sql = ps.format(session_id=session_id, expire_at=expire_at, favor=favor, state_vector=state_vector)
-        self.__execute_sql(sql)
+        self.__execute_sql_qmark(sql, (expire_at, favor, state_vector, session_id))
 
     def expire_session(self, session_id: str):
         
         # stored_by
-        ps_stored_by = """
-        DELETE FROM stored_by WHERE session_id = '{session_id}'
+        sql_stored_by = """
+        DELETE FROM stored_by WHERE session_id = ?
         """
-        sql_stored_by = ps_stored_by.format(session_id=session_id)
-        self.__execute_sql(sql_stored_by)
+        self.__execute_sql_qmark(sql_stored_by, (session_id, ))
         
         # backuped_by
-        ps_get_backups = """
+        sql_get_backups = """
         SELECT insertion_id, session_id
         FROM backuped_by
-        WHERE session_id = '{session_id}'
+        WHERE session_id = ?
         """
-        sql_get_backups = ps_get_backups.format(session_id=session_id)
-        backups = self.__execute_sql(sql_get_backups)
+        backups = self.__execute_sql_qmark(sql_get_backups, (session_id, ))
         for backup in backups:
             # rerank
             self.__rerank_backuped_by(backup[0], session_id)
         # remove
-        ps_delete_backuped_by = """
-        DELETE FROM backuped_by WHERE session_id = '{session_id}'
+        sql_delete_backuped_by = """
+        DELETE FROM backuped_by WHERE session_id = ?
         """
-        sql_delete_backuped_by = ps_delete_backuped_by.format(session_id=session_id)
-        self.__execute_sql(sql_delete_backuped_by)
+        self.__execute_sql_qmark(sql_delete_backuped_by, (session_id, ))
 
         # pending_stores
-        ps_pending_stores = """
-        DELETE FROM pending_stores WHERE session_id = '{session_id}'
+        sql_pending_stores = """
+        DELETE FROM pending_stores WHERE session_id = ?
         """
-        sql_pending_stores = ps_pending_stores.format(session_id=session_id)
-        self.__execute_sql(sql_pending_stores)
+        self.__execute_sql_qmark(sql_pending_stores, (session_id, ))
 
         # expire session
-        ps = """
+        sql = """
         UPDATE sessions
         SET is_expired = 1
-        WHERE id = '{session_id}'
+        WHERE id = ?
         """
-        sql = ps.format(session_id=session_id)
-        self.__execute_sql(sql)
+        self.__execute_sql_qmark(sql, (session_id, ))
+
+    def __split_digests(self, digests: bytes, size: int):
+        digests_bytes = bytes(digests)
+        return [digests_bytes[i:i+size] for i in range(0, len(digests_bytes), size)]
+
 
     def get_insertion(self, insertion_id: str):
-        ps = """
+        sql = """
         SELECT DISTINCT 
-            id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted
+            id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted, digests
         FROM 
             insertions
         WHERE
-            id = '{insertion_id}'
+            id = ?
         """
-        sql = ps.format(insertion_id=insertion_id)
-        result = self.__execute_sql(sql)
+        result = self.__execute_sql_qmark(sql, (insertion_id, ))
         if len(result) != 1:
             return None
         else:
@@ -284,6 +294,7 @@ class GlobalView:
                 'fetch_path': result[0][7],
                 'state_vector': result[0][8],
                 'is_deleted': False if (result[0][9] == 0) else True,
+                'digests': self.__split_digests(result[0][10], 2),
                 'stored_bys': self.get_stored_bys(result[0][0]),
                 'backuped_bys': self.get_backuped_bys(result[0][0])
             }
@@ -292,22 +303,20 @@ class GlobalView:
         if including_deleted:
             sql = """
             SELECT DISTINCT 
-                id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted
+                id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted, digests
             FROM 
                 insertions
             """
         else:
             sql = """
             SELECT DISTINCT 
-                id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted
+                id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted, digests
             FROM 
                 insertions
             WHERE
                 is_deleted = 0
             """
         results = self.__execute_sql(sql)
-        if results == None:
-            return []
         insertions = []
         for result in results:
             insertions.append({
@@ -321,10 +330,41 @@ class GlobalView:
                 'fetch_path': result[7],
                 'state_vector': result[8],
                 'is_deleted': False if (result[9] == 0) else True,
+                'digests': self.__split_digests(result[10], 2),
                 'stored_bys': self.get_stored_bys(result[0]),
                 'backuped_bys': self.get_backuped_bys(result[0])
             })
         return insertions
+
+    def get_insertion_by_file_name(self, file_name: str):
+        sql = """
+        SELECT DISTINCT
+            id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted, digests
+        FROM 
+            insertions
+        WHERE
+            file_name = ? AND
+            is_deleted = 0
+        """
+        result = self.__execute_sql_qmark(sql, (file_name, ))
+        if len(result) != 1:
+            return None
+        else:
+            return {
+                'id': result[0][0],
+                'file_name': result[0][1],
+                'sequence_number': result[0][2],
+                'desired_copies': result[0][3],
+                'packets': result[0][4],
+                'size': result[0][5],
+                'origin_session_id': result[0][6],
+                'fetch_path': result[0][7],
+                'state_vector': result[0][8],
+                'is_deleted': False if (result[0][9] == 0) else True,
+                'digests': self.__split_digests(result[0][10], 2),
+                'stored_bys': self.get_stored_bys(result[0][0]),
+                'backuped_bys': self.get_backuped_bys(result[0][0])
+            }
 
     def get_underreplicated_insertions(self):
         insertions = self.get_insertions()
@@ -338,12 +378,13 @@ class GlobalView:
         insertions = self.get_insertions()
         backupable_insertions = []
         for insertion in insertions:
-            if (len(insertion['stored_bys']) + len(insertion['backuped_bys'])) < (insertion['desired_copies'] * 2):
+            # print("stored_bys: {}; backuped_bys: {}; dcopies: {}".format(len(insertion['stored_bys']), len(insertion['backuped_bys']), insertion['desired_copies']))
+            if ( len(insertion['stored_bys']) + len(insertion['backuped_bys']) ) < (insertion['desired_copies'] * 2):
                 backupable_insertions.append(insertion)
         return backupable_insertions
 
     def add_insertion(self, insertion_id: str, file_name: str, sequence_number: int, size: int, origin_session_id: str,
-               fetch_path: str, state_vector: int, packets=1, desired_copies=3):
+               fetch_path: str, state_vector: int, digests: bytes, packets=1, desired_copies=3):
         # # check (same insertion_id):
         # insertion = self.get_insertion(insertion_id)
         # if (insertion is not None) and (insertion['is_deleted'] == False):
@@ -351,158 +392,129 @@ class GlobalView:
         # # TODO(check if there are insertions with the same file_name)
         # # TODO(may not needed, check if there are insertions with the same file_name and same sequence_number)
 
-        ps = """
+        sql = """
         INSERT OR IGNORE INTO insertions 
-            (id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted)
+            (id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted, digests)
         VALUES
-            ('{id}', '{file_name}', {sequence_number}, {desired_copies}, {packets}, {size}, '{origin_session_id}', '{fetch_path}', {state_vector}, 0)
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
         """
-
-        sql = ps.format(
-            id=insertion_id,
-            file_name=file_name,
-            sequence_number=sequence_number,
-            desired_copies=desired_copies,
-            packets=packets,
-            size=size,
-            origin_session_id=origin_session_id,
-            fetch_path=fetch_path,
-            state_vector=state_vector
-        )
-        self.__execute_sql(sql)
+        self.__execute_sql_qmark(sql, (insertion_id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, digests))
 
     def delete_insertion(self, insertion_id: str):
         # stored_by
-        ps_stored_by = """
-        DELETE FROM stored_by WHERE insertion_id = '{insertion_id}'
+        sql_stored_by = """
+        DELETE FROM stored_by WHERE insertion_id = ?
         """
-        sql_stored_by = ps_stored_by.format(insertion_id=insertion_id)
-        self.__execute_sql(sql_stored_by)
+        self.__execute_sql_qmark(sql_stored_by, (insertion_id, ))
         
         # backuped_by
-        ps_backuped_by = """
-        DELETE FROM backuped_by WHERE insertion_id = '{insertion_id}'
+        sql_backuped_by = """
+        DELETE FROM backuped_by WHERE insertion_id = ?
         """
-        sql_backuped_by = ps_backuped_by.format(insertion_id=insertion_id)
-        self.__execute_sql(sql_backuped_by)
+        self.__execute_sql_qmark(sql_backuped_by, (insertion_id, ))
 
         # backuped_by
-        ps_get_backups = """
-        SELECT insertion_id, session_id
+        sql_get_backups = """
+        SELECT DISTINCT insertion_id, session_id
         FROM backuped_by
-        WHERE insertion_id = '{insertion_id}'
+        WHERE insertion_id = ?
         """
-        sql_get_backups = ps_get_backups.format(insertion_id=insertion_id)
-        backups = self.__execute_sql(sql_get_backups)
+        backups = self.__execute_sql_qmark(sql_get_backups, (insertion_id, ))
         for backup in backups:
             # rerank
             self.__rerank_backuped_by(insertion_id, backup[1])
         # remove
-        ps_delete_backuped_by = """
-        DELETE FROM backuped_by WHERE insertion_id = '{insertion_id}'
+        sql_delete_backuped_by = """
+        DELETE FROM backuped_by WHERE insertion_id = ?
         """
-        sql_delete_backuped_by = ps_delete_backuped_by.format(insertion_id=insertion_id)
-        self.__execute_sql(sql_delete_backuped_by)
+        self.__execute_sql_qmark(sql_delete_backuped_by, (insertion_id, ))
 
         # pending_stores
-        ps_pending_stores = """
-        DELETE FROM pending_stores WHERE insertion_id = '{insertion_id}'
+        sql_pending_stores = """
+        DELETE FROM pending_stores WHERE insertion_id = ?
         """
-        sql_pending_stores = ps_pending_stores.format(insertion_id=insertion_id)
-        self.__execute_sql(sql_pending_stores)
+        self.__execute_sql_qmark(sql_pending_stores, (insertion_id, ))
 
         # insertions
-        ps_insertions = """
+        sql_insertions = """
         UPDATE insertions
         SET is_deleted = 1
-        WHERE id = '{insertion_id}'
+        WHERE id = ?
         """
-        sql_insertions = ps_insertions.format(insertion_id=insertion_id)
-        self.__execute_sql(sql_insertions)
+        self.__execute_sql_qmark(sql_insertions, (insertion_id, ))
 
     def store_file(self, insertion_id: str, session_id: str):
         # rerank backuped_by
         self.__rerank_backuped_by(insertion_id, session_id)
         # remove from backuped_by
-        ps_delete_backuped_by = """
-        DELETE FROM backuped_by WHERE (insertion_id = '{insertion_id}') AND (session_id = '{session_id}')
+        sql_delete_backuped_by = """
+        DELETE FROM backuped_by WHERE (insertion_id = ?) AND (session_id = ?)
         """
-        sql_delete_backuped_by = ps_delete_backuped_by.format(insertion_id=insertion_id, session_id=session_id)
-        self.__execute_sql(sql_delete_backuped_by)
+        self.__execute_sql_qmark(sql_delete_backuped_by, (insertion_id, session_id))
         # add to stored_by
-        ps_add_to_stored_by = """
+        sql_add_to_stored_by = """
         INSERT OR IGNORE INTO stored_by
             (insertion_id, session_id)
         VALUES
-            ('{insertion_id}', '{session_id}')
+            (?, ?)
         """
-        sql_add_to_stored_by = ps_add_to_stored_by.format(insertion_id=insertion_id, session_id=session_id)
-        self.__execute_sql(sql_add_to_stored_by)
+        self.__execute_sql_qmark(sql_add_to_stored_by, (insertion_id, session_id))
 
     def set_backups(self, insertion_id: str, backup_list: List[Tuple[str, str]]):
         # remove previous backups
-        ps_delete_backuped_by = """
-        DELETE FROM backuped_by WHERE (insertion_id = '{insertion_id}')
+        sql_delete_backuped_by = """
+        DELETE FROM backuped_by WHERE (insertion_id = ?)
         """
-        sql_delete_backuped_by = ps_delete_backuped_by.format(insertion_id=insertion_id)
-        self.__execute_sql(sql_delete_backuped_by)
+        self.__execute_sql_qmark(sql_delete_backuped_by, (insertion_id, ))
         # add backups
         length = len(backup_list)
         for rank in range(length):
             backup = backup_list[rank]
-            ps_add_backup = """
+            sql_add_backup = """
             INSERT OR IGNORE INTO backuped_by
                 (insertion_id, session_id, rank, nonce)
             VALUES
-                ('{insertion_id}', '{session_id}', {rank}, '{nonce}') 
+                (?, ?, ?, ?) 
             """
-            sql_add_backup = ps_add_backup.format(insertion_id=insertion_id, session_id=backup[0], rank=rank, nonce=backup[1])
-            self.__execute_sql(sql_add_backup)
+            self.__execute_sql_qmark(sql_add_backup, (insertion_id, backup[0], rank, backup[1]))
 
     def add_backup(self, insertion_id: str, session_id: str, rank: int, nonce: str):
         # delete all backups with larger rank value
-        ps_delete_backuped_by = """
+        sql_delete_backuped_by = """
         DELETE FROM backuped_by 
-        WHERE (insertion_id = '{insertion_id}') AND rank >= {rank}
+        WHERE (insertion_id = ?) AND rank >= ?
         """
-        sql_delete_backuped_by = ps_delete_backuped_by.format(insertion_id=insertion_id, rank=rank)
-        self.__execute_sql(sql_delete_backuped_by)
+        self.__execute_sql_qmark(sql_delete_backuped_by, (insertion_id, rank))
         # add this backup
-        ps_add_backup = """
+        sql_add_backup = """
         INSERT OR IGNORE INTO backuped_by
             (insertion_id, session_id, rank, nonce)
         VALUES
-            ('{insertion_id}', '{session_id}', {rank}, '{nonce}') 
+            (?, ?, ?, ?) 
         """
-        sql_add_backup = ps_add_backup.format(insertion_id=insertion_id, session_id=session_id, rank=rank, nonce=nonce)
-        self.__execute_sql(sql_add_backup)
+        self.__execute_sql_qmark(sql_add_backup, (insertion_id, session_id, rank, nonce))
 
     def get_stored_bys(self, insertion_id: str):
-        ps = """
+        sql = """
         SELECT DISTINCT insertion_id, session_id
         FROM stored_by
-        WHERE insertion_id = '{insertion_id}'
+        WHERE insertion_id = ?
+        ORDER BY session_id ASC
         """
-        sql = ps.format(insertion_id=insertion_id)
-        results = self.__execute_sql(sql)
-        if results == None:
-            return []
+        results = self.__execute_sql_qmark(sql, (insertion_id, ))
         stored_bys = []
         for result in results:
             stored_bys.append(result[1])
         return stored_bys
 
     def get_backuped_bys(self, insertion_id: str):
-        ps = """
+        sql = """
         SELECT DISTINCT insertion_id, session_id, rank, nonce
         FROM backuped_by
-        WHERE insertion_id = '{insertion_id}'
+        WHERE insertion_id = ?
         ORDER BY rank
         """
-        sql = ps.format(insertion_id=insertion_id)
-        results = self.__execute_sql(sql)
-        if results == None:
-            return []
+        results = self.__execute_sql_qmark(sql, (insertion_id, ))
         backuped_bys = []
         for result in results:
             backuped_bys.append({
@@ -513,16 +525,22 @@ class GlobalView:
         return backuped_bys
 
     def get_pending_stores(self, insertion_id: str):
-        ps = """
+        sql = """
         SELECT DISTINCT insertion_id, session_id
         FROM pending_stores
-        WHERE insertion_id = '{insertion_id}'
+        WHERE insertion_id = ?
         """
-        sql = ps.format(insertion_id=insertion_id)
-        results = self.__execute_sql(sql)
-        if results == None:
-            return []
+        results = self.__execute_sql_qmark(sql, (insertion_id, ))
         pending_stores = []
         for result in results:
             pending_stores.append(result[1])
-        return pending_stores   
+        return pending_stores
+
+    def add_pending_store(self, insertion_id: str, session_id: str):
+        sql = """
+        INSERT OR IGNORE INTO pending_stores
+            (insertion_id, session_id)
+        VALUES
+            (?, ?)
+        """
+        self.__execute_sql_qmark(sql, (insertion_id, session_id))

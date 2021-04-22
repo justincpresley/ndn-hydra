@@ -1,15 +1,16 @@
 import asyncio as aio
 import logging
+from ndn_distributed_repo.data_storage import data_storage
 import random
 import secrets
 import sys
 import time
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
-from ndn_python_repo import Storage
 from . import ReadHandle, ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
 from ..utils import PubSub
+from ..data_storage import DataStorage
 from ..global_view_2 import GlobalView
 from ..repo_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageBodyTlv
 from ..repo_messages.message import MessageTlv, MessageTypes
@@ -19,9 +20,8 @@ class InsertCommandHandle(ProtocolHandle):
     """
     InsertCommandHandle processes insert command handles, and deletes corresponding data stored
     in the database.
-    TODO: Add validator
     """
-    def __init__(self, app: NDNApp, storage: Storage, pb: PubSub, read_handle: ReadHandle,
+    def __init__(self, app: NDNApp, data_storage: DataStorage, pb: PubSub, read_handle: ReadHandle,
                  config: dict, message_handle: MessageHandle, global_view: GlobalView):
         """
         Read handle need to keep a reference to write handle to register new prefixes.
@@ -30,11 +30,12 @@ class InsertCommandHandle(ProtocolHandle):
         :param read_handle: ReadHandle. This param is necessary because InsertCommandHandle need to
             unregister prefixes.
         """
-        super(InsertCommandHandle, self).__init__(app, storage, pb, config)
+        super(InsertCommandHandle, self).__init__(app, data_storage, pb, config)
         self.m_read_handle = read_handle
         self.prefix = None
         self.message_handle = message_handle
         self.global_view = global_view
+        self.data_storage = data_storage
         # print(type(self.config['session_id']))
         #self.register_root = config['repo_config']['register_root']
 
@@ -73,6 +74,7 @@ class InsertCommandHandle(ProtocolHandle):
         file_name = cmd.file.file_name
         desired_copies = cmd.file.desired_copies
         packets = cmd.file.packets
+        digests = cmd.file.digests
         size = cmd.file.size
         sequence_number = cmd.sequence_number
         fetch_path = cmd.fetch_path.prefix
@@ -109,10 +111,11 @@ class InsertCommandHandle(ProtocolHandle):
                 pickself = True
                 break
         
-        if pickself:
-            # TODO: fetch and store this file
+        # if pickself:
+        #     # TODO: fetch and store this file
+        #     pass
             # print("pick myself")
-            picked_sessions = list(filter(lambda x: x['id'] != self.config['session_id'], sessions))
+            # picked_sessions = list(filter(lambda x: x['id'] != self.config['session_id'], picked_sessions))
 
 
         backups = []
@@ -140,11 +143,13 @@ class InsertCommandHandle(ProtocolHandle):
         add_message_body.file.file_name = file_name
         add_message_body.file.desired_copies = desired_copies
         add_message_body.file.packets = packets
+        add_message_body.file.digests = digests
         add_message_body.file.size = size
         add_message_body.sequence_number = sequence_number
         add_message_body.fetch_path = FetchPathTlv()
         add_message_body.fetch_path.prefix = fetch_path
-        add_message_body.is_stored_by_origin = 1 if pickself else 0
+        # add_message_body.is_stored_by_origin = 1 if pickself else 0
+        add_message_body.is_stored_by_origin = 0
         add_message_body.backup_list = backups
         # add msg
         add_message = MessageTlv()
@@ -160,11 +165,13 @@ class InsertCommandHandle(ProtocolHandle):
             self.config['session_id'],
             Name.to_str(fetch_path),
             next_state_vector,
-            packets,
-            desired_copies
+            b''.join(digests),
+            packets=packets,
+            desired_copies=desired_copies
         )
         if pickself:
-            self.global_view.store_file(insertion_id, self.config['session_id'])
+            # self.global_view.store_file(insertion_id, self.config['session_id'])
+            self.data_storage.add_metainfos(insertion_id, Name.to_str(file_name), packets, digests, Name.to_str(fetch_path))
         self.global_view.set_backups(insertion_id, backup_list)
         self.message_handle.svs.publishData(add_message.encode())
         bak = ""
@@ -178,7 +185,8 @@ class InsertCommandHandle(ProtocolHandle):
             pck=packets,
             siz=size,
             seq=sequence_number,
-            slf=1 if pickself else 0,
+            # slf=1 if pickself else 0,
+            slf=0,
             bak=bak
         )
         print(val)

@@ -1,11 +1,15 @@
 import argparse
 import asyncio as aio
 import logging
+from ndn_distributed_repo.handle_data_storage.data_storage_handle import DataStorageHandle
+from ndn_distributed_repo.data_storage.data_storage import DataStorage
+from time import sleep
+from typing import Dict
 import pkg_resources
 import sys
+from threading import Thread
 from ndn.app import NDNApp
 from ndn.encoding import Name
-from ndn.security import KeychainSqlite3, TpmFile
 from ndn_distributed_repo import *
 from ndn_python_repo import SqliteStorage
 # from handle_messages import MessageHandle
@@ -56,9 +60,9 @@ def process_cmd_opts():
         args["repo_prefix"] = process_prefix(vars.repo_prefix)
         args["node_name"] = process_others(vars.node_name)
         args["session_id"] = process_others(vars.session_id)
-        args["file_storage"] = "~/.ndn/repo/{repo_prefix}/{session_id}/file.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
-        args["global_view_storage"] = "~/.ndn/repo/{repo_prefix}/{session_id}/global_view.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
-        args["svs_storage"] = "~/.ndn/repo/{repo_prefix}/{session_id}/svs.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
+        args["data_storage_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/data.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
+        args["global_view_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/global_view.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
+        args["svs_storage_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/svs.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
         args["svs_group_prefix"] = process_prefix(vars.svs_group_prefix)
         
         return args
@@ -79,6 +83,62 @@ async def listen(repo_prefix: Name, pb: PubSub, insert_handle: InsertCommandHand
     await insert_handle.listen(repo_prefix)
     await delete_handle.listen(repo_prefix)
 
+class RepoNodeThread(Thread):
+    def __init__(self, config: Dict):
+        Thread.__init__(self)
+        
+        self.config = config
+
+    def run(self) -> None:
+        loop = aio.new_event_loop()
+        aio.set_event_loop(loop)
+
+        app = NDNApp()
+
+        
+        # data_storage = SqliteStorage(self.config['data_storage_path']+"abc.db")
+        data_storage = DataStorage(self.config['data_storage_path'])
+        global_view = GlobalView(self.config['global_view_path'])
+        pb = PubSub(app)
+
+        # messages (svs)
+        message_handle = MessageHandle(app, self.config, global_view, data_storage)
+
+        # protocol (commands & queries)
+        read_handle = ReadHandle(app, data_storage, self.config)
+        insert_handle = InsertCommandHandle(app, data_storage, pb, read_handle, self.config, message_handle, global_view)
+        delete_handle = DeleteCommandHandle(app, data_storage, pb, read_handle, self.config, message_handle, global_view)
+
+        # start listening
+        aio.ensure_future(listen(Name.normalize(self.config['repo_prefix']), pb, insert_handle, delete_handle))
+
+        try:
+            app.run_forever(after_start=message_handle.start())
+        except FileNotFoundError:
+            print('Error: could not connect to NFD.')
+
+class FileFetchingThread(Thread):
+    def __init__(self, config: Dict):
+        Thread.__init__(self)
+        self.config = config
+
+    def run(self) -> None:
+        loop = aio.new_event_loop()
+        aio.set_event_loop(loop)
+
+        app = NDNApp()
+
+        data_storage = DataStorage(self.config['data_storage_path'])
+
+        data_storage_handle = DataStorageHandle(app, self.config, data_storage)
+
+        try:
+            app.run_forever(after_start=data_storage_handle.start())
+        except FileNotFoundError:
+            print('Error: could not connect to NFD.')
+
+        
+        
 
 def main() -> int:
 
@@ -86,9 +146,9 @@ def main() -> int:
         'repo_prefix': None,
         'node_name': None,
         'session_id': None,
-        'file_storage': None,
-        'global_view_storage': None,
-        'svs_storage': None,
+        'data_storage_path': None,
+        'global_view_path': None,
+        'svs_storage_path': None,
         'svs_group_prefix': None,
         'svs_cache_others': True,
 		'period': 5
@@ -96,53 +156,10 @@ def main() -> int:
     cmd_args = process_cmd_opts()
     config = default_config.copy()
     config.update(cmd_args)
-    #config = process_config(cmdline_args)
-    #print(config)
 
-    # config_logging(config['logging_config'])
+    RepoNodeThread(config).start()
+    FileFetchingThread(config).start()
 
-    # storage = create_storage(config['db_config'])
-
-    app = NDNApp()
-    # tpm = TpmFile("/home/zixuan/.ndn/ndnsec-key-file")
-    # keychain = KeychainSqlite3("/home/zixuan/.ndn/pib.db", tpm)
-    # if keychain.has_default_identity():
-    #     print("yes")
-    # else:
-    #     print("no")
-    #     keychain.touch_identity(Name.from_str("/example_identity"))
-
-
-    file_storage = SqliteStorage(config['file_storage'])
-    global_view = GlobalView(config['global_view_storage'])
-
-    # messages (svs) 
-    message_handle = MessageHandle(app, SqliteStorage(config['svs_storage']), config['svs_group_prefix'], config['session_id'], config['node_name'], config['svs_cache_others'], global_view, config)
-
-    # protocol (commands & queries)
-    pb = PubSub(app)
-    read_handle = ReadHandle(app, file_storage, config)
-    insert_handle = InsertCommandHandle(app, file_storage, pb, read_handle, config, message_handle, global_view)
-    delete_handle = DeleteCommandHandle(app, file_storage, pb, read_handle, config)
-
-    # repo = RepoNode(app, None, read_handle, insert_handle, delete_handle, config)
-    # aio.ensure_future(repo.listen())
-    
-    # listen
-    repo_prefix = Name.from_str(config['repo_prefix'])
-    aio.ensure_future(listen(repo_prefix, pb, insert_handle, delete_handle))
-    # # pubsub
-    # pb.set_publisher_prefix(repo_prefix)
-    # await pb.wait_for_ready()
-    # # protocol handle
-    # await insert_handle.listen(repo_prefix)
-    # await delete_handle.listen(repo_prefix)
-
-
-    try:
-        app.run_forever(after_start=message_handle.start())
-    except FileNotFoundError:
-        print('Error: could not connect to NFD.')
     return 0
 
 
