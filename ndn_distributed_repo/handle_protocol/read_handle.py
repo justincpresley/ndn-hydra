@@ -19,9 +19,14 @@ class ReadHandle(object):
         self.app = app
         self.data_storage = data_storage
         self.global_view = global_view
-        self.node_name = config['node_name']
-        self.listen(Name.from_str(config['repo_prefix'] + "/main"))
-        self.listen(Name.from_str(config['repo_prefix'] + "/id/" + self.node_name))
+        self.node_name_comp = "/" + config['node_name']
+        self.repo_prefix = config['repo_prefix']
+
+        self.normal_serving_comp = "/main"
+        self.personal_serving_comp = "/id"
+
+        self.listen(Name.from_str(config['repo_prefix'] + self.normal_serving_comp))
+        self.listen(Name.from_str(config['repo_prefix'] + self.personal_serving_comp  + self.node_name_comp))
 
     def listen(self, prefix):
         """
@@ -45,7 +50,7 @@ class ReadHandle(object):
         if int_param.must_be_fresh:
             return
 
-        file_name = "" # get the file name
+        file_name = self._get_file_name_from_interest_name(Name.to_str(int_name))
         best_node_id = self.global_view.best_node_for_file(file_name, self.node_name)
 
         if best_node_id == None:
@@ -57,3 +62,11 @@ class ReadHandle(object):
         else:
             #create a link packet with /repo_prefix/id/best_node_id
             pass
+
+    def _get_file_name_from_interest_name(self, int_name):
+        # TODO: if it was signed with digest, remove the security part
+        file_name = int_name[len(self.repo_prefix):]
+        if file_name[0:len(self.normal_serving_comp)] == self.normal_serving_comp:
+            return file_name[len(self.normal_serving_comp):]
+        else:
+            return file_name[(len(self.personal_serving_comp)+len(self.node_name_comp)):]
