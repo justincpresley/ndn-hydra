@@ -46,6 +46,10 @@ class ReadHandle(object):
     def _on_interest(self, int_name, int_param, _app_param):
         """
         Repo should not respond to any interest with MustBeFresh flag set.
+        Repo will:
+        - Reply with data of its own
+        - Nack if data can not be found within the repo
+        - Reply with a redirect to another node
         """
         if int_param.must_be_fresh:
             return
