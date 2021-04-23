@@ -146,7 +146,7 @@ def main() -> int:
         'data_storage_path': None,
         'global_view_path': None,
         'svs_storage_path': None,
-        'svs_cache_others': True,
+        #'svs_cache_others': True,
 		'period': 5
     }
     cmd_args = process_cmd_opts()
