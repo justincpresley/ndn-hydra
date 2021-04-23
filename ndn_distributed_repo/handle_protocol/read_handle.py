@@ -65,7 +65,10 @@ class ReadHandle(object):
 
     def _get_file_name_from_interest_name(self, int_name):
         # TODO: if it was signed with digest, remove the security part
+<<<<<<< HEAD
         # also get rid of the segment number
+=======
+>>>>>>> 26176861d1b4ed1cd67f56ff09b7dfb7e9708acc
         file_name = int_name[len(self.repo_prefix):]
         if file_name[0:len(self.normal_serving_comp)] == self.normal_serving_comp:
             return file_name[len(self.normal_serving_comp):]
