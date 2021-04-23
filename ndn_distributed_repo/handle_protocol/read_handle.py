@@ -50,6 +50,9 @@ class ReadHandle(object):
         - Reply with data of its own
         - Nack if data can not be found within the repo
         - Reply with a redirect to another node
+        Assumptions:
+        - A file will always have a on list not empty
+        - A node on the on list will have the file in complete form
         """
         if int_param.must_be_fresh:
             return
