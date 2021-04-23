@@ -21,7 +21,7 @@ class ReadHandle(object):
         self.global_view = global_view
         self.node_name = config['node_name']
         self.listen(Name.from_str(config['repo_prefix'] + "/main"))
-        self.listen(Name.from_str(config['repo_prefix'] + "/id/" + self.config['node_name']))
+        self.listen(Name.from_str(config['repo_prefix'] + "/id/" + self.node_name))
 
     def listen(self, prefix):
         """
