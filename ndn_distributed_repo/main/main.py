@@ -48,7 +48,6 @@ def process_cmd_opts():
 
         # Adding all Command Line Arguments
         requiredArgs.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True,help="repo (group) prefix. Example: \"/samplerepo\"")
-        requiredArgs.add_argument("-gp", "--svsgroupprefix",action="store",dest="svs_group_prefix",required=True,help="prefix of svs group. Example: \"/repogroup\"")
         requiredArgs.add_argument("-n", "--nodename",action="store",dest="node_name",required=True,help="node name. Example: \"node01\"")
         requiredArgs.add_argument("-s", "--sessionid",action="store",dest="session_id",required=True,help="id of this session. Example: \"2c4f\"")
 
@@ -63,8 +62,6 @@ def process_cmd_opts():
         args["data_storage_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/data.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
         args["global_view_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/global_view.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
         args["svs_storage_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/svs.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
-        args["svs_group_prefix"] = process_prefix(vars.svs_group_prefix)
-        
         return args
 
     args = parse_cmd_opts()
@@ -86,7 +83,7 @@ async def listen(repo_prefix: Name, pb: PubSub, insert_handle: InsertCommandHand
 class RepoNodeThread(Thread):
     def __init__(self, config: Dict):
         Thread.__init__(self)
-        
+
         self.config = config
 
     def run(self) -> None:
@@ -95,7 +92,7 @@ class RepoNodeThread(Thread):
 
         app = NDNApp()
 
-        
+
         # data_storage = SqliteStorage(self.config['data_storage_path']+"abc.db")
         data_storage = DataStorage(self.config['data_storage_path'])
         global_view = GlobalView(self.config['global_view_path'])
@@ -137,8 +134,8 @@ class FileFetchingThread(Thread):
         except FileNotFoundError:
             print('Error: could not connect to NFD.')
 
-        
-        
+
+
 
 def main() -> int:
 
@@ -149,8 +146,7 @@ def main() -> int:
         'data_storage_path': None,
         'global_view_path': None,
         'svs_storage_path': None,
-        'svs_group_prefix': None,
-        'svs_cache_others': True,
+        #'svs_cache_others': True,
 		'period': 5
     }
     cmd_args = process_cmd_opts()
