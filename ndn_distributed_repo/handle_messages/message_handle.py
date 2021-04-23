@@ -24,15 +24,15 @@ class MessageHandle:
 
     # the main coroutine
     async def start(self):
-        self.svs = SVSync(self.app, Name.normalize(self.config['svs_group_prefix']), Name.normalize(self.config['session_id']), self.svs_missing_callback, storage=self.svs_storage)
+        self.svs = SVSync(self.app, Name.normalize(self.config['repo_prefix'] + "/group"), Name.normalize(self.config['session_id']), self.svs_missing_callback, storage=self.svs_storage)
         while True:
             await aio.sleep(self.config['period'])
             self.periodic()
 
-    # def __init__(self, app:NDNApp, svs_storage:Storage, svs_group_prefix:str, session_id:str, node_name:str, svs_cache_others:bool, global_view: GlobalView, config):
+    # def __init__(self, app:NDNApp, svs_storage:Storage, session_id:str, node_name:str, svs_cache_others:bool, global_view: GlobalView, config):
     #     self.app = app
     #     self.svs_storage = svs_storage
-    #     self.svs_group_prefix = svs_group_prefix
+    #     self.svs_group_prefix = repo_prefix + "/group"
     #     self.svs_node_id = session_id
     #     self.repo_node_name = node_name
     #     self.svs_cache_others = svs_cache_others
@@ -90,7 +90,7 @@ class MessageHandle:
                 esid=expired_session['id']
             )
             print(val)
-        
+
         # am I at the top of any insertion's backup list?
         underreplicated_insertions = self.global_view.get_underreplicated_insertions()
         for underreplicated_insertion in underreplicated_insertions:
@@ -98,7 +98,7 @@ class MessageHandle:
             for backuped_by in underreplicated_insertion['backuped_bys']:
                 if (backuped_by['session_id'] == self.config['session_id']) and (backuped_by['rank'] < deficit):
                     self.data_storage.add_metainfos(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
-                    
+
 
                     # # generate store msg and send
                     # # store tlv
@@ -129,7 +129,7 @@ class MessageHandle:
         # if random.random() < 0.618:
         #     return
         backupable_insertions = self.global_view.get_backupable_insertions()
-        
+
         for backupable_insertion in backupable_insertions:
 
             if random.random() < 0.618:
@@ -205,7 +205,7 @@ class MessageHandle:
                 store_message.body = store_message_body.encode()
                 # apply globalview and send msg thru SVS
                 # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
-                
+
                 self.global_view.store_file(announcable_insertion_id, self.config['session_id'])
                 self.svs.publishData(store_message.encode())
                 val = "[MSG][STORE]*  sid={sid};iid={iid}".format(
@@ -240,9 +240,9 @@ class MessageHandle:
         #     )
             # print(val)
         # print("--")
-     
 
-            
+
+
 
     def svs_missing_callback(self, missing_list):
         aio.ensure_future(self.on_missing_svs_messages(missing_list))
