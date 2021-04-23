@@ -1,5 +1,5 @@
 class FileMetadata:
-  
+
   def __init__(self, file_name: str, insertion_id: str, size: int, origin_id: str, on_list: list, backup_list: list):
     self.file_name = file_name
     self.size = size
@@ -27,7 +27,7 @@ class FileMetadata:
       return node_id in self.on_list
     except Exception as e:
       raise e
-  
+
   def is_active_insertion_id(self, insertion_id: str):
     return insertion_id == self.active_insertion_id
 
@@ -36,7 +36,7 @@ class FileMetadata:
 
   def get_active_insertion_id(self):
     return self.active_insertion_id
-  
+
   def get_inactive_insertion_id_list(self):
     return self.inactive_insertion_id_list
 
@@ -94,7 +94,7 @@ class FileMetadata:
     except (Exception, ValueError) as e:
       exception_str = 'Unable to remove {} from on_list of {}. '.format(node_id, self.file_name)
       raise Exception(exception_str + str(e))
-  
+
   def delete_file(self, insertion_id: str):
     try:
       self.__check_insertion_id(insertion_id)
@@ -124,11 +124,11 @@ class FileMetadata:
         exception_str += 'Unknown insertion id {}. Active insertion id is {}'\
           .format(insertion_id, self.active_insertion_id)
       raise Exception(exception_str)
-  
+
   def __check_file_not_deleted(self):
     if self.isDeleted:
       raise Exception('File is deleted. Active insertion id is {}'.format(self.active_insertion_id))
-  
+
   def __check_file_deleted(self):
     if not self.isDeleted:
       raise Exception('File is not deleted. Active insertion id is {}'.format(self.active_insertion_id))

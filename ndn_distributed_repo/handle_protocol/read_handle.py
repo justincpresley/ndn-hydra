@@ -1,6 +1,7 @@
 import asyncio as aio
 import logging
 from ..data_storage import DataStorage
+from ..global_view import GlobalView
 from ndn.app import NDNApp
 from ndn.encoding import Name, tlv_var
 from ndn_python_repo import Storage
@@ -10,17 +11,17 @@ class ReadHandle(object):
     """
     ReadCommandHandle processes ordinary interests, and return corresponding data if exists.
     """
-    def __init__(self, app: NDNApp, data_storage: DataStorage, config: dict):
+    def __init__(self, app: NDNApp, data_storage: DataStorage, global_view: GlobalView, config: dict):
         """
         :param app: NDNApp.
         :param storage: Storage.
-        TODO: determine which prefix to listen on.
         """
         self.app = app
         self.data_storage = data_storage
-        #self.register_root = config['repo_config']['register_root']
-        #if self.register_root:
-        #    self.listen(Name.from_str('/'))
+        self.global_view = global_view
+        self.node_name = config['node_name']
+        self.listen(Name.from_str(config['repo_prefix'] + "/main"))
+        self.listen(Name.from_str(config['repo_prefix'] + "/id/" + self.config['node_name']))
 
     def listen(self, prefix):
         """
@@ -43,9 +44,16 @@ class ReadHandle(object):
         """
         if int_param.must_be_fresh:
             return
-        # data_bytes = self.data_storage.get_data_packet(int_name, int_param.can_be_prefix)
-        data_bytes = None
-        if data_bytes == None:
-            return
-        self.app.put_raw_packet(data_bytes)
-        logging.info(f'Read handle: serve data {Name.to_str(int_name)}')
+
+        file_name = "" # get the file name
+        best_node_id = self.global_view.best_node_for_file(file_name, self.node_name)
+
+        if best_node_id == None:
+            #nack due to lack of avaliablity
+            pass
+        elif best_node_id == self.node_name:
+            #serve content from my Storage
+            pass
+        else:
+            #create a link packet with /repo_prefix/id/best_node_id
+            pass

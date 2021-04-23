@@ -1,11 +1,11 @@
 from threading import Lock
 from typing import List
+from secrets import choice
 from .file_metadata import FileMetadata
 from .node_metadata import NodeMetadata
 from ndn.svs import StateVector
 
 class GlobalView:
-
   def __init__(self):
     self.state_vector = StateVector()
     self.file_metadata_dict = {}
@@ -13,6 +13,17 @@ class GlobalView:
     self.lock = Lock()
     #add active insertion id per file
     #store outdated insertion id per file
+
+  def best_node_for_file(self, file_name: str, current_node_name: str):
+    if file_name in self.file_metadata_dict:
+      if self.file_metadata_dict[file_name].is_file_deleted():
+        return None
+      on_list = self.file_metadata_dict[file_name].get_on_list()
+      if current_node_name in on_list:
+        return current_node_name
+      else:
+        return choice(on_list)
+    return None
 
   def insert_file(self, node_id: str, seqNo: int, insertion_id: str, file_name: str, size: int, on_list: list, backup_list: List, new_favor: int):
     #in case where insertion_id is new, but haven't heard the delete from the previous insertion id, what to do???
@@ -157,16 +168,16 @@ class GlobalView:
     finally:
       self.lock.release()
 
-  def update_node_favor(self, node_id: str, seqNo:int, new_favor: int):
-    self.lock.acquire()
-    try:
-      self.state_vector.set(node_id, seqNo)
-      self.__update_node_favor(node_id, new_favor)
-    finally:
-      self.lock.release()
+    def update_node_favor(self, node_id: str, seqNo:int, new_favor: int):
+        self.lock.acquire()
+        try:
+            self.state_vector.set(node_id, seqNo)
+            self.__update_node_favor(node_id, new_favor)
+        finally:
+            self.lock.release()
 
-  def __update_node_favor(self, node_id: str, new_favor: int):
-    if node_id in self.node_metadata_dict:
-      self.node_metadata_dict[node_id].set_favor(new_favor)
-    else:
-      self.node_metadata_dict[node_id] = NodeMetadata(node_id, new_favor, set(), set())
+    def __update_node_favor(self, node_id: str, new_favor: int):
+        if node_id in self.node_metadata_dict:
+            self.node_metadata_dict[node_id].set_favor(new_favor)
+        else:
+            self.node_metadata_dict[node_id] = NodeMetadata(node_id, new_favor, set(), set())
