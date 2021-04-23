@@ -50,21 +50,24 @@ class ReadHandle(object):
         if int_param.must_be_fresh:
             return
         # get rid of the security part if any on the int_name
-        file_name = self._get_file_name_from_interest_name(Name.to_str(int_name[:-1]))
+        file_name = self._get_file_name_from_interest(Name.to_str(int_name[:-1]))
         best_node_id = self.global_view.best_node_for_file(file_name, self.node_name)
         segment = int(Component.to_str(int_name[-1])[4:])
 
-        if best_node_id == None:
-            #nack due to lack of avaliablity
-            pass
-        elif best_node_id == self.node_name:
+        if best_node_id == self.node_name:
             #serve content from my storage
-            pass
+            logging.info(f'Read handle: served data {Name.to_str(int_name)}')
+            return
+        elif best_node_id == None:
+            #nack due to lack of avaliablity
+            logging.info(f'Read handle: data not found {Name.to_str(int_name)}')
+            return
         else:
             #create a link packet with /repo_prefix/id/best_node_id
-            pass
+            logging.info(f'Read handle: redirected {Name.to_str(int_name)}')
+            return
 
-    def _get_file_name_from_interest_name(self, int_name):
+    def _get_file_name_from_interest(self, int_name):
         file_name = int_name[len(self.repo_prefix):]
         if file_name[0:len(self.normal_serving_comp)] == self.normal_serving_comp:
             return file_name[len(self.normal_serving_comp):]
