@@ -3,7 +3,7 @@ import logging
 from ..data_storage import DataStorage
 from ..global_view import GlobalView
 from ndn.app import NDNApp
-from ndn.encoding import Name, tlv_var
+from ndn.encoding import Name, tlv_var, ContentType
 from ndn_python_repo import Storage
 
 
@@ -59,18 +59,23 @@ class ReadHandle(object):
         # get rid of the security part if any on the int_name
         file_name = self._get_file_name_from_interest(Name.to_str(int_name[:-1]))
         best_node_id = self.global_view.best_node_for_file(file_name, self.node_name)
-        segment = int(Component.to_str(int_name[-1])[4:])
+        segment_comp = "/" + Component.to_str(int_name[-1])
 
         if best_node_id == self.node_name:
-            #serve content from my storage
+            # serve content from my storage
+            storage_content = self.data_storage.get_v(file_name + segment_comp)
+            self.app.put_data(int_name, content=storage_content, content_type=ContentType.BLOB)
             logging.info(f'Read handle: served data {Name.to_str(int_name)}')
             return
         elif best_node_id == None:
-            #nack due to lack of avaliablity
+            # nack due to lack of avaliability
+            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
             logging.info(f'Read handle: data not found {Name.to_str(int_name)}')
             return
         else:
-            #create a link packet with /repo_prefix/id/best_node_id
+            # create a link to a node who has the content
+            link_content = b'' #create a link packet with /repo_prefix/id/best_node_id
+            self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK)
             logging.info(f'Read handle: redirected {Name.to_str(int_name)}')
             return
 

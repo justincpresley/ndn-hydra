@@ -16,9 +16,9 @@ class GlobalView:
 
   def best_node_for_file(self, file_name: str, current_node_name: str):
     if file_name in self.file_metadata_dict:
-      if self.file_metadata_dict[file_name].is_file_deleted():
-        return None
       on_list = self.file_metadata_dict[file_name].get_on_list()
+      if self.file_metadata_dict[file_name].is_file_deleted() or not on_list:
+        return None
       if current_node_name in on_list:
         return current_node_name
       else:
