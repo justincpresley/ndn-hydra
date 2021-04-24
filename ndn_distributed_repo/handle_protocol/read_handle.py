@@ -19,14 +19,14 @@ class ReadHandle(object):
         self.app = app
         self.data_storage = data_storage
         self.global_view = global_view
-        self.node_name_comp = "/" + config['node_name']
+        self.node_name = config['node_name']
         self.repo_prefix = config['repo_prefix']
 
         self.normal_serving_comp = "/main"
         self.personal_serving_comp = "/id"
 
-        self.listen(Name.from_str(config['repo_prefix'] + self.normal_serving_comp))
-        self.listen(Name.from_str(config['repo_prefix'] + self.personal_serving_comp  + self.node_name_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.normal_serving_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.personal_serving_comp  + "/" + self.node_name))
 
     def listen(self, prefix):
         """
@@ -74,7 +74,8 @@ class ReadHandle(object):
             return
         else:
             # create a link to a node who has the content
-            link_content = b'' #create a link packet with /repo_prefix/id/best_node_id
+            new_name = self.repo_prefix + self.personal_serving_comp + "/" + best_node_id + "/" + file_name
+            link_content = bytes(new_name.encode())
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK)
             logging.info(f'Read handle: redirected {Name.to_str(int_name)}')
             return
