@@ -88,7 +88,7 @@ class RepoNodeThread(Thread):
         Thread.__init__(self)
 
         self.config = config
-
+    
     def run(self) -> None:
         loop = aio.new_event_loop()
         aio.set_event_loop(loop)
