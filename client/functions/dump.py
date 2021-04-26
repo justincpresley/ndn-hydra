@@ -9,6 +9,8 @@
 
 from time import sleep
 from ndn_distributed_repo.global_view_2.global_view import GlobalView
+from ndn.app import NDNApp
+from ndn.encoding import FormalName
 
 class DumpClient(object):
     def __init__(self, app: NDNApp, repo_prefix: FormalName, sessionid: str):
