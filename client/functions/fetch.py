@@ -47,13 +47,14 @@ class FetchClient(object):
       if os.path.isfile(local_filename) and not overwrite:
         raise FileExistsError("{} already exists".format(local_filename))
 
-      # Test to see if closest node has data or not and change accordingly
-      # TODO test to see what the ContentType is
+      # Ping with only one data packet at the start
+      b_array = bytearray()
+      # TODO test to see what the ContentType is / add to b_arry first segment
 
       # Fetch the file.
-      b_array = bytearray()
+
       semaphore = aio.Semaphore(10)
-      async for (_, _, content, _) in concurrent_fetcher(self.app, name_at_repo, 0, None, semaphore):
+      async for (_, _, content, _) in concurrent_fetcher(self.app, name_at_repo, 1, None, semaphore):
         b_array.extend(content)
 
       # After b_array is filled, sort out what to do with the data.
