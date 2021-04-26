@@ -9,7 +9,7 @@
 
 import asyncio
 from ndn.app import NDNApp
-from ndn.encoding import FormalName
+from ndn.encoding import FormalName, Component, Name
 
 
 class FetchClient(object):
