@@ -133,7 +133,6 @@ class FileFetchingThread(Thread):
 
 
 
-
 def main() -> int:
     default_config = {
         'repo_prefix': None,
