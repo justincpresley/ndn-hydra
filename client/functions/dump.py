@@ -10,7 +10,7 @@
 from time import sleep
 from ndn_distributed_repo.global_view.global_view import GlobalView
 from ndn.app import NDNApp
-from ndn.encoding import FormalName
+from ndn.encoding import FormalName, Name
 
 class DumpClient(object):
     def __init__(self, app: NDNApp, repo_prefix: FormalName, sessionid: str):
@@ -23,7 +23,7 @@ class DumpClient(object):
       self.app = app
       self.sessionid = sessionid
       self.repo_prefix = repo_prefix
-      global_view_storage = "~/.ndn/repo/{repo_prefix}/{session_id}/global_view.db".format(repo_prefix=repo_prefix, session_id=sessionid)
+      global_view_storage = "~/.ndn/repo/{repo_prefix}/{session_id}/global_view.db".format(repo_prefix=Name.to_str(repo_prefix), session_id=sessionid)
       self.global_view = GlobalView(global_view_storage)
 
     def get_view(self):
