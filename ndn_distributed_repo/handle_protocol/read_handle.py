@@ -1,5 +1,6 @@
 import asyncio as aio
 import logging
+from secrets import choice
 from ..data_storage import DataStorage
 from ..global_view import GlobalView
 from ndn.app import NDNApp
