@@ -59,8 +59,10 @@ async def concurrent_fetcher(app: NDNApp, name: NonStrictName, start_block_id: i
                 if meta_info.content_type == ContentType.LINK:
                     trial_times -= 1
                     name = Name.from_str(str(bytes(content).decode()))
+                    logging.info(f'Data name was redirected to a new link.')
                 elif meta_info.content_type == ContentType.NACK:
                     trial_times += 99
+                    logging.info(f'Application Nack')
                     continue
                 else:
                     # Save data and update final_id
