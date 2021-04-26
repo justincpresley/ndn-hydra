@@ -39,7 +39,6 @@ def process_cmd_opts():
         return input_string
 
     def parse_cmd_opts():
-
         # Command Line Parser
         parser = argparse.ArgumentParser(add_help=False,description="ndn-distributed-repo")
         requiredArgs = parser.add_argument_group("required arguments")
@@ -62,6 +61,7 @@ def process_cmd_opts():
         args["data_storage_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/data.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
         args["global_view_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/global_view.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
         args["svs_storage_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/svs.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
+
         return args
 
     args = parse_cmd_opts()
@@ -83,15 +83,12 @@ async def listen(repo_prefix: Name, pb: PubSub, insert_handle: InsertCommandHand
 class RepoNodeThread(Thread):
     def __init__(self, config: Dict):
         Thread.__init__(self)
-
         self.config = config
 
     def run(self) -> None:
         loop = aio.new_event_loop()
         aio.set_event_loop(loop)
-
         app = NDNApp()
-
 
         # data_storage = SqliteStorage(self.config['data_storage_path']+"abc.db")
         data_storage = DataStorage(self.config['data_storage_path'])
@@ -102,7 +99,7 @@ class RepoNodeThread(Thread):
         message_handle = MessageHandle(app, self.config, global_view, data_storage)
 
         # protocol (commands & queries)
-        read_handle = ReadHandle(app, data_storage, self.config)
+        read_handle = ReadHandle(app, data_storage, global_view, self.config)
         insert_handle = InsertCommandHandle(app, data_storage, pb, read_handle, self.config, message_handle, global_view)
         delete_handle = DeleteCommandHandle(app, data_storage, pb, read_handle, self.config, message_handle, global_view)
 
@@ -136,9 +133,7 @@ class FileFetchingThread(Thread):
 
 
 
-
 def main() -> int:
-
     default_config = {
         'repo_prefix': None,
         'node_name': None,
@@ -155,7 +150,6 @@ def main() -> int:
 
     RepoNodeThread(config).start()
     FileFetchingThread(config).start()
-
     return 0
 
 

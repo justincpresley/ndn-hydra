@@ -1,52 +1,45 @@
 # -----------------------------------------------------------------------------
 # NDN Repo insert client.
 #
+# @Author Justin C Presley
 # @Author Daniel Achee
 # @Author Caton Zhong
 # @Date   2021-01-25
 # -----------------------------------------------------------------------------
 
-import os
-import sys
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
-
-import argparse
-import asyncio as aio
+import asyncio
 from ndn_distributed_repo.protocol import RepoCommand, File, FetchPath
 from ndn_distributed_repo.utils import PubSub
 import logging
 from ndn.app import NDNApp
-from ndn.encoding import Name, Component, DecodeError, NonStrictName, FormalName
-from ndn.types import InterestNack, InterestTimeout
-from ndn.utils import gen_nonce
-from typing import Optional
-
+from ndn.encoding import Name, Component, FormalName
 
 class DeleteClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName):
       """
-      This client inserts data packets from the remote repo.
+      This client deletes a certain file from the remote repo.
       :param app: NDNApp.
-      :param repo_name: NonStrictName. Routable name to remote repo.
+      :param client_prefix: NonStrictName. Routable name to client.
+      :param repo_prefix: NonStrictName. Routable name to remote repo.
       """
       self.app = app
       self.client_prefix = client_prefix
       self.repo_prefix = repo_prefix
       self.pb = PubSub(self.app, self.client_prefix)
 
-    async def delete_file(self, file_name: FormalName, desired_copies: int, packets: int, size: int, fetch_prefix: FormalName):
+    async def delete_file(self, file_name: FormalName):
       """
-      Delete file with file name file_name from repo 
+      Delete a file asscoiated with a file name from the remote repo
       """
       # send command interest
       file = File()
       file.file_name = file_name
-      file.desired_copies = desired_copies
-      file.packets = packets
+      file.desired_copies = 0
+      file.packets = 0
       file.digests = []
-      file.size = size
+      file.size = 0
       fetch_path = FetchPath()
-      fetch_path.prefix = fetch_prefix
+      fetch_path.prefix = self.client_prefix + [Component.from_str("upload")] + file_name
       cmd = RepoCommand()
       cmd.file = file
       cmd.sequence_number = 0

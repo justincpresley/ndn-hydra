@@ -2,7 +2,7 @@ import asyncio as aio
 import logging
 import time
 from ..data_storage import DataStorage
-from ..global_view_2 import GlobalView
+from ..global_view import GlobalView
 import random
 import sys
 from ndn.app import NDNApp
@@ -98,7 +98,7 @@ class DeleteCommandHandle(ProtocolHandle):
             iid=insertion_id
         )
         print(val)
-    
+
 
 
 

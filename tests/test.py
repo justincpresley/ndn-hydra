@@ -1,7 +1,7 @@
 from global_view import GlobalView
 import json
 
-gv = GlobalView("/home/zixuan/ndn/repo/ndn_distributed_repo/global_view_2/test.db")
+gv = GlobalView("/home/zixuan/ndn/repo/ndn_distributed_repo/global_view/test.db")
 
 #seeding
 gv.add_session("s_b079", "n_00", 1617831120, 1.85, 15)
