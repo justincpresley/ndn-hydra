@@ -61,11 +61,14 @@ class ReadHandle(object):
         file_name = self._get_file_name_from_interest(Name.to_str(int_name[:-1]))
         best_id = self._best_id_for_file(file_name)
         segment_comp = "/" + Component.to_str(int_name[-1])
+        if Component.to_str(int_name[-1]) == "seg=0":
+            print(f'[cmd][FETCH] name {Name.to_str(int_name[:-1])}')
 
         if best_id == self.session_id:
             # serve content from my storage
             storage_content = self.data_storage.get_v(file_name + segment_comp)
-            self.app.put_data(int_name, content=storage_content, content_type=ContentType.BLOB)
+            final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
+            self.app.put_data(int_name, content=storage_content, content_type=ContentType.BLOB, final_block_id=final_id)
             logging.info(f'Read handle: served data {Name.to_str(int_name)}')
             return
         elif best_id == None:
@@ -77,7 +80,8 @@ class ReadHandle(object):
             # create a link to a node who has the content
             new_name = self.repo_prefix + self.personal_serving_comp + "/" + best_id + "/" + file_name
             link_content = bytes(new_name.encode())
-            self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK)
+            final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
+            self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)
             logging.info(f'Read handle: redirected {Name.to_str(int_name)}')
             return
 

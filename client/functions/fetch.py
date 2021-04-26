@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# NDN Repo insert client.
+# NDN Repo fetch client.
 #
 # @Author Justin C Presley
 # @Author Daniel Achee
@@ -13,6 +13,8 @@ import os
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name
 from functions.utils.concurrent_fetcher import concurrent_fetcher
+from functions.utils.segment_fetcher import segment_fetcher
+
 
 class FetchClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName):
@@ -32,7 +34,7 @@ class FetchClient(object):
       :param local_filename: str. The filename of the retrieved file on the local file system.
       :param overwrite: If true, existing files are replaced.
       """
-      name_at_repo = self.repo_prefix + [Component.from_str("main")] + file_name
+      name_at_repo = self.repo_prefix + [Component.from_str("main")] + file_name + [Component.from_segment(0)]
 
       # If no local filename is provided, store file with last name component
       # of repo filename
@@ -45,9 +47,12 @@ class FetchClient(object):
       if os.path.isfile(local_filename) and not overwrite:
         raise FileExistsError("{} already exists".format(local_filename))
 
+      # Test to see if closest node has data or not and change accordingly
+      # TODO test to see what the ContentType is
+
       # Fetch the file.
-      semaphore = aio.Semaphore(10)
       b_array = bytearray()
+      semaphore = aio.Semaphore(10)
       async for (_, _, content, _) in concurrent_fetcher(self.app, name_at_repo, 0, None, semaphore):
         b_array.extend(content)
 

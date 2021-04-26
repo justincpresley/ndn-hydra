@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# NDN Repo insert client.
+# NDN Repo delete client.
 #
 # @Author Justin C Presley
 # @Author Daniel Achee

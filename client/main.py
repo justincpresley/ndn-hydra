@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# NDN Repo insert client.
+# NDN Repo client.
 #
 # @Author Justin C Presley
 # @Author Daniel Achee
@@ -10,6 +10,7 @@
 import asyncio
 from argparse import ArgumentParser, Namespace
 import sys
+import logging
 from os import path
 from ndn.app import NDNApp
 from ndn.encoding import Name

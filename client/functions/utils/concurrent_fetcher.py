@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# NDN Repo insert client.
+# NDN Concurrent Repo Fetcher
 #
 # @Author Justin C Presley
 # @Author Daniel Achee
@@ -42,9 +42,10 @@ async def concurrent_fetcher(app: NDNApp, name: NonStrictName, start_block_id: i
         :param seq: block_id of data
         """
         nonlocal app, name, semaphore, is_failed, received_or_fail, final_id
+        int_name = name + [Component.from_segment(seq)]
+
         trial_times = 0
         while True:
-            int_name = name + [Component.from_segment(seq)]
             trial_times += 1
             if trial_times > 3:
                 semaphore.release()
@@ -56,21 +57,12 @@ async def concurrent_fetcher(app: NDNApp, name: NonStrictName, start_block_id: i
                 data_name, meta_info, content, data_bytes = await app.express_interest(
                     int_name, need_raw_packet=True, can_be_prefix=False, lifetime=1000, **kwargs)
 
-                if meta_info.content_type == ContentType.LINK:
-                    trial_times -= 1
-                    name = Name.from_str(str(bytes(content).decode()))
-                    logging.info(f'Data name was redirected to a new link.')
-                elif meta_info.content_type == ContentType.NACK:
-                    trial_times += 99
-                    logging.info(f'Application Nack')
-                    continue
-                else:
-                    # Save data and update final_id
-                    logging.info('Received data: {}'.format(Name.to_str(data_name)))
-                    seq_to_data_packet[seq] = (data_name, meta_info, content, data_bytes)
-                    if meta_info is not None and meta_info.final_block_id is not None:
-                        final_id = Component.to_number(meta_info.final_block_id)
-                    break
+                # Save data and update final_id
+                logging.info('Received data: {}'.format(Name.to_str(data_name)))
+                seq_to_data_packet[seq] = (data_name, meta_info, content, data_bytes)
+                if meta_info is not None and meta_info.final_block_id is not None:
+                    final_id = Component.to_number(meta_info.final_block_id)
+                break
             except InterestNack as e:
                 logging.info(f'Nacked with reason={e.reason}')
             except InterestTimeout:
