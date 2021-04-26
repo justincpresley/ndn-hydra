@@ -23,7 +23,7 @@ class FetchClient(object):
       self.client_prefix = client_prefix
       self.repo_prefix = repo_prefix
 
-    async def fetch_file(self, file_name: FormalName):
+    async def fetch_file(self, file_name: FormalName, path: str):
       """
       Insert a file associated with a file name to the remote repo
       """
