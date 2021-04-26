@@ -10,6 +10,7 @@
 import asyncio
 from argparse import ArgumentParser, Namespace
 import sys
+from os import path
 from ndn.app import NDNApp
 from ndn.encoding import Name
 
