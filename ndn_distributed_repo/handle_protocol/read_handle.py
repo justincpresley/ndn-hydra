@@ -19,14 +19,14 @@ class ReadHandle(object):
         self.app = app
         self.data_storage = data_storage
         self.global_view = global_view
-        self.node_name = config['node_name']
+        self.session_id = config['session_id']
         self.repo_prefix = config['repo_prefix']
 
         self.normal_serving_comp = "/main"
         self.personal_serving_comp = "/id"
 
         self.listen(Name.from_str(self.repo_prefix + self.normal_serving_comp))
-        self.listen(Name.from_str(self.repo_prefix + self.personal_serving_comp  + "/" + self.node_name))
+        self.listen(Name.from_str(self.repo_prefix + self.personal_serving_comp  + "/" + self.session_id))
 
     def listen(self, prefix):
         """
@@ -58,23 +58,23 @@ class ReadHandle(object):
             return
         # get rid of the security part if any on the int_name
         file_name = self._get_file_name_from_interest(Name.to_str(int_name[:-1]))
-        best_node_id = self._best_node_for_file(file_name)
+        best_id = self._best_id_for_file(file_name)
         segment_comp = "/" + Component.to_str(int_name[-1])
 
-        if best_node_id == self.node_name:
+        if best_id == self.session_id:
             # serve content from my storage
             storage_content = self.data_storage.get_v(file_name + segment_comp)
             self.app.put_data(int_name, content=storage_content, content_type=ContentType.BLOB)
             logging.info(f'Read handle: served data {Name.to_str(int_name)}')
             return
-        elif best_node_id == None:
+        elif best_id == None:
             # nack due to lack of avaliability
             self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
             logging.info(f'Read handle: data not found {Name.to_str(int_name)}')
             return
         else:
             # create a link to a node who has the content
-            new_name = self.repo_prefix + self.personal_serving_comp + "/" + best_node_id + "/" + file_name
+            new_name = self.repo_prefix + self.personal_serving_comp + "/" + best_id + "/" + file_name
             link_content = bytes(new_name.encode())
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK)
             logging.info(f'Read handle: redirected {Name.to_str(int_name)}')
@@ -85,15 +85,16 @@ class ReadHandle(object):
         if file_name[0:len(self.normal_serving_comp)] == self.normal_serving_comp:
             return file_name[len(self.normal_serving_comp):]
         else:
-            return file_name[(len(self.personal_serving_comp)+len(self.node_name_comp)):]
+            return file_name[(len(self.personal_serving_comp)+len("/" + self.session_id)):]
 
-    def _best_node_for_file(self, file_name: str):
-      if file_name in self.file_metadata_dict:
-        on_list = self.file_metadata_dict[file_name].get_on_list()
-        if self.file_metadata_dict[file_name].is_file_deleted() or not on_list:
-          return None
-        if self.node_name in on_list:
-          return self.node_name
-        else:
-          return choice(on_list)
-      return None
+    def _best_id_for_file(self, file_name: str):
+        file_info = self.global_view.get_insertion_by_file_name(file_name)
+        if file_info != None:
+            on_list = file_info["stored_bys"]
+            if file_info["is_deleted"] == True or not on_list:
+                return None
+            if self.session_id in on_list:
+                return self.session_id
+            else:
+              return choice(on_list)
+        return None
