@@ -8,7 +8,7 @@ from ndn.encoding import Name
 from ndn.svs import SVSync
 from ndn_python_repo import Storage
 from ndn_python_repo import SqliteStorage
-from ..global_view_2.global_view import GlobalView
+from ..global_view.global_view import GlobalView
 from ..data_storage import DataStorage
 from ..repo_messages import *
 

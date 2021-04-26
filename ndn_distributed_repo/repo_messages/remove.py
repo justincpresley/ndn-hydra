@@ -1,5 +1,5 @@
 from ndn_distributed_repo.data_storage.data_storage import DataStorage
-from ndn_distributed_repo.global_view_2.global_view import GlobalView
+from ndn_distributed_repo.global_view.global_view import GlobalView
 from ndn.encoding import *
 from .message_base import MessageBodyBase
 
@@ -34,7 +34,7 @@ class RemoveMessageBody(MessageBodyBase):
             iid=insertion_id
         )
         print(val)
-        # if insertion 
+        # if insertion
         insertion = global_view.get_insertion(insertion_id)
         if (insertion == None) or (insertion['is_deleted'] == True):
             # add store to pending_stores

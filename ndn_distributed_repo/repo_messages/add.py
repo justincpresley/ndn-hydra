@@ -1,5 +1,5 @@
 from ndn_distributed_repo.data_storage.data_storage import DataStorage
-from ndn_distributed_repo.global_view_2.global_view import GlobalView
+from ndn_distributed_repo.global_view.global_view import GlobalView
 from ndn.encoding import *
 from .message_base import MessageBodyBase
 from .store import StoreMessageBodyTlv
@@ -51,7 +51,7 @@ class AddMessageBodyTlv(TlvModel):
     sequence_number = UintField(AddMessageBodyTypes.SEQUENCE_NUMBER)
     fetch_path = ModelField(AddMessageBodyTypes.FETCH_PATH, FetchPathTlv)
     is_stored_by_origin = UintField(AddMessageBodyTypes.IS_STORED_BY_ORIGIN)
-    backup_list = RepeatedField(ModelField(AddMessageBodyTypes.BACKUP, BackupTlv))  
+    backup_list = RepeatedField(ModelField(AddMessageBodyTypes.BACKUP, BackupTlv))
 
 class AddMessageBody(MessageBodyBase):
     def __init__(self, nid:str, seq:int, raw_bytes:bytes):
@@ -92,10 +92,10 @@ class AddMessageBody(MessageBodyBase):
         )
         print(val)
         global_view.add_insertion(
-            insertion_id, 
-            Name.to_str(file_name), 
-            sequence_number, 
-            size, 
+            insertion_id,
+            Name.to_str(file_name),
+            sequence_number,
+            size,
             session_id,
             Name.to_str(fetch_path),
             self.seq,
@@ -143,7 +143,7 @@ class AddMessageBody(MessageBodyBase):
             # store_message.body = store_message_body.encode()
             # # apply globalview and send msg thru SVS
             # # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
-            
+
             # # global_view.store_file(insertion_id, config['session_id'])
             # svs.publishData(store_message.encode())
             # val = "[MSG][STORE]*  sid={sid};iid={iid}".format(

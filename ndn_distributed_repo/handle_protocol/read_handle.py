@@ -1,7 +1,7 @@
 import asyncio as aio
 import logging
 from ..data_storage import DataStorage
-from ..global_view_2 import GlobalView
+from ..global_view import GlobalView
 from ndn.app import NDNApp
 from ndn.encoding import Name, tlv_var, ContentType
 from ndn_python_repo import Storage

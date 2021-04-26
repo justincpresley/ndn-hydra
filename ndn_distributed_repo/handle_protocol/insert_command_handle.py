@@ -11,7 +11,7 @@ from . import ReadHandle, ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
 from ..utils import PubSub
 from ..data_storage import DataStorage
-from ..global_view_2 import GlobalView
+from ..global_view import GlobalView
 from ..repo_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageBodyTlv
 from ..repo_messages.message import MessageTlv, MessageTypes
 from ..handle_messages import MessageHandle
@@ -70,7 +70,7 @@ class InsertCommandHandle(ProtocolHandle):
         """
         # print("Process Insert Command for File: ")
         # print("receive INSERT command for file: {}".format(Name.to_str(cmd.file.file_name)))
-     
+
         file_name = cmd.file.file_name
         desired_copies = cmd.file.desired_copies
         packets = cmd.file.packets
@@ -110,7 +110,7 @@ class InsertCommandHandle(ProtocolHandle):
             if picked_sessions[i]['id'] == self.config['session_id']:
                 pickself = True
                 break
-        
+
         # if pickself:
         #     # TODO: fetch and store this file
         #     pass
@@ -158,10 +158,10 @@ class InsertCommandHandle(ProtocolHandle):
         # apply globalview and send msg thru SVS
         next_state_vector = self.message_handle.svs.getCore().getStateVector().get(self.config['session_id']) + 1
         self.global_view.add_insertion(
-            insertion_id, 
-            Name.to_str(file_name), 
-            sequence_number, 
-            size, 
+            insertion_id,
+            Name.to_str(file_name),
+            sequence_number,
+            size,
             self.config['session_id'],
             Name.to_str(fetch_path),
             next_state_vector,
@@ -190,7 +190,7 @@ class InsertCommandHandle(ProtocolHandle):
             bak=bak
         )
         print(val)
-        
-        
 
-    
+
+
+

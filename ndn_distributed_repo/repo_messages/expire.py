@@ -1,4 +1,4 @@
-from ndn_distributed_repo.global_view_2.global_view import GlobalView
+from ndn_distributed_repo.global_view.global_view import GlobalView
 from ndn_distributed_repo.data_storage.data_storage import DataStorage
 from ndn.encoding import *
 from .message_base import MessageBodyBase
@@ -49,7 +49,7 @@ class ExpireMessageBody(MessageBodyBase):
                     print(type(digests[0]))
 
                     data_storage.add_metainfos(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
-                    
+
 
 
                     # # generate store msg and send
