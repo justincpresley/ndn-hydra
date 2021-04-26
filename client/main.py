@@ -73,7 +73,7 @@ async def run_client(app: NDNApp, args: Namespace):
 
   elif args.function == "fetch":
     fetchClient = FetchClient(app, client_prefix, repo_prefix)
-    await fetchClient.fetch_file(filename, args.path)
+    await fetchClient.fetch_file(filename, args.path, True)
     print("Client finished Fetch Command!")
 
   elif args.function == "dump":
