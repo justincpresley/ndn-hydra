@@ -54,14 +54,17 @@ async def run_insert_client(app: NDNApp, args: Namespace):
   client_prefix = Name.from_str("/client")
   filename = None
   desired_copies = 2
+  sid = ""
 
   if args.function != "dump":
       filename = Name.from_str(args.filename)
+  else:
+      sid = args.sessionid
 
   insertClient = InsertClient(app, client_prefix, repo_prefix)
   deleteClient = DeleteClient(app, client_prefix, repo_prefix)
   fetchClient = FetchClient(app, client_prefix, repo_prefix)
-  dumpClient = DumpClient(app, repo_prefix, args.sessionid)
+  dumpClient = DumpClient(app, repo_prefix, sid)
 
   if args.function == "insert":
     await insertClient.insert_file(filename, desired_copies, args.path)

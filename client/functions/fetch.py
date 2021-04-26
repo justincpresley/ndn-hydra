@@ -27,4 +27,5 @@ class FetchClient(object):
       """
       Insert a file associated with a file name to the remote repo
       """
+      fetch_name = self.repo_prefix + [Component.from_str("main")] + file_name
       print("Fetching Not Implemented Yet.")
