@@ -26,15 +26,15 @@ def parse_cmd_opts():
 
     # Define All Subparsers
     insertsp = subparsers.add_parser('insert')
-    insertsp.add_argument("-fn","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
+    insertsp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
     insertsp.add_argument("-p","--path",action="store",dest="path",required=True, help="The path of the file desired to be the input.")
 
     fetchsp = subparsers.add_parser('fetch')
-    fetchsp.add_argument("-fn","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
+    fetchsp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
     fetchsp.add_argument("-p","--path",action="store",dest="path",default="./example/fetchedFile", required=False, help="The path you want the file to be placed.")
 
     deletesp = subparsers.add_parser('delete')
-    deletesp.add_argument("-fn","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
+    deletesp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
 
     dumpsp = subparsers.add_parser('dump')
     dumpsp.add_argument("-sid","--sessionid",action="store",dest="sessionid",required=True, help="The session ID of the node.")
