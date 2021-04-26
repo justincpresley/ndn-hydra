@@ -30,6 +30,7 @@ class InsertClient(object):
       self.repo_prefix = repo_prefix
       self.pb = PubSub(self.app, self.client_prefix)
       self.packets = []
+      self.digests = []
 
     async def insert_file(self, file_name: FormalName, desired_copies: int, path: str):
       """
@@ -68,8 +69,6 @@ class InsertClient(object):
             seg_no = 0
         if seg_no < seg_cnt:
             self.app.put_raw_packet(self.packets[seg_no])
-
-
 
       file = File()
       file.file_name = file_name

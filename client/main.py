@@ -50,7 +50,7 @@ def parse_cmd_opts():
           sys.exit()
     return vars
 
-async def run_insert_client(app: NDNApp, args: Namespace):
+async def run_client(app: NDNApp, args: Namespace):
   repo_prefix = Name.from_str("/pndrepo")
   client_prefix = Name.from_str("/client")
   filename = None
@@ -95,7 +95,7 @@ def main():
     args = parse_cmd_opts()
     app = NDNApp()
     try:
-        app.run_forever(after_start=run_insert_client(app, args))
+        app.run_forever(after_start=run_client(app, args))
     except FileNotFoundError:
         print('Error: could not connect to NFD.')
         sys.exit()
