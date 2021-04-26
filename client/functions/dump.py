@@ -31,6 +31,11 @@ class DumpClient(object):
       Continually get the global view and print it to the terminal.
       """
       while True:
+          sessions = self.global_view.get_sessions()
+          node_list = []
+          for index in range(len(sessions)):
+              node_list.append(sessions[index]["id"])
+          print(node_list)
           insertions = self.global_view.get_insertions()
           for insertion in insertions:
               on = ""
