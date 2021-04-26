@@ -38,7 +38,7 @@ def parse_cmd_opts():
     deletesp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
 
     dumpsp = subparsers.add_parser('dump')
-    dumpsp.add_argument("-sid","--sessionid",action="store",dest="sessionid",required=True, help="The session ID of the node.")
+    dumpsp.add_argument("-s","--sessionid",action="store",dest="sessionid",required=True, help="The session ID of the node.")
 
     # Getting all Arguments
     vars = parser.parse_args()
