@@ -4,7 +4,7 @@ from secrets import choice
 from ..data_storage import DataStorage
 from ..global_view import GlobalView
 from ndn.app import NDNApp
-from ndn.encoding import Name, tlv_var, ContentType
+from ndn.encoding import Name, tlv_var, ContentType, Component
 from ndn_python_repo import Storage
 
 
