@@ -15,9 +15,10 @@ from ndn.encoding import FormalName
 class DumpClient(object):
     def __init__(self, app: NDNApp, repo_prefix: FormalName, sessionid: str):
       """
-      This client fetches data packets from the remote repo.
+      This client looks at a global view database.
       :param app: NDNApp.
-      :param repo_name: NonStrictName. Routable name to remote repo.
+      :param repo_prefix: NonStrictName. Routable name to remote repo.
+      :param sessionid: str. The session ID that the node owns.
       """
       self.app = app
       self.sessionid = sessionid
@@ -26,6 +27,9 @@ class DumpClient(object):
       self.global_view = GlobalView(global_view_storage)
 
     def get_view(self):
+      """
+      Continually get the global view and print it to the terminal.
+      """
       while True:
           insertions = self.global_view.get_insertions()
           for insertion in insertions:

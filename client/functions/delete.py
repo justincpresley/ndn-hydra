@@ -17,9 +17,10 @@ from ndn.encoding import Name, Component, FormalName
 class DeleteClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName):
       """
-      This client inserts data packets from the remote repo.
+      This client deletes a certain file from the remote repo.
       :param app: NDNApp.
-      :param repo_name: NonStrictName. Routable name to remote repo.
+      :param client_prefix: NonStrictName. Routable name to client.
+      :param repo_prefix: NonStrictName. Routable name to remote repo.
       """
       self.app = app
       self.client_prefix = client_prefix
@@ -28,7 +29,7 @@ class DeleteClient(object):
 
     async def delete_file(self, file_name: FormalName):
       """
-      Delete file with file name file_name from repo
+      Delete a file asscoiated with a file name from the remote repo
       """
       # send command interest
       file = File()

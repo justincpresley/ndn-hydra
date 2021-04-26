@@ -24,4 +24,7 @@ class FetchClient(object):
       self.repo_prefix = repo_prefix
 
     async def fetch_file(self, file_name: FormalName):
+      """
+      Insert a file associated with a file name to the remote repo
+      """
       print("Fetching Not Implemented Yet.")

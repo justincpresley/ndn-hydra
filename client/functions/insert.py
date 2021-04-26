@@ -22,7 +22,8 @@ class InsertClient(object):
       """
       This client inserts data packets from the remote repo.
       :param app: NDNApp.
-      :param repo_name: NonStrictName. Routable name to remote repo.
+      :param client_prefix: NonStrictName. Routable name to client.
+      :param repo_prefix: NonStrictName. Routable name to remote repo.
       """
       self.app = app
       self.client_prefix = client_prefix
@@ -32,7 +33,7 @@ class InsertClient(object):
 
     async def insert_file(self, file_name: FormalName, desired_copies: int, path: str):
       """
-      Insert file with file name file_name from repo
+      Insert a file associated with a file name to the remote repo
       """
       # send command interest
 
