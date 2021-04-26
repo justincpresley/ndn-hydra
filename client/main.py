@@ -55,29 +55,29 @@ async def run_client(app: NDNApp, args: Namespace):
   client_prefix = Name.from_str("/client")
   filename = None
   desired_copies = 2
-  sid = ""
+
 
   if args.function != "dump":
       filename = Name.from_str(args.filename)
-  else:
-      sid = args.sessionid
 
-  insertClient = InsertClient(app, client_prefix, repo_prefix)
-  deleteClient = DeleteClient(app, client_prefix, repo_prefix)
-  fetchClient = FetchClient(app, client_prefix, repo_prefix)
-  dumpClient = DumpClient(app, repo_prefix, sid)
 
   if args.function == "insert":
+    insertClient = InsertClient(app, client_prefix, repo_prefix)
     await insertClient.insert_file(filename, desired_copies, args.path)
-    await asyncio.sleep(20)
     print("Client finished Insert Command!")
+
   elif args.function == "delete":
+    deleteClient = DeleteClient(app, client_prefix, repo_prefix)
     await deleteClient.delete_file(filename)
     print("Client finished Delete Command!")
+
   elif args.function == "fetch":
+    fetchClient = FetchClient(app, client_prefix, repo_prefix)
     await fetchClient.fetch_file(filename, args.path)
     print("Client finished Fetch Command!")
+
   elif args.function == "dump":
+    dumpClient = DumpClient(app, repo_prefix, args.sessionid)
     try:
         dumpClient.get_view()
     except KeyboardInterrupt:
@@ -85,9 +85,11 @@ async def run_client(app: NDNApp, args: Namespace):
     sys.stdout.write('\r')
     sys.stdout.flush()
     print("Client finished Dump Command!")
+
   else:
     print("Not Implemented Yet / Unknown Command.")
 
+  await asyncio.sleep(20)
   app.shutdown()
 
 
