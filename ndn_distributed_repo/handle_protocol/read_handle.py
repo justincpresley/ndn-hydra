@@ -1,7 +1,7 @@
 import asyncio as aio
 import logging
 from ..data_storage import DataStorage
-from ..global_view import GlobalView
+from ..global_view_2 import GlobalView
 from ndn.app import NDNApp
 from ndn.encoding import Name, tlv_var, ContentType
 from ndn_python_repo import Storage
@@ -58,7 +58,7 @@ class ReadHandle(object):
             return
         # get rid of the security part if any on the int_name
         file_name = self._get_file_name_from_interest(Name.to_str(int_name[:-1]))
-        best_node_id = self.global_view.best_node_for_file(file_name, self.node_name)
+        best_node_id = self._best_node_for_file(file_name)
         segment_comp = "/" + Component.to_str(int_name[-1])
 
         if best_node_id == self.node_name:
@@ -86,3 +86,14 @@ class ReadHandle(object):
             return file_name[len(self.normal_serving_comp):]
         else:
             return file_name[(len(self.personal_serving_comp)+len(self.node_name_comp)):]
+
+    def _best_node_for_file(self, file_name: str):
+      if file_name in self.file_metadata_dict:
+        on_list = self.file_metadata_dict[file_name].get_on_list()
+        if self.file_metadata_dict[file_name].is_file_deleted() or not on_list:
+          return None
+        if self.node_name in on_list:
+          return self.node_name
+        else:
+          return choice(on_list)
+      return None
