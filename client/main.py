@@ -56,7 +56,6 @@ async def run_client(app: NDNApp, args: Namespace):
   filename = None
   desired_copies = 2
 
-
   if args.function != "dump":
       filename = Name.from_str(args.filename)
 
@@ -65,6 +64,7 @@ async def run_client(app: NDNApp, args: Namespace):
     insertClient = InsertClient(app, client_prefix, repo_prefix)
     await insertClient.insert_file(filename, desired_copies, args.path)
     print("Client finished Insert Command!")
+    await asyncio.sleep(20)
 
   elif args.function == "delete":
     deleteClient = DeleteClient(app, client_prefix, repo_prefix)
@@ -89,9 +89,7 @@ async def run_client(app: NDNApp, args: Namespace):
   else:
     print("Not Implemented Yet / Unknown Command.")
 
-  await asyncio.sleep(20)
   app.shutdown()
-
 
 def main():
     args = parse_cmd_opts()
