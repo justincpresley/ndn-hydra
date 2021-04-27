@@ -63,10 +63,11 @@ class FetchClient(object):
         end_index = Component.to_number(meta_info.final_block_id)
         b_array.extend(content)
 
-      # Fetch the file.
-      semaphore = aio.Semaphore(10)
-      async for (_, _, content, _) in concurrent_fetcher(self.app, name_at_repo, start_index, end_index, semaphore):
-        b_array.extend(content)
+      # Fetch the rest of the file.
+      if start_index <= end_index:
+          semaphore = aio.Semaphore(10)
+          async for (_, _, content, _) in concurrent_fetcher(self.app, name_at_repo, start_index, end_index, semaphore):
+            b_array.extend(content)
 
       # After b_array is filled, sort out what to do with the data.
       if len(b_array) > 0:
