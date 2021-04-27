@@ -11,10 +11,8 @@ import asyncio as aio
 import logging
 import os
 from ndn.app import NDNApp
-from ndn.encoding import FormalName, Component, Name
+from ndn.encoding import FormalName, Component, Name, ContentType
 from functions.utils.concurrent_fetcher import concurrent_fetcher
-from functions.utils.segment_fetcher import segment_fetcher
-
 
 class FetchClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName):
@@ -49,17 +47,30 @@ class FetchClient(object):
 
       # Ping with only one data packet at the start
       b_array = bytearray()
-      # TODO test to see what the ContentType is / add to b_arry first segment
+      start_index = 0
+      end_index = None
+      data_name, meta_info, content, data_bytes = await self.app.express_interest(
+        name_at_repo, need_raw_packet=True, can_be_prefix=False, must_be_fresh=False, lifetime=1000)
+      if meta_info.content_type == ContentType.NACK:
+        print("Distributed Repo does not have that file.")
+        return
+      elif meta_info.content_type == ContentType.LINK:
+        name_at_repo = Name.from_str(bytes(content).decode())
+        end_index = Component.to_number(meta_info.final_block_id)
+      else:
+        name_at_repo = name_at_repo[:-1]
+        start_index = start_index + 1
+        end_index = Component.to_number(meta_info.final_block_id)
+        b_array.extend(content)
 
       # Fetch the file.
-
       semaphore = aio.Semaphore(10)
-      async for (_, _, content, _) in concurrent_fetcher(self.app, name_at_repo, 1, None, semaphore):
+      async for (_, _, content, _) in concurrent_fetcher(self.app, name_at_repo, start_index, end_index, semaphore):
         b_array.extend(content)
 
       # After b_array is filled, sort out what to do with the data.
       if len(b_array) > 0:
-        logging.info(f'Fetching completed, writing to file {local_filename}')
+        print(f'Fetching completed, writing to file {local_filename}')
 
         # Create folder hierarchy
         local_folder = os.path.dirname(local_filename)

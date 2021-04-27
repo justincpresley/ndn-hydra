@@ -62,9 +62,8 @@ class ReadHandle(object):
         best_id = self._best_id_for_file(file_name)
         segment_comp = "/" + Component.to_str(int_name[-1])
 
-
         if best_id == self.session_id:
-            if Component.to_str(int_name[-1]) == "seg=0":
+            if segment_comp == "/seg=0":
                 print(f'[cmd][FETCH] serving data to client')
 
             # serve content from my storage
@@ -74,7 +73,7 @@ class ReadHandle(object):
             logging.info(f'Read handle: served data {Name.to_str(int_name)}')
             return
         elif best_id == None:
-            if Component.to_str(int_name[-1]) == "seg=0":
+            if segment_comp == "/seg=0":
                 print(f'[cmd][FETCH] nacked client due to no file in repo')
 
             # nack due to lack of avaliability
@@ -82,11 +81,11 @@ class ReadHandle(object):
             logging.info(f'Read handle: data not found {Name.to_str(int_name)}')
             return
         else:
-            if Component.to_str(int_name[-1]) == "seg=0":
+            if segment_comp == "/seg=0":
                 print(f'[cmd][FETCH] linked to another node in the repo')
 
             # create a link to a node who has the content
-            new_name = self.repo_prefix + self.personal_serving_comp + "/" + best_id + "/" + file_name
+            new_name = self.repo_prefix + self.personal_serving_comp + "/" + best_id + file_name
             link_content = bytes(new_name.encode())
             final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)

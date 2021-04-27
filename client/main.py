@@ -33,7 +33,7 @@ def parse_cmd_opts():
 
     fetchsp = subparsers.add_parser('fetch')
     fetchsp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
-    fetchsp.add_argument("-p","--path",action="store",dest="path",default="./example/fetchedFile", required=False, help="The path you want the file to be placed.")
+    fetchsp.add_argument("-p","--path",action="store",dest="path",default="./client/example/fetchedFile", required=False, help="The path you want the file to be placed.")
 
     deletesp = subparsers.add_parser('delete')
     deletesp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
