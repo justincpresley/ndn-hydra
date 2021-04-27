@@ -65,7 +65,7 @@ class ReadHandle(object):
 
         if best_id == self.session_id:
             if Component.to_str(int_name[-1]) == "seg=0":
-                print(f'[cmd][FETCH] served data to client')
+                print(f'[cmd][FETCH] serving data to client')
 
             # serve content from my storage
             storage_content = self.data_storage.get_v(file_name + segment_comp)
