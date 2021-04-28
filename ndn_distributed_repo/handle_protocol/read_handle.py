@@ -24,7 +24,7 @@ class ReadHandle(object):
         self.repo_prefix = config['repo_prefix']
 
         self.normal_serving_comp = "/fetch"
-        self.personal_serving_comp = "/id"
+        self.personal_serving_comp = "/idfetch"
 
         self.listen(Name.from_str(self.repo_prefix + self.normal_serving_comp))
         self.listen(Name.from_str(self.repo_prefix + self.personal_serving_comp  + "/" + self.session_id))
