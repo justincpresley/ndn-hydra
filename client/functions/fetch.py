@@ -32,7 +32,7 @@ class FetchClient(object):
       :param local_filename: str. The filename of the retrieved file on the local file system.
       :param overwrite: If true, existing files are replaced.
       """
-      name_at_repo = self.repo_prefix + [Component.from_str("main")] + file_name + [Component.from_segment(0)]
+      name_at_repo = self.repo_prefix + [Component.from_str("fetch")] + file_name + [Component.from_segment(0)]
 
       # If no local filename is provided, store file with last name component
       # of repo filename

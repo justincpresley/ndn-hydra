@@ -23,7 +23,7 @@ class ReadHandle(object):
         self.session_id = config['session_id']
         self.repo_prefix = config['repo_prefix']
 
-        self.normal_serving_comp = "/main"
+        self.normal_serving_comp = "/fetch"
         self.personal_serving_comp = "/id"
 
         self.listen(Name.from_str(self.repo_prefix + self.normal_serving_comp))
