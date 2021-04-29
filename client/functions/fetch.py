@@ -19,7 +19,8 @@ class FetchClient(object):
       """
       This client fetches data packets from the remote repo.
       :param app: NDNApp.
-      :param repo_name: NonStrictName. Routable name to remote repo.
+      :param client_prefix: NonStrictName. Routable name to client.
+      :param repo_prefix: NonStrictName. Routable name to remote repo.
       """
       self.app = app
       self.client_prefix = client_prefix

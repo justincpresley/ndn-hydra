@@ -21,6 +21,12 @@ class QueryHandle(object):
         self.session_id = config['session_id']
         self.repo_prefix = config['repo_prefix']
 
+        self.normal_serving_comp = "/query"
+        self.personal_serving_comp = "/sid-query"
+
+        self.listen(Name.from_str(self.repo_prefix + self.normal_serving_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.personal_serving_comp  + "/" + self.session_id))
+
     def listen(self, prefix):
         """
         This function needs to be called for prefix of all data stored.
@@ -37,4 +43,4 @@ class QueryHandle(object):
         logging.info(f'Query handle: stop listening to {Name.to_str(prefix)}')
 
     def _on_interest(self, int_name, int_param, _app_param):
-        return
+        print(f'[cmd][QUERY] query received')
