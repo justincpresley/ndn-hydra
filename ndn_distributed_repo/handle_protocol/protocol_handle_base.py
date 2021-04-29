@@ -10,7 +10,6 @@ from ..protocol.repo_commands import RepoCommand
 from ndn_python_repo import Storage
 from ..utils import PubSub
 
-
 class ProtocolHandle(object):
     """
     Interface for protocol interest handles

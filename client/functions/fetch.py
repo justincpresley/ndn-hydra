@@ -1,9 +1,9 @@
 # -----------------------------------------------------------------------------
-# NDN Repo fetch client.
+# NDN Distributed Repo fetch client.
 #
 # @Author Justin C Presley
 # @Author Daniel Achee
-# @Author Caton Zhong
+# @Author Zixuan Zhong
 # @Date   2021-01-25
 # -----------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ from ndn.encoding import FormalName, Component, Name, ContentType
 from functions.utils.concurrent_fetcher import concurrent_fetcher
 
 class FetchClient(object):
-    def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName):
+    def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:
       """
       This client fetches data packets from the remote repo.
       :param app: NDNApp.
@@ -25,7 +25,7 @@ class FetchClient(object):
       self.client_prefix = client_prefix
       self.repo_prefix = repo_prefix
 
-    async def fetch_file(self, file_name: FormalName, local_filename: str = None, overwrite: bool = False):
+    async def fetch_file(self, file_name: FormalName, local_filename: str = None, overwrite: bool = False) -> None:
       """
       Fetch a file from remote repo, and write to the current working directory.
       :param name_at_repo: NonStrictName. The name with which this file is stored in the repo.

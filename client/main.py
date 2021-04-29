@@ -1,9 +1,9 @@
 # -----------------------------------------------------------------------------
-# NDN Repo client.
+# NDN Distributed Repo client.
 #
 # @Author Justin C Presley
 # @Author Daniel Achee
-# @Author Caton Zhong
+# @Author Zixuan Zhong
 # @Date   2021-01-25
 # -----------------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ from functions.delete import DeleteClient
 from functions.fetch import FetchClient
 from functions.dump import DumpClient
 
-def parse_cmd_opts():
+def parse_cmd_opts() -> Namespace:
     # Command Line Parser
     parser = ArgumentParser(description="A Distributed Repo Client")
     subparsers = parser.add_subparsers(title="Client Commands", dest="function")
@@ -51,7 +51,7 @@ def parse_cmd_opts():
           sys.exit()
     return vars
 
-async def run_client(app: NDNApp, args: Namespace):
+async def run_client(app: NDNApp, args: Namespace) -> None:
   repo_prefix = Name.from_str("/pndrepo")
   client_prefix = Name.from_str("/client")
   filename = None
@@ -92,7 +92,7 @@ async def run_client(app: NDNApp, args: Namespace):
 
   app.shutdown()
 
-def main():
+def main() -> None:
     args = parse_cmd_opts()
     app = NDNApp()
     try:

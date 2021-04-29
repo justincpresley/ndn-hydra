@@ -1,9 +1,9 @@
 # -----------------------------------------------------------------------------
-# NDN Repo dump client.
+# NDN Distributed Repo dump client.
 #
 # @Author Justin C Presley
 # @Author Daniel Achee
-# @Author Caton Zhong
+# @Author Zixuan Zhong
 # @Date   2021-01-25
 # -----------------------------------------------------------------------------
 
@@ -13,7 +13,7 @@ from ndn.app import NDNApp
 from ndn.encoding import FormalName, Name
 
 class DumpClient(object):
-    def __init__(self, app: NDNApp, repo_prefix: FormalName, sessionid: str):
+    def __init__(self, app: NDNApp, repo_prefix: FormalName, sessionid: str) -> None:
       """
       This client looks at a global view database.
       :param app: NDNApp.
@@ -26,7 +26,7 @@ class DumpClient(object):
       global_view_storage = "~/.ndn/repo/{repo_prefix}/{session_id}/global_view.db".format(repo_prefix=Name.to_str(repo_prefix), session_id=sessionid)
       self.global_view = GlobalView(global_view_storage)
 
-    def get_view(self):
+    def get_view(self) -> None:
       """
       Continually get the global view and print it to the terminal.
       """

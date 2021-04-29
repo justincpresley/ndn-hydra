@@ -1,24 +1,24 @@
 # -----------------------------------------------------------------------------
-# NDN Repo insert client.
+# NDN Distributed Repo insert client.
 #
 # @Author Justin C Presley
 # @Author Daniel Achee
-# @Author Caton Zhong
+# @Author Zixuan Zhong
 # @Date   2021-01-25
 # -----------------------------------------------------------------------------
 
-from hashlib import blake2b
 import asyncio
+import logging
+from hashlib import blake2b
 from ndn_distributed_repo.protocol import RepoCommand, File, FetchPath
 from ndn_distributed_repo.utils import PubSub
-import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
 
 SEGMENT_SIZE = 8192
 
 class InsertClient(object):
-    def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName):
+    def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:
       """
       This client inserts data packets from the remote repo.
       :param app: NDNApp.
@@ -32,7 +32,7 @@ class InsertClient(object):
       self.packets = []
       self.digests = []
 
-    async def insert_file(self, file_name: FormalName, desired_copies: int, path: str):
+    async def insert_file(self, file_name: FormalName, desired_copies: int, path: str) -> bool:
       """
       Insert a file associated with a file name to the remote repo
       """

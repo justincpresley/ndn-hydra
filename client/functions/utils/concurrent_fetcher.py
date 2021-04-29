@@ -1,20 +1,18 @@
 # -----------------------------------------------------------------------------
-# NDN Concurrent Repo Fetcher
+# NDN Distributed Repo Concurrent Fetcher.
 #
 # @Author Justin C Presley
 # @Author Daniel Achee
-# @Author Caton Zhong
+# @Author Zixuan Zhong
 # @Date   2021-01-25
 # -----------------------------------------------------------------------------
 
 import asyncio as aio
-from datetime import datetime
 import logging
 from ndn.app import NDNApp
 from ndn.types import InterestNack, InterestTimeout
 from ndn.encoding import Name, NonStrictName, Component
 from typing import Optional
-
 
 async def concurrent_fetcher(app: NDNApp, name: NonStrictName, start_block_id: int,
                              end_block_id: Optional[int], semaphore: aio.Semaphore, **kwargs):

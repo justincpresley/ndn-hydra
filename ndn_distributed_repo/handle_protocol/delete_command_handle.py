@@ -7,14 +7,12 @@ import random
 import sys
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
-from . import ReadHandle, ProtocolHandle
+from . import ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
+from ..utils import PubSub
 from ..repo_messages.remove import RemoveMessageBodyTlv
 from ..repo_messages.message import MessageTlv, MessageTypes
 from ..handle_messages import MessageHandle
-
-from ..utils import PubSub
-
 
 class DeleteCommandHandle(ProtocolHandle):
     """
@@ -22,17 +20,17 @@ class DeleteCommandHandle(ProtocolHandle):
     in the database.
     TODO: Add validator
     """
-    def __init__(self, app: NDNApp, data_storage: DataStorage, pb: PubSub, read_handle: ReadHandle,
-                 config: dict, message_handle: MessageHandle, global_view: GlobalView):
+    def __init__(self, app: NDNApp, data_storage: DataStorage, pb: PubSub, config: dict,
+                message_handle: MessageHandle, global_view: GlobalView):
         """
-        Read handle need to keep a reference to write handle to register new prefixes.
         :param app: NDNApp.
-        :param storage: Storage.
-        :param read_handle: ReadHandle. This param is necessary because DeleteCommandHandle need to
-            unregister prefixes.
+        :param data_storage: Storage.
+        :param pb: PubSub.
+        :param config: All config Info.
+        :param message_handle: SVS interface, Group Messages.
+        :param global_view: Global View.
         """
         super(DeleteCommandHandle, self).__init__(app, data_storage, pb, config)
-        self.m_read_handle = read_handle
         self.prefix = None
         self.message_handle = message_handle
         self.global_view = global_view

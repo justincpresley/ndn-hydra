@@ -10,12 +10,14 @@ from ndn_python_repo import Storage
 
 class ReadHandle(object):
     """
-    ReadCommandHandle processes ordinary interests, and return corresponding data if exists.
+    ReadHandle processes ordinary interests, and return corresponding data if exists.
     """
     def __init__(self, app: NDNApp, data_storage: DataStorage, global_view: GlobalView, config: dict):
         """
         :param app: NDNApp.
-        :param storage: Storage.
+        :param data_storage: Storage.
+        :param global_view: Global View.
+        :param config: All config Info.
         """
         self.app = app
         self.data_storage = data_storage
@@ -52,7 +54,6 @@ class ReadHandle(object):
         - Nack if data can not be found within the repo
         - Reply with a redirect to another node
         Assumptions:
-        - A file will always have a on list not empty
         - A node on the on list will have the file in complete form
         """
         if int_param.must_be_fresh:

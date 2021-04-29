@@ -7,7 +7,7 @@ import sys
 import time
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
-from . import ReadHandle, ProtocolHandle
+from . import ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
 from ..utils import PubSub
 from ..data_storage import DataStorage
@@ -21,23 +21,21 @@ class InsertCommandHandle(ProtocolHandle):
     InsertCommandHandle processes insert command handles, and deletes corresponding data stored
     in the database.
     """
-    def __init__(self, app: NDNApp, data_storage: DataStorage, pb: PubSub, read_handle: ReadHandle,
-                 config: dict, message_handle: MessageHandle, global_view: GlobalView):
+    def __init__(self, app: NDNApp, data_storage: DataStorage, pb: PubSub, config: dict,
+                message_handle: MessageHandle, global_view: GlobalView):
         """
-        Read handle need to keep a reference to write handle to register new prefixes.
         :param app: NDNApp.
-        :param storage: Storage.
-        :param read_handle: ReadHandle. This param is necessary because InsertCommandHandle need to
-            unregister prefixes.
+        :param data_storage: Storage.
+        :param pb: PubSub.
+        :param config: All config Info.
+        :param message_handle: SVS interface, Group Messages.
+        :param global_view: Global View.
         """
         super(InsertCommandHandle, self).__init__(app, data_storage, pb, config)
-        self.m_read_handle = read_handle
         self.prefix = None
         self.message_handle = message_handle
         self.global_view = global_view
         self.data_storage = data_storage
-        # print(type(self.config['session_id']))
-        #self.register_root = config['repo_config']['register_root']
 
     async def listen(self, prefix: NonStrictName):
         """
