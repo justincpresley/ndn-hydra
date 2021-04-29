@@ -1,20 +1,23 @@
 import asyncio as aio
 import logging
+from secrets import choice
 from ..data_storage import DataStorage
 from ..global_view import GlobalView
 from ndn.app import NDNApp
-from ndn.encoding import Name, tlv_var, ContentType
+from ndn.encoding import Name, tlv_var, ContentType, Component
 from ndn_python_repo import Storage
 
 
 class ReadHandle(object):
     """
-    ReadCommandHandle processes ordinary interests, and return corresponding data if exists.
+    ReadHandle processes ordinary interests, and return corresponding data if exists.
     """
     def __init__(self, app: NDNApp, data_storage: DataStorage, global_view: GlobalView, config: dict):
         """
         :param app: NDNApp.
-        :param storage: Storage.
+        :param data_storage: Storage.
+        :param global_view: Global View.
+        :param config: All config Info.
         """
         self.app = app
         self.data_storage = data_storage
@@ -22,8 +25,8 @@ class ReadHandle(object):
         self.session_id = config['session_id']
         self.repo_prefix = config['repo_prefix']
 
-        self.normal_serving_comp = "/main"
-        self.personal_serving_comp = "/id"
+        self.normal_serving_comp = "/fetch"
+        self.personal_serving_comp = "/sid-fetch"
 
         self.listen(Name.from_str(self.repo_prefix + self.normal_serving_comp))
         self.listen(Name.from_str(self.repo_prefix + self.personal_serving_comp  + "/" + self.session_id))
@@ -51,7 +54,6 @@ class ReadHandle(object):
         - Nack if data can not be found within the repo
         - Reply with a redirect to another node
         Assumptions:
-        - A file will always have a on list not empty
         - A node on the on list will have the file in complete form
         """
         if int_param.must_be_fresh:
@@ -62,21 +64,32 @@ class ReadHandle(object):
         segment_comp = "/" + Component.to_str(int_name[-1])
 
         if best_id == self.session_id:
+            if segment_comp == "/seg=0":
+                print(f'[cmd][FETCH] serving data to client')
+
             # serve content from my storage
             storage_content = self.data_storage.get_v(file_name + segment_comp)
-            self.app.put_data(int_name, content=storage_content, content_type=ContentType.BLOB)
+            final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
+            self.app.put_data(int_name, content=storage_content, content_type=ContentType.BLOB, final_block_id=final_id)
             logging.info(f'Read handle: served data {Name.to_str(int_name)}')
             return
         elif best_id == None:
+            if segment_comp == "/seg=0":
+                print(f'[cmd][FETCH] nacked client due to no file in repo')
+
             # nack due to lack of avaliability
             self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
             logging.info(f'Read handle: data not found {Name.to_str(int_name)}')
             return
         else:
+            if segment_comp == "/seg=0":
+                print(f'[cmd][FETCH] linked to another node in the repo')
+
             # create a link to a node who has the content
-            new_name = self.repo_prefix + self.personal_serving_comp + "/" + best_id + "/" + file_name
+            new_name = self.repo_prefix + self.personal_serving_comp + "/" + best_id + file_name
             link_content = bytes(new_name.encode())
-            self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK)
+            final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
+            self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)
             logging.info(f'Read handle: redirected {Name.to_str(int_name)}')
             return
 

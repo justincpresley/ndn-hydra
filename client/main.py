@@ -1,15 +1,16 @@
 # -----------------------------------------------------------------------------
-# NDN Repo insert client.
+# NDN Distributed Repo client.
 #
 # @Author Justin C Presley
 # @Author Daniel Achee
-# @Author Caton Zhong
+# @Author Zixuan Zhong
 # @Date   2021-01-25
 # -----------------------------------------------------------------------------
 
 import asyncio
 from argparse import ArgumentParser, Namespace
 import sys
+import logging
 from os import path
 from ndn.app import NDNApp
 from ndn.encoding import Name
@@ -19,7 +20,7 @@ from functions.delete import DeleteClient
 from functions.fetch import FetchClient
 from functions.dump import DumpClient
 
-def parse_cmd_opts():
+def parse_cmd_opts() -> Namespace:
     # Command Line Parser
     parser = ArgumentParser(description="A Distributed Repo Client")
     subparsers = parser.add_subparsers(title="Client Commands", dest="function")
@@ -32,7 +33,7 @@ def parse_cmd_opts():
 
     fetchsp = subparsers.add_parser('fetch')
     fetchsp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
-    fetchsp.add_argument("-p","--path",action="store",dest="path",default="./example/fetchedFile", required=False, help="The path you want the file to be placed.")
+    fetchsp.add_argument("-p","--path",action="store",dest="path",default="./client/example/fetchedFile", required=False, help="The path you want the file to be placed.")
 
     deletesp = subparsers.add_parser('delete')
     deletesp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
@@ -50,7 +51,7 @@ def parse_cmd_opts():
           sys.exit()
     return vars
 
-async def run_client(app: NDNApp, args: Namespace):
+async def run_client(app: NDNApp, args: Namespace) -> None:
   repo_prefix = Name.from_str("/pndrepo")
   client_prefix = Name.from_str("/client")
   filename = None
@@ -73,7 +74,7 @@ async def run_client(app: NDNApp, args: Namespace):
 
   elif args.function == "fetch":
     fetchClient = FetchClient(app, client_prefix, repo_prefix)
-    await fetchClient.fetch_file(filename, args.path)
+    await fetchClient.fetch_file(filename, args.path, True)
     print("Client finished Fetch Command!")
 
   elif args.function == "dump":
@@ -91,7 +92,7 @@ async def run_client(app: NDNApp, args: Namespace):
 
   app.shutdown()
 
-def main():
+def main() -> None:
     args = parse_cmd_opts()
     app = NDNApp()
     try:

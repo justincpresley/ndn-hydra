@@ -12,8 +12,6 @@ from ndn.app import NDNApp
 from ndn.encoding import Name
 from ndn_distributed_repo import *
 from ndn_python_repo import SqliteStorage
-# from handle_messages import MessageHandle
-# from . import *
 
 def process_cmd_opts():
     """
@@ -100,8 +98,9 @@ class RepoNodeThread(Thread):
 
         # protocol (commands & queries)
         read_handle = ReadHandle(app, data_storage, global_view, self.config)
-        insert_handle = InsertCommandHandle(app, data_storage, pb, read_handle, self.config, message_handle, global_view)
-        delete_handle = DeleteCommandHandle(app, data_storage, pb, read_handle, self.config, message_handle, global_view)
+        insert_handle = InsertCommandHandle(app, data_storage, pb, self.config, message_handle, global_view)
+        delete_handle = DeleteCommandHandle(app, data_storage, pb, self.config, message_handle, global_view)
+        query_handle = QueryHandle(app, global_view, self.config)
 
         # start listening
         aio.ensure_future(listen(Name.normalize(self.config['repo_prefix']), pb, insert_handle, delete_handle))
@@ -121,9 +120,7 @@ class FileFetchingThread(Thread):
         aio.set_event_loop(loop)
 
         app = NDNApp()
-
         data_storage = DataStorage(self.config['data_storage_path'])
-
         data_storage_handle = DataStorageHandle(app, self.config, data_storage)
 
         try:

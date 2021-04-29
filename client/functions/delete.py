@@ -1,21 +1,21 @@
 # -----------------------------------------------------------------------------
-# NDN Repo insert client.
+# NDN Distributed Repo delete client.
 #
 # @Author Justin C Presley
 # @Author Daniel Achee
-# @Author Caton Zhong
+# @Author Zixuan Zhong
 # @Date   2021-01-25
 # -----------------------------------------------------------------------------
 
 import asyncio
+import logging
 from ndn_distributed_repo.protocol import RepoCommand, File, FetchPath
 from ndn_distributed_repo.utils import PubSub
-import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
 
 class DeleteClient(object):
-    def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName):
+    def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:
       """
       This client deletes a certain file from the remote repo.
       :param app: NDNApp.
@@ -27,7 +27,7 @@ class DeleteClient(object):
       self.repo_prefix = repo_prefix
       self.pb = PubSub(self.app, self.client_prefix)
 
-    async def delete_file(self, file_name: FormalName):
+    async def delete_file(self, file_name: FormalName) -> bool:
       """
       Delete a file asscoiated with a file name from the remote repo
       """
