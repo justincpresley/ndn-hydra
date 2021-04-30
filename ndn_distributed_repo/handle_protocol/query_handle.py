@@ -45,23 +45,28 @@ class QueryHandle(object):
     def _on_interest(self, int_name, int_param, _app_param):
         if not int_param.must_be_fresh or not int_param.can_be_prefix:
             return
-        query = self._get_query_from_interest(int_name)
-        querytype = Component.to_str(query[0])
+        query = self._get_query_from_interest(Name.to_str(int_name))
+        querytype = Component.to_str(Name.from_str(query)[0])
         if querytype == "sids":
             print(f'[cmd][QUERY] query received: sids')
-            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
-        else if querytype == "files":
+            self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
+            return
+        elif querytype == "files":
             print(f'[cmd][QUERY] query received: files')
-            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
-        else if querytype == "file":
+            self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
+            return
+        elif querytype == "file":
             print(f'[cmd][QUERY] query received: file')
-            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
-        else if querytype == "prefix":
+            self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
+            return
+        elif querytype == "prefix":
             print(f'[cmd][QUERY] query received: prefix')
-            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
+            self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
+            return
         else:
             print(f'[cmd][QUERY] unknown query received')
-            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
+            self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
+            return
 
     def _get_query_from_interest(self, int_name):
         query = int_name[len(self.repo_prefix):]

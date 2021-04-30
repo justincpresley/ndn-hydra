@@ -12,6 +12,7 @@ import logging
 import os
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType
+from ndn.types import InterestNack, InterestTimeout, InterestCanceled, ValidationFailure
 from functions.utils.concurrent_fetcher import concurrent_fetcher
 
 class QueryClient(object):
@@ -26,23 +27,22 @@ class QueryClient(object):
       self.client_prefix = client_prefix
       self.repo_prefix = repo_prefix
 
-      self.normal_serving_comp = "/query"
-      self.personal_serving_comp = "/sid-query"
-
     async def send_query(self, query: Name, sid: str=None) -> None:
       """
       Form a certain query and request that info from a node.
       """
-      named_query = self.repo_prefix
       if not sid:
-          named_query = named_query + [Component.from_str(self.normal_serving_comp)] + query
+          named_query = self.repo_prefix + [Component.from_str("query")] + query
       else:
-          named_query = named_query + [Component.from_str(self.personal_serving_comp)] + [Component.from_str(self.sid)] + query
+          named_query = self.repo_prefix + [Component.from_str("sid-query")] + [Component.from_str(sid)] + query
 
-      data_name, meta_info, content, data_bytes = await self.app.express_interest(named_query,
-                                                        can_be_prefix=True, must_be_fresh=True, lifetime=1000)
-      if meta_info.content_type == ContentType.NACK:
-        print("Distributed Repo does not know that query.")
-        return
-      else:
-        return
+      try:
+          data_name, meta_info, content = await self.app.express_interest(named_query, can_be_prefix=True, must_be_fresh=True, lifetime=3000)
+          if meta_info.content_type == ContentType.NACK:
+             print("Distributed Repo does not know that query.")
+             return
+          else:
+             return
+      except (InterestNack, InterestTimeout, InterestCanceled, ValidationFailure) as e:
+          print("Query command received no data packet back")
+          return

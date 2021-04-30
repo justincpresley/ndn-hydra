@@ -13,7 +13,7 @@ import sys
 import logging
 from os import path
 from ndn.app import NDNApp
-from ndn.encoding import Name
+from ndn.encoding import Name, Component
 
 from functions.insert import InsertClient
 from functions.delete import DeleteClient
@@ -64,8 +64,6 @@ async def run_client(app: NDNApp, args: Namespace) -> None:
 
   if args.function != "dump" and args.function != "query":
       filename = Name.from_str(args.filename)
-  if args.function == "query":
-      query = Name.from_str(args.query)
 
   if args.function == "insert":
     insertClient = InsertClient(app, client_prefix, repo_prefix)
@@ -85,7 +83,7 @@ async def run_client(app: NDNApp, args: Namespace) -> None:
 
   elif args.function == "query":
     queryClient = QueryClient(app, client_prefix, repo_prefix)
-    await queryClient.send_query(query, args.sessionid)
+    await queryClient.send_query(Name.from_str(str(args.query)), args.sessionid)
     print("Client finished Query Command!")
 
   elif args.function == "dump":
