@@ -41,6 +41,7 @@ def parse_cmd_opts() -> Namespace:
 
     querysp = subparsers.add_parser('query')
     querysp.add_argument("-s","--sessionid",action="store",dest="sessionid",default=None, required=False, help="The session ID of the node you want to query. Best-route by default.")
+    querysp.add_argument("-q","--query",action="store",dest="query",required=True, help="The Query you want to send to the Repo.")
 
     dumpsp = subparsers.add_parser('dump')
     dumpsp.add_argument("-s","--sessionid",action="store",dest="sessionid",required=True, help="The session ID of the node.")
@@ -63,6 +64,8 @@ async def run_client(app: NDNApp, args: Namespace) -> None:
 
   if args.function != "dump" and args.function != "query":
       filename = Name.from_str(args.filename)
+  if args.function == "query":
+      query = Name.from_str(args.query)
 
   if args.function == "insert":
     insertClient = InsertClient(app, client_prefix, repo_prefix)
@@ -82,7 +85,7 @@ async def run_client(app: NDNApp, args: Namespace) -> None:
 
   elif args.function == "query":
     queryClient = QueryClient(app, client_prefix, repo_prefix)
-    await queryClient.produce_query()
+    await queryClient.send_query(query, args.sessionid)
     print("Client finished Query Command!")
 
   elif args.function == "dump":

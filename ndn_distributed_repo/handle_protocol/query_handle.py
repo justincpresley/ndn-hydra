@@ -43,4 +43,29 @@ class QueryHandle(object):
         logging.info(f'Query handle: stop listening to {Name.to_str(prefix)}')
 
     def _on_interest(self, int_name, int_param, _app_param):
-        print(f'[cmd][QUERY] query received')
+        if not int_param.must_be_fresh or not int_param.can_be_prefix:
+            return
+        query = self._get_query_from_interest(int_name)
+        querytype = Component.to_str(query[0])
+        if querytype == "sids":
+            print(f'[cmd][QUERY] query received: sids')
+            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
+        else if querytype == "files":
+            print(f'[cmd][QUERY] query received: files')
+            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
+        else if querytype == "file":
+            print(f'[cmd][QUERY] query received: file')
+            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
+        else if querytype == "prefix":
+            print(f'[cmd][QUERY] query received: prefix')
+            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
+        else:
+            print(f'[cmd][QUERY] unknown query received')
+            self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
+
+    def _get_query_from_interest(self, int_name):
+        query = int_name[len(self.repo_prefix):]
+        if query[0:len(self.normal_serving_comp)] == self.normal_serving_comp:
+            return query[len(self.normal_serving_comp):]
+        else:
+            return query[(len(self.personal_serving_comp)+len("/" + self.session_id)):]

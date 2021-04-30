@@ -26,8 +26,23 @@ class QueryClient(object):
       self.client_prefix = client_prefix
       self.repo_prefix = repo_prefix
 
-    async def produce_query(self) -> None:
+      self.normal_serving_comp = "/query"
+      self.personal_serving_comp = "/sid-query"
+
+    async def send_query(self, query: Name, sid: str=None) -> None:
       """
       Form a certain query and request that info from a node.
       """
-      print("Client Query Command Failed.")
+      named_query = self.repo_prefix
+      if not sid:
+          named_query = named_query + [Component.from_str(self.normal_serving_comp)] + query
+      else:
+          named_query = named_query + [Component.from_str(self.personal_serving_comp)] + [Component.from_str(self.sid)] + query
+
+      data_name, meta_info, content, data_bytes = await self.app.express_interest(named_query,
+                                                        can_be_prefix=True, must_be_fresh=True, lifetime=1000)
+      if meta_info.content_type == ContentType.NACK:
+        print("Distributed Repo does not know that query.")
+        return
+      else:
+        return
