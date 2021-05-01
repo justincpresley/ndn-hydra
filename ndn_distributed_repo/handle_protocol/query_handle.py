@@ -49,7 +49,9 @@ class QueryHandle(object):
         querytype = Component.to_str(Name.from_str(query)[0])
         if querytype == "sids":
             print(f'[cmd][QUERY] query received: sids')
-            self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
+            sessions = self.global_view.get_sessions()
+            sidliststr = " ".join([key["id"] for key in sessions])
+            self.app.put_data(int_name, content=bytes(sidliststr.encode()), freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "files":
             print(f'[cmd][QUERY] query received: files')
