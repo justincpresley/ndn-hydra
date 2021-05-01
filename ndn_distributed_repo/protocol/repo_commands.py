@@ -7,7 +7,6 @@
 
 from ndn.encoding import TlvModel, ModelField, NameField, UintField, RepeatedField, BytesField
 
-
 class RepoTypeNumber:
   REPO_COMMAND = 201
   FILE = 202
@@ -29,6 +28,9 @@ class File(TlvModel):
   packets = UintField(RepoTypeNumber.PACKETS)
   digests = RepeatedField(BytesField(RepoTypeNumber.DIGEST))
   size = UintField(RepoTypeNumber.SIZE)
+
+class FileList(TlvModel):
+    list = RepeatedField(ModelField(RepoTypeNumber.FILE, File))
 
 class RepoCommand(TlvModel):
   file = ModelField(RepoTypeNumber.FILE, File)
