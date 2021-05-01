@@ -56,7 +56,18 @@ class QueryHandle(object):
             return
         elif querytype == "files":
             print(f'[cmd][QUERY] query received: files')
-            self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
+            insertions = self.global_view.get_insertions()
+            filelist = FileList()
+            filelist.list = []
+            for index in range(len(insertions)):
+                file = File()
+                file.file_name = insertions[index]["file_name"]
+                file.desired_copies = insertions[index]["desired_copies"]
+                file.packets = insertions[index]["packets"]
+                file.digests = insertions[index]["digests"]
+                file.size = insertions[index]["size"]
+                filelist.list.append(file)
+            self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "file":
             print(f'[cmd][QUERY] query received: file')

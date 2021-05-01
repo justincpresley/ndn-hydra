@@ -45,7 +45,28 @@ class QueryClient(object):
              querytype = Component.to_str(query[0])
              if querytype == "sids":
                  print(f'List of All Session IDs')
-                 print(f'{bytes(content).decode()}')
+                 print(f'{bytes(content).decode().split()}')
+                 return
+             elif querytype == "files":
+                 filelist = FileList.parse(content)
+                 counter = 1
+                 if filelist.list:
+                     print(f'List of All Files')
+                     for file in filelist.list:
+                         print(f'File {counter} meta-info')
+                         print(f'\tfile_name: {Name.to_str(file.file_name)}')
+                         print(f'\tdesired_copies: {file.desired_copies}')
+                         print(f'\tsize: {file.size}')
+                         counter = counter + 1
+                 else:
+                     print(f'No files inserted in the remote repo.')
+                 return
+             elif querytype == "file":
+                 return
+             elif querytype == "prefix":
+                 return
+             else:
+                 print("Client does not know that query.")
                  return
       except (InterestNack, InterestTimeout, InterestCanceled, ValidationFailure) as e:
           print("Query command received no data packet back")
