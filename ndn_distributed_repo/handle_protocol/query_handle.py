@@ -71,7 +71,20 @@ class QueryHandle(object):
             return
         elif querytype == "file":
             print(f'[cmd][QUERY] query received: file')
-            self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
+            insertions = self.global_view.get_insertions()
+            filename = query[5:]
+            filecontent = None
+            for index in range(len(insertions)):
+                if Name.to_str(insertions[index]["file_name"]) == filename:
+                    file = File()
+                    file.file_name = insertions[index]["file_name"]
+                    file.desired_copies = insertions[index]["desired_copies"]
+                    file.packets = insertions[index]["packets"]
+                    file.digests = insertions[index]["digests"]
+                    file.size = insertions[index]["size"]
+                    filecontent = file.encode()
+                    break
+            self.app.put_data(int_name, content=filecontent, freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "prefix":
             print(f'[cmd][QUERY] query received: prefix')

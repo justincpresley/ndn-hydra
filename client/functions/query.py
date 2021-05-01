@@ -62,6 +62,14 @@ class QueryClient(object):
                      print(f'No files inserted in the remote repo.')
                  return
              elif querytype == "file":
+                 if content:
+                     file = File.parse(content)
+                     print(f'File Exists, File meta-info')
+                     print(f'\tfile_name: {Name.to_str(file.file_name)}')
+                     print(f'\tsize: {file.size}')
+                     print(f'\tdesired_copies: {file.desired_copies}')
+                 else:
+                     print(f'File Does Not Exists in The Repo')
                  return
              elif querytype == "prefix":
                  return
