@@ -13,11 +13,12 @@ import sys
 import logging
 from os import path
 from ndn.app import NDNApp
-from ndn.encoding import Name
+from ndn.encoding import Name, Component
 
 from functions.insert import InsertClient
 from functions.delete import DeleteClient
 from functions.fetch import FetchClient
+from functions.query import QueryClient
 from functions.dump import DumpClient
 
 def parse_cmd_opts() -> Namespace:
@@ -31,12 +32,16 @@ def parse_cmd_opts() -> Namespace:
     insertsp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
     insertsp.add_argument("-p","--path",action="store",dest="path",required=True, help="The path of the file desired to be the input.")
 
+    deletesp = subparsers.add_parser('delete')
+    deletesp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
+
     fetchsp = subparsers.add_parser('fetch')
     fetchsp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
     fetchsp.add_argument("-p","--path",action="store",dest="path",default="./client/example/fetchedFile", required=False, help="The path you want the file to be placed.")
 
-    deletesp = subparsers.add_parser('delete')
-    deletesp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
+    querysp = subparsers.add_parser('query')
+    querysp.add_argument("-s","--sessionid",action="store",dest="sessionid",default=None, required=False, help="The session ID of the node you want to query. Best-route by default.")
+    querysp.add_argument("-q","--query",action="store",dest="query",required=True, help="The Query you want to send to the Repo.")
 
     dumpsp = subparsers.add_parser('dump')
     dumpsp.add_argument("-s","--sessionid",action="store",dest="sessionid",required=True, help="The session ID of the node.")
@@ -57,9 +62,8 @@ async def run_client(app: NDNApp, args: Namespace) -> None:
   filename = None
   desired_copies = 2
 
-  if args.function != "dump":
+  if args.function != "dump" and args.function != "query":
       filename = Name.from_str(args.filename)
-
 
   if args.function == "insert":
     insertClient = InsertClient(app, client_prefix, repo_prefix)
@@ -76,6 +80,11 @@ async def run_client(app: NDNApp, args: Namespace) -> None:
     fetchClient = FetchClient(app, client_prefix, repo_prefix)
     await fetchClient.fetch_file(filename, args.path, True)
     print("Client finished Fetch Command!")
+
+  elif args.function == "query":
+    queryClient = QueryClient(app, client_prefix, repo_prefix)
+    await queryClient.send_query(Name.from_str(str(args.query)), args.sessionid)
+    print("Client finished Query Command!")
 
   elif args.function == "dump":
     dumpClient = DumpClient(app, repo_prefix, args.sessionid)

@@ -5,6 +5,7 @@ from ..global_view import GlobalView
 from ndn.app import NDNApp
 from ndn.encoding import Name, tlv_var, ContentType, Component
 from ndn_python_repo import Storage
+from ndn_distributed_repo.protocol import File, FileList
 
 class QueryHandle(object):
     """
@@ -20,6 +21,12 @@ class QueryHandle(object):
         self.global_view = global_view
         self.session_id = config['session_id']
         self.repo_prefix = config['repo_prefix']
+
+        self.normal_serving_comp = "/query"
+        self.personal_serving_comp = "/sid-query"
+
+        self.listen(Name.from_str(self.repo_prefix + self.normal_serving_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.personal_serving_comp  + "/" + self.session_id))
 
     def listen(self, prefix):
         """
@@ -37,4 +44,73 @@ class QueryHandle(object):
         logging.info(f'Query handle: stop listening to {Name.to_str(prefix)}')
 
     def _on_interest(self, int_name, int_param, _app_param):
-        return
+        if not int_param.must_be_fresh or not int_param.can_be_prefix:
+            return
+        query = self._get_query_from_interest(Name.to_str(int_name))
+        querytype = Component.to_str(Name.from_str(query)[0])
+        if querytype == "sids":
+            print(f'[cmd][QUERY] query received: sids')
+            sessions = self.global_view.get_sessions()
+            sidliststr = " ".join([key["id"] for key in sessions])
+            self.app.put_data(int_name, content=bytes(sidliststr.encode()), freshness_period=3000, content_type=ContentType.BLOB)
+            return
+        elif querytype == "files":
+            print(f'[cmd][QUERY] query received: files')
+            insertions = self.global_view.get_insertions()
+            filelist = FileList()
+            filelist.list = []
+            for index in range(len(insertions)):
+                file = File()
+                file.file_name = insertions[index]["file_name"]
+                file.desired_copies = insertions[index]["desired_copies"]
+                file.packets = insertions[index]["packets"]
+                file.digests = insertions[index]["digests"]
+                file.size = insertions[index]["size"]
+                filelist.list.append(file)
+            self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
+            return
+        elif querytype == "file":
+            print(f'[cmd][QUERY] query received: file')
+            insertions = self.global_view.get_insertions()
+            filename = query[5:]
+            filecontent = None
+            for index in range(len(insertions)):
+                if Name.to_str(insertions[index]["file_name"]) == filename:
+                    file = File()
+                    file.file_name = insertions[index]["file_name"]
+                    file.desired_copies = insertions[index]["desired_copies"]
+                    file.packets = insertions[index]["packets"]
+                    file.digests = insertions[index]["digests"]
+                    file.size = insertions[index]["size"]
+                    filecontent = file.encode()
+                    break
+            self.app.put_data(int_name, content=filecontent, freshness_period=3000, content_type=ContentType.BLOB)
+            return
+        elif querytype == "prefix":
+            print(f'[cmd][QUERY] query received: prefix')
+            insertions = self.global_view.get_insertions()
+            prefix = query[7:]
+            filelist = FileList()
+            filelist.list = []
+            for index in range(len(insertions)):
+                if Name.is_prefix(Name.from_str(prefix), insertions[index]["file_name"]):
+                    file = File()
+                    file.file_name = insertions[index]["file_name"]
+                    file.desired_copies = insertions[index]["desired_copies"]
+                    file.packets = insertions[index]["packets"]
+                    file.digests = insertions[index]["digests"]
+                    file.size = insertions[index]["size"]
+                    filelist.list.append(file)
+            self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
+            return
+        else:
+            print(f'[cmd][QUERY] unknown query received')
+            self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
+            return
+
+    def _get_query_from_interest(self, int_name):
+        query = int_name[len(self.repo_prefix):]
+        if query[0:len(self.normal_serving_comp)] == self.normal_serving_comp:
+            return query[len(self.normal_serving_comp):]
+        else:
+            return query[(len(self.personal_serving_comp)+len("/" + self.session_id)):]

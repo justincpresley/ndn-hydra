@@ -132,9 +132,9 @@ class GlobalView:
 
     def get_session(self, session_id: str):
         sql = """
-        SELECT DISTINCT 
-            id, node_name, expire_at, favor, state_vector, is_expired 
-        FROM 
+        SELECT DISTINCT
+            id, node_name, expire_at, favor, state_vector, is_expired
+        FROM
             sessions
         WHERE
             id = ?
@@ -155,16 +155,16 @@ class GlobalView:
     def get_sessions(self, including_expired: bool = False):
         if including_expired:
             sql = """
-            SELECT DISTINCT 
+            SELECT DISTINCT
                 id, node_name, expire_at, favor, state_vector, is_expired
-            FROM 
+            FROM
                 sessions
             """
         else:
             sql = """
-            SELECT DISTINCT 
+            SELECT DISTINCT
                 id, node_name, expire_at, favor, state_vector, is_expired
-            FROM 
+            FROM
                 sessions
             WHERE
                 is_expired = 0
@@ -184,8 +184,8 @@ class GlobalView:
 
     def get_sessions_expired_by(self, timestamp: int):
         sql = """
-        SELECT DISTINCT 
-            id, node_name, expire_at, favor, state_vector, is_expired 
+        SELECT DISTINCT
+            id, node_name, expire_at, favor, state_vector, is_expired
         FROM
             sessions
         WHERE
@@ -228,13 +228,13 @@ class GlobalView:
         self.__execute_sql_qmark(sql, (expire_at, favor, state_vector, session_id))
 
     def expire_session(self, session_id: str):
-        
+
         # stored_by
         sql_stored_by = """
         DELETE FROM stored_by WHERE session_id = ?
         """
         self.__execute_sql_qmark(sql_stored_by, (session_id, ))
-        
+
         # backuped_by
         sql_get_backups = """
         SELECT insertion_id, session_id
@@ -272,9 +272,9 @@ class GlobalView:
 
     def get_insertion(self, insertion_id: str):
         sql = """
-        SELECT DISTINCT 
+        SELECT DISTINCT
             id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted, digests
-        FROM 
+        FROM
             insertions
         WHERE
             id = ?
@@ -302,16 +302,16 @@ class GlobalView:
     def get_insertions(self, including_deleted: bool = False):
         if including_deleted:
             sql = """
-            SELECT DISTINCT 
+            SELECT DISTINCT
                 id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted, digests
-            FROM 
+            FROM
                 insertions
             """
         else:
             sql = """
-            SELECT DISTINCT 
+            SELECT DISTINCT
                 id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted, digests
-            FROM 
+            FROM
                 insertions
             WHERE
                 is_deleted = 0
@@ -340,7 +340,7 @@ class GlobalView:
         sql = """
         SELECT DISTINCT
             id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted, digests
-        FROM 
+        FROM
             insertions
         WHERE
             file_name = ? AND
@@ -393,7 +393,7 @@ class GlobalView:
         # # TODO(may not needed, check if there are insertions with the same file_name and same sequence_number)
 
         sql = """
-        INSERT OR IGNORE INTO insertions 
+        INSERT OR IGNORE INTO insertions
             (id, file_name, sequence_number, desired_copies, packets, size, origin_session_id, fetch_path, state_vector, is_deleted, digests)
         VALUES
             (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
@@ -406,7 +406,7 @@ class GlobalView:
         DELETE FROM stored_by WHERE insertion_id = ?
         """
         self.__execute_sql_qmark(sql_stored_by, (insertion_id, ))
-        
+
         # backuped_by
         sql_backuped_by = """
         DELETE FROM backuped_by WHERE insertion_id = ?
@@ -474,14 +474,14 @@ class GlobalView:
             INSERT OR IGNORE INTO backuped_by
                 (insertion_id, session_id, rank, nonce)
             VALUES
-                (?, ?, ?, ?) 
+                (?, ?, ?, ?)
             """
             self.__execute_sql_qmark(sql_add_backup, (insertion_id, backup[0], rank, backup[1]))
 
     def add_backup(self, insertion_id: str, session_id: str, rank: int, nonce: str):
         # delete all backups with larger rank value
         sql_delete_backuped_by = """
-        DELETE FROM backuped_by 
+        DELETE FROM backuped_by
         WHERE (insertion_id = ?) AND rank >= ?
         """
         self.__execute_sql_qmark(sql_delete_backuped_by, (insertion_id, rank))
@@ -490,7 +490,7 @@ class GlobalView:
         INSERT OR IGNORE INTO backuped_by
             (insertion_id, session_id, rank, nonce)
         VALUES
-            (?, ?, ?, ?) 
+            (?, ?, ?, ?)
         """
         self.__execute_sql_qmark(sql_add_backup, (insertion_id, session_id, rank, nonce))
 
