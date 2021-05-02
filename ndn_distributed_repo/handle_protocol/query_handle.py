@@ -88,7 +88,20 @@ class QueryHandle(object):
             return
         elif querytype == "prefix":
             print(f'[cmd][QUERY] query received: prefix')
-            self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
+            insertions = self.global_view.get_insertions()
+            prefix = query[7:]
+            filelist = FileList()
+            filelist.list = []
+            for index in range(len(insertions)):
+                if Name.is_prefix(Name.from_str(prefix), insertions[index]["file_name"]):
+                    file = File()
+                    file.file_name = insertions[index]["file_name"]
+                    file.desired_copies = insertions[index]["desired_copies"]
+                    file.packets = insertions[index]["packets"]
+                    file.digests = insertions[index]["digests"]
+                    file.size = insertions[index]["size"]
+                    filelist.list.append(file)
+            self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
             return
         else:
             print(f'[cmd][QUERY] unknown query received')

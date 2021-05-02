@@ -72,6 +72,18 @@ class QueryClient(object):
                      print(f'File Does Not Exists in The Repo')
                  return
              elif querytype == "prefix":
+                 filelist = FileList.parse(content)
+                 counter = 1
+                 if filelist.list:
+                     print(f'List of All Files with prefix {Name.to_str(query[1:])}')
+                     for file in filelist.list:
+                         print(f'File {counter} meta-info')
+                         print(f'\tfile_name: {Name.to_str(file.file_name)}')
+                         print(f'\tdesired_copies: {file.desired_copies}')
+                         print(f'\tsize: {file.size}')
+                         counter = counter + 1
+                 else:
+                     print(f'No files inserted in the remote repo with prefix {Name.to_str(query[1:])}.')
                  return
              else:
                  print("Client does not know that query.")
