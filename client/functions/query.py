@@ -34,7 +34,7 @@ class QueryClient(object):
       if not sid:
           named_query = self.repo_prefix + [Component.from_str("query")] + query
       else:
-          named_query = self.repo_prefix + [Component.from_str("sid-query")] + [Component.from_str(sid)] + query
+          named_query = self.repo_prefix + [Component.from_str("sid")] + [Component.from_str(sid)] + [Component.from_str("query")] + query
 
       try:
           data_name, meta_info, content = await self.app.express_interest(named_query, can_be_prefix=True, must_be_fresh=True, lifetime=3000)

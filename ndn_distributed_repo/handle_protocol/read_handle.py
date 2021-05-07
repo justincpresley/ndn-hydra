@@ -25,11 +25,11 @@ class ReadHandle(object):
         self.session_id = config['session_id']
         self.repo_prefix = config['repo_prefix']
 
-        self.normal_serving_comp = "/fetch"
-        self.personal_serving_comp = "/sid-fetch"
+        self.command_comp = "/fetch"
+        self.sid_comp = "/sid"
 
-        self.listen(Name.from_str(self.repo_prefix + self.normal_serving_comp))
-        self.listen(Name.from_str(self.repo_prefix + self.personal_serving_comp  + "/" + self.session_id))
+        self.listen(Name.from_str(self.repo_prefix + self.command_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.sid_comp  + "/" + self.session_id + self.command_comp))
 
     def listen(self, prefix):
         """
@@ -86,7 +86,7 @@ class ReadHandle(object):
                 print(f'[cmd][FETCH] linked to another node in the repo')
 
             # create a link to a node who has the content
-            new_name = self.repo_prefix + self.personal_serving_comp + "/" + best_id + file_name
+            new_name = self.repo_prefix + self.sid_comp + "/" + best_id + self.command_comp + file_name
             link_content = bytes(new_name.encode())
             final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)
@@ -95,10 +95,10 @@ class ReadHandle(object):
 
     def _get_file_name_from_interest(self, int_name):
         file_name = int_name[len(self.repo_prefix):]
-        if file_name[0:len(self.normal_serving_comp)] == self.normal_serving_comp:
-            return file_name[len(self.normal_serving_comp):]
+        if file_name[0:len(self.sid_comp)] == self.sid_comp:
+            return file_name[(len(self.sid_comp)+len("/" + self.session_id)+len(self.command_comp)):]
         else:
-            return file_name[(len(self.personal_serving_comp)+len("/" + self.session_id)):]
+            return file_name[(len(self.command_comp)):]
 
     def _best_id_for_file(self, file_name: str):
         file_info = self.global_view.get_insertion_by_file_name(file_name)
