@@ -22,11 +22,11 @@ class QueryHandle(object):
         self.session_id = config['session_id']
         self.repo_prefix = config['repo_prefix']
 
-        self.normal_serving_comp = "/query"
-        self.personal_serving_comp = "/sid-query"
+        self.command_comp = "/query"
+        self.sid_comp = "/sid"
 
-        self.listen(Name.from_str(self.repo_prefix + self.normal_serving_comp))
-        self.listen(Name.from_str(self.repo_prefix + self.personal_serving_comp  + "/" + self.session_id))
+        self.listen(Name.from_str(self.repo_prefix + self.command_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.sid_comp  + "/" + self.session_id + self.command_comp))
 
     def listen(self, prefix):
         """
@@ -110,7 +110,7 @@ class QueryHandle(object):
 
     def _get_query_from_interest(self, int_name):
         query = int_name[len(self.repo_prefix):]
-        if query[0:len(self.normal_serving_comp)] == self.normal_serving_comp:
-            return query[len(self.normal_serving_comp):]
+        if query[0:len(self.sid_comp)] == self.sid_comp:
+            return query[(len(self.sid_comp)+len("/" + self.session_id)+len(self.command_comp)):]
         else:
-            return query[(len(self.personal_serving_comp)+len("/" + self.session_id)):]
+            return query[(len(self.command_comp)):]
