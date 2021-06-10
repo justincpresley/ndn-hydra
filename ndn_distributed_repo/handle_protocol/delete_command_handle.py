@@ -13,6 +13,7 @@ from ..utils import PubSub
 from ..repo_messages.remove import RemoveMessageBodyTlv
 from ..repo_messages.message import MessageTlv, MessageTypes
 from ..handle_messages import MessageHandle
+from ndn_python_repo import Storage
 
 class DeleteCommandHandle(ProtocolHandle):
     """
@@ -20,7 +21,7 @@ class DeleteCommandHandle(ProtocolHandle):
     in the database.
     TODO: Add validator
     """
-    def __init__(self, app: NDNApp, data_storage: DataStorage, pb: PubSub, config: dict,
+    def __init__(self, app: NDNApp, data_storage: Storage, pb: PubSub, config: dict,
                 message_handle: MessageHandle, global_view: GlobalView):
         """
         :param app: NDNApp.

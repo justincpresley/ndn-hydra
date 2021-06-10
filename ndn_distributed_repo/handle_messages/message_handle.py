@@ -4,16 +4,16 @@ import time
 import random
 from typing import Dict
 from ndn.app import NDNApp
-from ndn.encoding import Name
+from ndn.encoding import Name, Component
+from ndn.types import InterestNack, InterestTimeout
 from ndn.svs import SVSync
 from ndn_python_repo import Storage
-from ndn_python_repo import SqliteStorage
 from ..global_view.global_view import GlobalView
-from ..data_storage import DataStorage
 from ..repo_messages import *
+from ..utils import concurrent_fetcher
 
 class MessageHandle:
-    def __init__(self, app: NDNApp, config: Dict, global_view: GlobalView, data_storage: DataStorage):
+    def __init__(self, app: NDNApp, config: Dict, global_view: GlobalView, data_storage: Storage):
         self.app = app
         self.config = config
         self.global_view = global_view
@@ -97,7 +97,7 @@ class MessageHandle:
             deficit = underreplicated_insertion['desired_copies'] - len(underreplicated_insertion['stored_bys'])
             for backuped_by in underreplicated_insertion['backuped_bys']:
                 if (backuped_by['session_id'] == self.config['session_id']) and (backuped_by['rank'] < deficit):
-                    self.data_storage.add_metainfos(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
+                    self.fetch_file(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
 
 
                     # # generate store msg and send
@@ -184,35 +184,6 @@ class MessageHandle:
             )
             print(val)
 
-    def store(self):
-        announcable_insertion_ids = self.data_storage.get_announcable_insertions()
-        for announcable_insertion_id in announcable_insertion_ids:
-            insertion = self.global_view.get_insertion(announcable_insertion_id)
-            if len(insertion['stored_bys']) < insertion['desired_copies']:
-                # store msg
-                self.data_storage.annouce_insertion(announcable_insertion_id)
-                expire_at = int(time.time()+(self.config['period']*2))
-                favor = 1.85
-                store_message_body = StoreMessageBodyTlv()
-                store_message_body.session_id = self.config['session_id'].encode()
-                store_message_body.node_name = self.config['node_name'].encode()
-                store_message_body.expire_at = expire_at
-                store_message_body.favor = str(favor).encode()
-                store_message_body.insertion_id = announcable_insertion_id.encode()
-                # store msg
-                store_message = MessageTlv()
-                store_message.header = MessageTypes.STORE
-                store_message.body = store_message_body.encode()
-                # apply globalview and send msg thru SVS
-                # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
-
-                self.global_view.store_file(announcable_insertion_id, self.config['session_id'])
-                self.svs.publishData(store_message.encode())
-                val = "[MSG][STORE]*  sid={sid};iid={iid}".format(
-                    sid=self.config['session_id'],
-                    iid=announcable_insertion_id
-                )
-                print(val)
 
     def periodic(self):
         # print('periodic')
@@ -220,7 +191,7 @@ class MessageHandle:
         self.heartbeat()
         self.detect_expired_sessions()
         self.claim()
-        self.store()
+        # self.store()
 
         # sessions = self.global_view.get_sessions()
         # insertions = self.global_view.get_insertions()
@@ -241,6 +212,33 @@ class MessageHandle:
             # print(val)
         # print("--")
 
+    def store(self, insertion_id: str):
+        insertion = self.global_view.get_insertion(insertion_id)
+        if len(insertion['stored_bys']) < insertion['desired_copies']:
+            # store msg
+            expire_at = int(time.time()+(self.config['period']*2))
+            favor = 1.85
+            store_message_body = StoreMessageBodyTlv()
+            store_message_body.session_id = self.config['session_id'].encode()
+            store_message_body.node_name = self.config['node_name'].encode()
+            store_message_body.expire_at = expire_at
+            store_message_body.favor = str(favor).encode()
+            store_message_body.insertion_id = insertion_id.encode()
+            # store msg
+            store_message = MessageTlv()
+            store_message.header = MessageTypes.STORE
+            store_message.body = store_message_body.encode()
+            # apply globalview and send msg thru SVS
+            # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
+
+            self.global_view.store_file(insertion_id, self.config['session_id'])
+            self.svs.publishData(store_message.encode())
+            val = "[MSG][STORE]*  sid={sid};iid={iid}".format(
+                sid=self.config['session_id'],
+                iid=insertion_id
+            )
+            print(val)
+
     def svs_missing_callback(self, missing_list):
         aio.ensure_future(self.on_missing_svs_messages(missing_list))
 
@@ -255,10 +253,44 @@ class MessageHandle:
                 seq = i.lowSeqNum
                 message = Message(nid, seq, message_bytes)
                 message_body = message.get_message_body()
-                aio.ensure_future(message_body.apply(self.global_view, self.data_storage, self.svs, self.config))
+                aio.ensure_future(message_body.apply(self.global_view, self.fetch_file, self.svs, self.config))
                 # print('fetched GM {}:{}'.format(nid, seq))
                 i.lowSeqNum = i.lowSeqNum + 1
 
     def svs_sending_callback(self, expire_at: int):
         self.expire_at = expire_at
 
+    def fetch_file(self, insertion_id: str, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+        aio.ensure_future(self.async_fetch(insertion_id, file_name, packets, digests, fetch_path))
+
+    async def async_fetch(self, insertion_id: str, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+        if packets > 1:
+            inserted_packets = await self.fetch_segmented_file(file_name, packets, fetch_path)
+            if inserted_packets == packets:
+                self.store(insertion_id)
+        elif packets == 1:
+            inserted_packets = await self.fetch_single_file(file_name, fetch_path)
+            if inserted_packets == packets:
+                self.store(insertion_id)
+
+    async def fetch_segmented_file(self, file_name: str, packets: int, fetch_path: str):
+        semaphore = aio.Semaphore(10)
+        fetched_segments = 0
+        async for (_, _, _, data_bytes, key) in concurrent_fetcher(self.app, fetch_path, file_name, 0, packets-1, semaphore):
+            #TODO: check digest
+            self.data_storage.put_data_packet(key, data_bytes)
+            fetched_segments += 1
+        return fetched_segments
+
+    async def fetch_single_file(self, file_name: str, fetch_path: str):
+        int_name = int_name = Name.normalize(fetch_path) + [Component.from_segment(0)]
+        key = Name.normalize(file_name) + [Component.from_segment(0)]
+        try:
+            data_name, _, _, data_bytes = await self.app.express_interest(
+                int_name, need_raw_packet=True, can_be_prefix=False, lifetime=1000)
+        except InterestNack as e:
+            return 0
+        except InterestTimeout:
+            return 0
+        self.data_storage.put_data_packet(key, data_bytes)
+        return 1

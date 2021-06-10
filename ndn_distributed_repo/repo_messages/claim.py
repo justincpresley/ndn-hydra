@@ -1,4 +1,5 @@
 import copy
+from typing import Callable
 from ndn_distributed_repo.data_storage.data_storage import DataStorage
 import time
 from ndn_distributed_repo.global_view.global_view import GlobalView
@@ -40,7 +41,7 @@ class ClaimMessageBody(MessageBodyBase):
         super(ClaimMessageBody, self).__init__(nid, seq)
         self.message_body = ClaimMessageBodyTlv.parse(raw_bytes)
 
-    async def apply(self, global_view: GlobalView, data_storage: DataStorage, svs, config):
+    async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
         session_id = self.message_body.session_id.tobytes().decode()
         node_name = self.message_body.node_name.tobytes().decode()
         expire_at = self.message_body.expire_at

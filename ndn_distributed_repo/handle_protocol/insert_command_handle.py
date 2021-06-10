@@ -10,18 +10,18 @@ from ndn.encoding import Name, NonStrictName, Component, DecodeError
 from . import ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
 from ..utils import PubSub
-from ..data_storage import DataStorage
 from ..global_view import GlobalView
 from ..repo_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageBodyTlv
 from ..repo_messages.message import MessageTlv, MessageTypes
 from ..handle_messages import MessageHandle
+from ndn_python_repo import Storage
 
 class InsertCommandHandle(ProtocolHandle):
     """
     InsertCommandHandle processes insert command handles, and deletes corresponding data stored
     in the database.
     """
-    def __init__(self, app: NDNApp, data_storage: DataStorage, pb: PubSub, config: dict,
+    def __init__(self, app: NDNApp, data_storage: Storage, pb: PubSub, config: dict,
                 message_handle: MessageHandle, global_view: GlobalView):
         """
         :param app: NDNApp.
@@ -35,7 +35,6 @@ class InsertCommandHandle(ProtocolHandle):
         self.prefix = None
         self.message_handle = message_handle
         self.global_view = global_view
-        self.data_storage = data_storage
 
     async def listen(self, prefix: NonStrictName):
         """
@@ -169,7 +168,7 @@ class InsertCommandHandle(ProtocolHandle):
         )
         if pickself:
             # self.global_view.store_file(insertion_id, self.config['session_id'])
-            self.data_storage.add_metainfos(insertion_id, Name.to_str(file_name), packets, digests, Name.to_str(fetch_path))
+            self.message_handle.fetch_file(insertion_id, Name.to_str(file_name), packets, digests, Name.to_str(fetch_path))
         self.global_view.set_backups(insertion_id, backup_list)
         self.message_handle.svs.publishData(add_message.encode())
         bak = ""

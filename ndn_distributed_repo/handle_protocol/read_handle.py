@@ -12,7 +12,7 @@ class ReadHandle(object):
     """
     ReadHandle processes ordinary interests, and return corresponding data if exists.
     """
-    def __init__(self, app: NDNApp, data_storage: DataStorage, global_view: GlobalView, config: dict):
+    def __init__(self, app: NDNApp, data_storage: Storage, global_view: GlobalView, config: dict):
         """
         :param app: NDNApp.
         :param data_storage: Storage.

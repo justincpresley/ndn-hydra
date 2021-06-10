@@ -89,7 +89,7 @@ class RepoNodeThread(Thread):
         app = NDNApp()
 
         # data_storage = SqliteStorage(self.config['data_storage_path']+"abc.db")
-        data_storage = DataStorage(self.config['data_storage_path'])
+        data_storage = SqliteStorage(self.config['data_storage_path'])
         global_view = GlobalView(self.config['global_view_path'])
         pb = PubSub(app)
 
@@ -110,23 +110,23 @@ class RepoNodeThread(Thread):
         except FileNotFoundError:
             print('Error: could not connect to NFD.')
 
-class FileFetchingThread(Thread):
-    def __init__(self, config: Dict):
-        Thread.__init__(self)
-        self.config = config
+# class FileFetchingThread(Thread):
+#     def __init__(self, config: Dict):
+#         Thread.__init__(self)
+#         self.config = config
 
-    def run(self) -> None:
-        loop = aio.new_event_loop()
-        aio.set_event_loop(loop)
+#     def run(self) -> None:
+#         loop = aio.new_event_loop()
+#         aio.set_event_loop(loop)
 
-        app = NDNApp()
-        data_storage = DataStorage(self.config['data_storage_path'])
-        data_storage_handle = DataStorageHandle(app, self.config, data_storage)
+#         app = NDNApp()
+#         data_storage = DataStorage(self.config['data_storage_path'])
+#         data_storage_handle = DataStorageHandle(app, self.config, data_storage)
 
-        try:
-            app.run_forever(after_start=data_storage_handle.start())
-        except FileNotFoundError:
-            print('Error: could not connect to NFD.')
+#         try:
+#             app.run_forever(after_start=data_storage_handle.start())
+#         except FileNotFoundError:
+#             print('Error: could not connect to NFD.')
 
 
 
@@ -146,7 +146,6 @@ def main() -> int:
     config.update(cmd_args)
 
     RepoNodeThread(config).start()
-    FileFetchingThread(config).start()
     return 0
 
 
