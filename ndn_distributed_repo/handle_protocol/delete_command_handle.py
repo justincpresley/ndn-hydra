@@ -12,7 +12,7 @@ from ..protocol.repo_commands import RepoCommand
 from ..utils import PubSub
 from ..repo_messages.remove import RemoveMessageBodyTlv
 from ..repo_messages.message import MessageTlv, MessageTypes
-from ..handle_messages import MessageHandle
+from ..main import MainLoop
 from ndn_python_repo import Storage
 
 class DeleteCommandHandle(ProtocolHandle):
@@ -22,18 +22,18 @@ class DeleteCommandHandle(ProtocolHandle):
     TODO: Add validator
     """
     def __init__(self, app: NDNApp, data_storage: Storage, pb: PubSub, config: dict,
-                message_handle: MessageHandle, global_view: GlobalView):
+                main_loop: MainLoop, global_view: GlobalView):
         """
         :param app: NDNApp.
         :param data_storage: Storage.
         :param pb: PubSub.
         :param config: All config Info.
-        :param message_handle: SVS interface, Group Messages.
+        :param main_loop: SVS interface, Group Messages.
         :param global_view: Global View.
         """
         super(DeleteCommandHandle, self).__init__(app, data_storage, pb, config)
         self.prefix = None
-        self.message_handle = message_handle
+        self.main_loop = main_loop
         self.global_view = global_view
         #self.register_root = config['repo_config']['register_root']
 
@@ -92,7 +92,7 @@ class DeleteCommandHandle(ProtocolHandle):
         remove_message.header = MessageTypes.REMOVE
         remove_message.body = remove_message_body.encode()
         self.global_view.delete_insertion(insertion_id)
-        self.message_handle.svs.publishData(remove_message.encode())
+        self.main_loop.svs.publishData(remove_message.encode())
         val = "[MSG][REMOVE]* iid={iid}".format(
             iid=insertion_id
         )

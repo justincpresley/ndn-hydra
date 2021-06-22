@@ -18,7 +18,7 @@ def process_cmd_opts():
     Parse, process, and return cmd options.
     """
     # def print_version():
-    #     pkg_name = 'ndn-distributed-repo'
+    #     pkg_name = 'ndn-hydra'
     #     version = pkg_resources.require(pkg_name)[0].version
     #     print(pkg_name + ' ' + version)
 
@@ -38,13 +38,13 @@ def process_cmd_opts():
 
     def parse_cmd_opts():
         # Command Line Parser
-        parser = argparse.ArgumentParser(add_help=False,description="ndn-distributed-repo")
+        parser = argparse.ArgumentParser(add_help=False,description="ndn-hydra")
         requiredArgs = parser.add_argument_group("required arguments")
         optionalArgs = parser.add_argument_group("optional arguments")
         informationArgs = parser.add_argument_group("information arguments")
 
         # Adding all Command Line Arguments
-        requiredArgs.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True,help="repo (group) prefix. Example: \"/samplerepo\"")
+        requiredArgs.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True,help="repo (group) prefix. Example: \"/hydra\"")
         requiredArgs.add_argument("-n", "--nodename",action="store",dest="node_name",required=True,help="node name. Example: \"node01\"")
         requiredArgs.add_argument("-s", "--sessionid",action="store",dest="session_id",required=True,help="id of this session. Example: \"2c4f\"")
 
@@ -78,7 +78,7 @@ async def listen(repo_prefix: Name, pb: PubSub, insert_handle: InsertCommandHand
     await insert_handle.listen(repo_prefix)
     await delete_handle.listen(repo_prefix)
 
-class RepoNodeThread(Thread):
+class HydraSessionThread(Thread):
     def __init__(self, config: Dict):
         Thread.__init__(self)
         self.config = config
@@ -93,20 +93,20 @@ class RepoNodeThread(Thread):
         global_view = GlobalView(self.config['global_view_path'])
         pb = PubSub(app)
 
-        # messages (svs)
-        message_handle = MessageHandle(app, self.config, global_view, data_storage)
+        # main_loop (svs)
+        main_loop = MainLoop(app, self.config, global_view, data_storage)
 
-        # protocol (commands & queries)
+        # protocol (reads, commands & queries)
         read_handle = ReadHandle(app, data_storage, global_view, self.config)
-        insert_handle = InsertCommandHandle(app, data_storage, pb, self.config, message_handle, global_view)
-        delete_handle = DeleteCommandHandle(app, data_storage, pb, self.config, message_handle, global_view)
+        insert_handle = InsertCommandHandle(app, data_storage, pb, self.config, main_loop, global_view)
+        delete_handle = DeleteCommandHandle(app, data_storage, pb, self.config, main_loop, global_view)
         query_handle = QueryHandle(app, global_view, self.config)
 
         # start listening
         aio.ensure_future(listen(Name.normalize(self.config['repo_prefix']), pb, insert_handle, delete_handle))
 
         try:
-            app.run_forever(after_start=message_handle.start())
+            app.run_forever(after_start=main_loop.start())
         except FileNotFoundError:
             print('Error: could not connect to NFD.')
 
@@ -145,7 +145,7 @@ def main() -> int:
     config = default_config.copy()
     config.update(cmd_args)
 
-    RepoNodeThread(config).start()
+    HydraSessionThread(config).start()
     return 0
 
 

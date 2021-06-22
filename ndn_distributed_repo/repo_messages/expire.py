@@ -51,8 +51,6 @@ class ExpireMessageBody(MessageBodyBase):
 
                     fetch_file(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
 
-
-
                     # # generate store msg and send
                     # # store tlv
                     # expire_at = int(time.time()+(config['period']*2))

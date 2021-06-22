@@ -12,7 +12,7 @@ from ..global_view.global_view import GlobalView
 from ..repo_messages import *
 from ..utils import concurrent_fetcher
 
-class MessageHandle:
+class MainLoop:
     def __init__(self, app: NDNApp, config: Dict, global_view: GlobalView, data_storage: Storage):
         self.app = app
         self.config = config
