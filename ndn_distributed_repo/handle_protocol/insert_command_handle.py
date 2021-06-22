@@ -86,8 +86,6 @@ class InsertCommandHandle(ProtocolHandle):
 
         sessions = self.global_view.get_sessions()
 
-        # print("{0} sessions".format(len(sessions)))
-
         if len(sessions) < (desired_copies * 2):
             print("not enough node sessions") # TODO: notify the client?
             return
