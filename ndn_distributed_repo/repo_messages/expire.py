@@ -35,7 +35,7 @@ class ExpireMessageBody(MessageBodyBase):
             sid=session_id,
             esid=expired_session_id
         )
-        print(val)
+        self.logger.info(val)
         global_view.expire_session(expired_session_id)
         # am I at the top of any insertion's backup list?
         underreplicated_insertions = global_view.get_underreplicated_insertions()
@@ -46,7 +46,7 @@ class ExpireMessageBody(MessageBodyBase):
                 if (backuped_by['session_id'] == config['session_id']) and (backuped_by['rank'] < deficit):
 
                     digests = underreplicated_insertion['digests']
-                    print(type(digests[0]))
+                    self.logger.debug(type(digests[0]))
 
                     fetch_file(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
 
@@ -72,7 +72,7 @@ class ExpireMessageBody(MessageBodyBase):
                     #     sid=config['session_id'],
                     #     iid=underreplicated_insertion['id']
                     # )
-                    # print(val)
+                    # self.logger.info(val)
         # update session
         global_view.update_session(session_id, node_name, expire_at, favor, self.seq)
         return

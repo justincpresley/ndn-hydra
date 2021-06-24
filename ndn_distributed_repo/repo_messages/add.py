@@ -90,7 +90,7 @@ class AddMessageBody(MessageBodyBase):
             slf=1 if is_stored_by_origin else 0,
             bak=bak
         )
-        print(val)
+        self.logger.info(val)
         global_view.add_insertion(
             insertion_id,
             Name.to_str(file_name),
@@ -150,7 +150,7 @@ class AddMessageBody(MessageBodyBase):
             #     sid=config['session_id'],
             #     iid=insertion_id
             # )
-            # print(val)
+            # self.logger.info(val)
         # update session
         global_view.update_session(session_id, node_name, expire_at, favor, self.seq)
         return

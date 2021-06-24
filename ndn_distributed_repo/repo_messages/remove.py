@@ -33,12 +33,12 @@ class RemoveMessageBody(MessageBodyBase):
             sid=session_id,
             iid=insertion_id
         )
-        print(val)
+        self.logger.info(val)
         # if insertion
         insertion = global_view.get_insertion(insertion_id)
         if (insertion == None) or (insertion['is_deleted'] == True):
             # add store to pending_stores
-            print('nothing to remove')
+            self.logger.warning('nothing to remove')
         else:
             global_view.delete_insertion(insertion_id)
             # TODO: remove from data_storage

@@ -1,6 +1,7 @@
 import argparse
 import asyncio as aio
 import logging
+import os
 # from ndn_distributed_repo.handle_data_storage.data_storage_handle import DataStorageHandle
 # from ndn_distributed_repo.data_storage.data_storage import DataStorage
 # from ndn_distributed_repo.main_loop.main_loop import MainLoop
@@ -58,9 +59,11 @@ def process_cmd_opts():
         args["repo_prefix"] = process_prefix(vars.repo_prefix)
         args["node_name"] = process_others(vars.node_name)
         args["session_id"] = process_others(vars.session_id)
-        args["data_storage_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/data.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
-        args["global_view_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/global_view.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
-        args["svs_storage_path"] = "~/.ndn/repo{repo_prefix}/{session_id}/svs.db".format(repo_prefix=args["repo_prefix"], session_id=args["session_id"])
+        workpath = "{home}/.ndn/repo{repo_prefix}/{session_id}".format(home=os.path.expanduser("~"), repo_prefix=args["repo_prefix"], session_id=args["session_id"])
+        args["logging_path"] = "{workpath}/session.log".format(workpath=workpath)
+        args["data_storage_path"] = "{workpath}/data.db".format(workpath=workpath)
+        args["global_view_path"] = "{workpath}/global_view.db".format(workpath=workpath)
+        args["svs_storage_path"] = "{workpath}/svs.db".format(workpath=workpath)
 
         return args
 
@@ -86,6 +89,25 @@ class HydraSessionThread(Thread):
         self.config = config
 
     def run(self) -> None:
+
+        if len(os.path.dirname(self.config['logging_path'])) > 0 and not os.path.exists(os.path.dirname(self.config['logging_path'])):
+            try:
+                os.makedirs(os.path.dirname(self.config['logging_path']))
+            except PermissionError:
+                raise PermissionError("Could not create directory: {}".format(self.config['logging_path'])) from None
+            except FileExistsError:
+                pass
+
+        logging.basicConfig(level=logging.INFO,
+                            format='%(created)f  %(levelname)-8s  %(message)s',
+                            filename=self.config['logging_path'],
+                            filemode='w')
+
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        # logging.getLogger().addHandler(console)
+
+
         loop = aio.new_event_loop()
         aio.set_event_loop(loop)
         app = NDNApp()
@@ -121,6 +143,7 @@ def main() -> int:
         'data_storage_path': None,
         'global_view_path': None,
         'svs_storage_path': None,
+        'logging_path': None,
         #'svs_cache_others': True,
 		'period': 20
     }

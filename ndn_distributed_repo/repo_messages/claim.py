@@ -58,14 +58,14 @@ class ClaimMessageBody(MessageBodyBase):
                 sid=claimer_session_id,
                 iid=insertion_id
             )
-            print(val)
+            self.logger.info(val)
             global_view.add_backup(insertion_id, claimer_session_id, rank, claimer_nonce)
         else:
             val = "[MSG][CLAIM.R] sid={sid};iid={iid}".format(
                 sid=claimer_session_id,
                 iid=insertion_id
             )
-            print(val)
+            self.logger.info(val)
             if authorizer_session_id == config['session_id']:
                 from .message import MessageTlv, MessageTypes
                 commit = False
@@ -94,7 +94,7 @@ class ClaimMessageBody(MessageBodyBase):
                         sid=claimer_session_id,
                         iid=insertion_id
                     )
-                    print(val)
+                    self.logger.info(val)
         # update session
         global_view.update_session(session_id, node_name, expire_at, favor, self.seq)
         return

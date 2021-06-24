@@ -74,19 +74,19 @@ class InsertCommandHandle(ProtocolHandle):
         sequence_number = cmd.sequence_number
         fetch_path = cmd.fetch_path.prefix
 
-        print("[cmd][INSERT] file {}".format(Name.to_str(file_name)))
+        self.logger.info("[cmd][INSERT] file {}".format(Name.to_str(file_name)))
 
         # TODO: check duplicate sequence number
 
         # are there enough sessions?
         if desired_copies == 0:
-            print("desired_copies is 0")
+            self.logger.warning("desired_copies is 0")
             return
 
         sessions = self.global_view.get_sessions()
 
         if len(sessions) < (desired_copies * 2):
-            print("not enough node sessions") # TODO: notify the client?
+            self.logger.warning("not enough node sessions") # TODO: notify the client?
             return
 
         # generate unique insertion_id
@@ -182,7 +182,7 @@ class InsertCommandHandle(ProtocolHandle):
             slf=0,
             bak=bak
         )
-        print(val)
+        self.logger.info(val)
 
 
 

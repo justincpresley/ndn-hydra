@@ -1,4 +1,5 @@
 import asyncio as aio
+import logging
 import secrets
 import time
 import random
@@ -21,6 +22,7 @@ class MainLoop:
         self.svs_storage = SqliteStorage(self.config['svs_storage_path'])
         self.svs = None
         self.expire_at = 0
+        self.logger = logging.getLogger()
 
     # the main coroutine
     async def start(self):
@@ -89,7 +91,7 @@ class MainLoop:
                 sid=self.config['session_id'],
                 esid=expired_session['id']
             )
-            print(val)
+            self.logger.info(val)
 
         # am I at the top of any insertion's backup list?
         underreplicated_insertions = self.global_view.get_underreplicated_insertions()
@@ -110,8 +112,8 @@ class MainLoop:
 
             if random.random() < 0.618:
                 continue
-            print(json.dumps(backupable_insertion['stored_bys']))
-            print(json.dumps(backupable_insertion['backuped_bys']))
+            # print(json.dumps(backupable_insertion['stored_bys']))
+            # print(json.dumps(backupable_insertion['backuped_bys']))
             already_in = False
             for stored_by in backupable_insertion['stored_bys']:
                 if stored_by == self.config['session_id']:
@@ -158,7 +160,7 @@ class MainLoop:
                 sid=self.config['session_id'],
                 iid=backupable_insertion['id']
             )
-            print(val)
+            self.logger.info(val)
 
 
     def periodic(self):
@@ -185,7 +187,7 @@ class MainLoop:
         #         on=on,
         #         bck=bck
         #     )
-            # print(val)
+            # self.logger.info(val)
         # print("--")
 
     def store(self, insertion_id: str):
@@ -213,7 +215,7 @@ class MainLoop:
                 sid=self.config['session_id'],
                 iid=insertion_id
             )
-            print(val)
+            self.logger.info(val)
 
     def svs_missing_callback(self, missing_list):
         aio.ensure_future(self.on_missing_svs_messages(missing_list))
@@ -243,19 +245,22 @@ class MainLoop:
             packets=packets,
             fetch_path=fetch_path
         )
-        # print(val)
+        self.logger.info(val)
         aio.ensure_future(self.async_fetch(insertion_id, file_name, packets, digests, fetch_path))
 
     async def async_fetch(self, insertion_id: str, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
-        print(packets)
+        self.logger.debug(packets)
         if packets > 1:
             start = time.time()
             inserted_packets = await self.fetch_segmented_file(file_name, packets, fetch_path)
             if inserted_packets == packets:
                 end = time.time()
                 duration = end -start
-                print("duration:")
-                print(duration)
+                val = "[ACT][FETCHED]*pcks={packets};duration={duration}".format(
+                    packets=packets,
+                    duration=duration
+                )
+                self.logger.info(val)
                 self.store(insertion_id)
         elif packets == 1:
             inserted_packets = await self.fetch_single_file(file_name, fetch_path)

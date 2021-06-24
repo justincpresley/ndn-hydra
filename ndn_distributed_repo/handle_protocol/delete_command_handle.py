@@ -69,11 +69,11 @@ class DeleteCommandHandle(ProtocolHandle):
         file_name = cmd.file.file_name
         sequence_number = cmd.sequence_number
 
-        print("[cmd][DELETE] file {}".format(Name.to_str(file_name)))
+        self.logger.info("[cmd][DELETE] file {}".format(Name.to_str(file_name)))
 
         insertion = self.global_view.get_insertion_by_file_name(Name.to_str(file_name))
         if insertion == None:
-            print("file does not exist")
+            self.logger.warning("file does not exist")
             return
 
         insertion_id = insertion['id']
@@ -95,7 +95,7 @@ class DeleteCommandHandle(ProtocolHandle):
         val = "[MSG][REMOVE]* iid={iid}".format(
             iid=insertion_id
         )
-        print(val)
+        self.logger.info(val)
 
 
 

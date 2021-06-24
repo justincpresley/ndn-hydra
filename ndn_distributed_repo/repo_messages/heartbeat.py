@@ -32,7 +32,7 @@ class HeartbeatMessageBody(MessageBodyBase):
             exp=expire_at,
             fav=favor
         )
-        # print(val)
+        self.logger.debug(val)
         global_view.update_session(session_id, node_name, expire_at, favor, self.seq)
         # sessions = global_view.get_sessions()
         # print(json.dumps(sessions))
