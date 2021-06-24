@@ -1,10 +1,9 @@
 import asyncio as aio
 import logging
 from secrets import choice
-from ..data_storage import DataStorage
 from ..global_view import GlobalView
 from ndn.app import NDNApp
-from ndn.encoding import Name, tlv_var, ContentType, Component
+from ndn.encoding import Name, tlv_var, ContentType, Component, parse_data
 from ndn_python_repo import Storage
 
 
@@ -68,11 +67,34 @@ class ReadHandle(object):
                 print(f'[cmd][FETCH] serving data to client')
 
             # serve content from my storage
-            storage_content = self.data_storage.get_v(file_name + segment_comp)
+            # storage_content = self.data_storage.get_v(file_name + segment_comp)
+
+            
+
+            data_bytes = self.data_storage.get_data_packet(file_name + segment_comp, int_param.can_be_prefix)
+
+            
+
+
+
+            # print("fetch packet")
+            # print(file_name + segment_comp)
+            # print(data_bytes)
+
+            if data_bytes == None:
+                return
+            
+            logging.info(f'Read handle: serve data {Name.to_str(int_name)}')
+            _, _, content, _ = parse_data(data_bytes)
+            # print("serve"+file_name + segment_comp+"   "+Name.to_str(name))
             final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
-            self.app.put_data(int_name, content=storage_content, content_type=ContentType.BLOB, final_block_id=final_id)
-            logging.info(f'Read handle: served data {Name.to_str(int_name)}')
+            self.app.put_data(int_name, content=content, content_type=ContentType.BLOB, final_block_id=final_id)
             return
+
+            # final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
+            # self.app.put_data(int_name, content=storage_content, content_type=ContentType.BLOB, final_block_id=final_id)
+            # logging.info(f'Read handle: served data {Name.to_str(int_name)}')
+            # return
         elif best_id == None:
             if segment_comp == "/seg=0":
                 print(f'[cmd][FETCH] nacked client due to no file in repo')

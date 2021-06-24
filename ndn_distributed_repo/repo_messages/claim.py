@@ -1,6 +1,5 @@
 import copy
 from typing import Callable
-from ndn_distributed_repo.data_storage.data_storage import DataStorage
 import time
 from ndn_distributed_repo.global_view.global_view import GlobalView
 from ndn.encoding import *

@@ -1,8 +1,9 @@
 import argparse
 import asyncio as aio
 import logging
-from ndn_distributed_repo.handle_data_storage.data_storage_handle import DataStorageHandle
-from ndn_distributed_repo.data_storage.data_storage import DataStorage
+# from ndn_distributed_repo.handle_data_storage.data_storage_handle import DataStorageHandle
+# from ndn_distributed_repo.data_storage.data_storage import DataStorage
+# from ndn_distributed_repo.main_loop.main_loop import MainLoop
 from time import sleep
 from typing import Dict
 import pkg_resources
@@ -12,6 +13,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name
 from ndn_distributed_repo import *
 from ndn_python_repo import SqliteStorage
+
 
 def process_cmd_opts():
     """
@@ -110,25 +112,6 @@ class HydraSessionThread(Thread):
         except FileNotFoundError:
             print('Error: could not connect to NFD.')
 
-# class FileFetchingThread(Thread):
-#     def __init__(self, config: Dict):
-#         Thread.__init__(self)
-#         self.config = config
-
-#     def run(self) -> None:
-#         loop = aio.new_event_loop()
-#         aio.set_event_loop(loop)
-
-#         app = NDNApp()
-#         data_storage = DataStorage(self.config['data_storage_path'])
-#         data_storage_handle = DataStorageHandle(app, self.config, data_storage)
-
-#         try:
-#             app.run_forever(after_start=data_storage_handle.start())
-#         except FileNotFoundError:
-#             print('Error: could not connect to NFD.')
-
-
 
 def main() -> int:
     default_config = {
@@ -139,7 +122,7 @@ def main() -> int:
         'global_view_path': None,
         'svs_storage_path': None,
         #'svs_cache_others': True,
-		'period': 5
+		'period': 20
     }
     cmd_args = process_cmd_opts()
     config = default_config.copy()

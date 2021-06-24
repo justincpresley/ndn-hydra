@@ -2,12 +2,12 @@ import asyncio as aio
 import secrets
 import time
 import random
-from typing import Dict
+from typing import Dict, List
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component
 from ndn.types import InterestNack, InterestTimeout
 from ndn.svs import SVSync
-from ndn_python_repo import Storage
+from ndn_python_repo import Storage, SqliteStorage
 from ..global_view.global_view import GlobalView
 from ..repo_messages import *
 from ..utils import concurrent_fetcher
@@ -99,30 +99,6 @@ class MainLoop:
                 if (backuped_by['session_id'] == self.config['session_id']) and (backuped_by['rank'] < deficit):
                     self.fetch_file(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
 
-
-                    # # generate store msg and send
-                    # # store tlv
-                    # expire_at = int(time.time()+(self.config['period']*2))
-                    # favor = 1.85
-                    # store_message_body = StoreMessageBodyTlv()
-                    # store_message_body.session_id = self.config['session_id'].encode()
-                    # store_message_body.node_name = self.config['node_name'].encode()
-                    # store_message_body.expire_at = expire_at
-                    # store_message_body.favor = str(favor).encode()
-                    # store_message_body.insertion_id = underreplicated_insertion['id'].encode()
-                    # # store msg
-                    # store_message = MessageTlv()
-                    # store_message.header = MessageTypes.STORE
-                    # store_message.body = store_message_body.encode()
-                    # # apply globalview and send msg thru SVS
-                    # # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
-                    # self.global_view.store_file(underreplicated_insertion['id'], self.config['session_id'])
-                    # self.svs.publishData(store_message.encode())
-                    # val = "[MSG][STORE]+  sid={sid};iid={iid}".format(
-                    #     sid=self.config['session_id'],
-                    #     iid=underreplicated_insertion['id']
-                    # )
-                    # print(val)
 
     def claim(self):
         # TODO: possibility based on # active sessions and period
@@ -261,12 +237,25 @@ class MainLoop:
         self.expire_at = expire_at
 
     def fetch_file(self, insertion_id: str, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+        val = "[ACT][FETCH]*  iid={iid};file_name={file_name};pcks={packets};fetch_path={fetch_path}".format(
+            iid=insertion_id,
+            file_name=file_name,
+            packets=packets,
+            fetch_path=fetch_path
+        )
+        # print(val)
         aio.ensure_future(self.async_fetch(insertion_id, file_name, packets, digests, fetch_path))
 
     async def async_fetch(self, insertion_id: str, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+        print(packets)
         if packets > 1:
+            start = time.time()
             inserted_packets = await self.fetch_segmented_file(file_name, packets, fetch_path)
             if inserted_packets == packets:
+                end = time.time()
+                duration = end -start
+                print("duration:")
+                print(duration)
                 self.store(insertion_id)
         elif packets == 1:
             inserted_packets = await self.fetch_single_file(file_name, fetch_path)
@@ -276,9 +265,16 @@ class MainLoop:
     async def fetch_segmented_file(self, file_name: str, packets: int, fetch_path: str):
         semaphore = aio.Semaphore(10)
         fetched_segments = 0
-        async for (_, _, _, data_bytes, key) in concurrent_fetcher(self.app, fetch_path, file_name, 0, packets-1, semaphore):
+        async for (_, _, content, data_bytes, key) in concurrent_fetcher(self.app, fetch_path, file_name, 0, packets-1, semaphore):
             #TODO: check digest
+            # print("segment:")
+            # print(Name.to_str(key))
+            # print(type(content))
+            # print(content)
+            # print(type(data_bytes))
+            # print(data_bytes)
             self.data_storage.put_data_packet(key, data_bytes)
+            # self.data_storage.put_data_packet(key, content.tobytes())
             fetched_segments += 1
         return fetched_segments
 

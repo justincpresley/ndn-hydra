@@ -41,8 +41,10 @@ async def concurrent_fetcher(app: NDNApp, name: NonStrictName, file_name: NonStr
         :param seq: block_id of data
         """
         nonlocal app, name, file_name, semaphore, is_failed, received_or_fail, final_id
-        int_name = name + [Component.from_segment(seq)]
-        key = file_name + [Component.from_segment(seq)]
+        int_name = Name.normalize(name) + [Component.from_segment(seq)]
+        # print(Name.to_str(int_name))
+        key = Name.normalize(file_name) + [Component.from_segment(seq)]
+        # print(Name.to_str(key))
 
         trial_times = 0
         while True:
