@@ -3,18 +3,13 @@
 ## Dependencies
 
 ```
-pip install pytest
 pip install python-ndn ndn-svs ndn-python-repo
 ```
 
-Go to [python-ndn repo](https://github.com/zjkmxy/python-ndn) if you have issues installing
+## Run
 
-## To Run Tests
-
+1. add the root folder of this repo to PYTHONPATH environment variable
+2. register the group prefix `/<hydra-prefix>/group` as multi-cast 
+```bash
+nfdc strategy set /<hydra-prefix>/group /localhost/nfd/strategy/multicast/%FD%03
 ```
-$pytest
-```
-
-## Troubleshooting
-
-Ensure ndn_distributed_repo is on PYTHON_PATH
