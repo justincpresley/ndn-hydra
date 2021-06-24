@@ -1,6 +1,5 @@
 import asyncio as aio
 import logging
-from ndn_distributed_repo.data_storage import data_storage
 import random
 import secrets
 import sys
@@ -10,32 +9,31 @@ from ndn.encoding import Name, NonStrictName, Component, DecodeError
 from . import ProtocolHandle
 from ..protocol.repo_commands import RepoCommand
 from ..utils import PubSub
-from ..data_storage import DataStorage
 from ..global_view import GlobalView
 from ..repo_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageBodyTlv
 from ..repo_messages.message import MessageTlv, MessageTypes
-from ..handle_messages import MessageHandle
+from ..main import MainLoop
+from ndn_python_repo import Storage
 
 class InsertCommandHandle(ProtocolHandle):
     """
     InsertCommandHandle processes insert command handles, and deletes corresponding data stored
     in the database.
     """
-    def __init__(self, app: NDNApp, data_storage: DataStorage, pb: PubSub, config: dict,
-                message_handle: MessageHandle, global_view: GlobalView):
+    def __init__(self, app: NDNApp, data_storage: Storage, pb: PubSub, config: dict,
+                main_loop: MainLoop, global_view: GlobalView):
         """
         :param app: NDNApp.
         :param data_storage: Storage.
         :param pb: PubSub.
         :param config: All config Info.
-        :param message_handle: SVS interface, Group Messages.
+        :param main_loop: the Main Loop.
         :param global_view: Global View.
         """
         super(InsertCommandHandle, self).__init__(app, data_storage, pb, config)
         self.prefix = None
-        self.message_handle = message_handle
+        self.main_loop = main_loop
         self.global_view = global_view
-        self.data_storage = data_storage
 
     async def listen(self, prefix: NonStrictName):
         """
@@ -64,7 +62,6 @@ class InsertCommandHandle(ProtocolHandle):
     async def _process_insert(self, cmd: RepoCommand):
         """
         Process insert command.
-        Return to client with status code 100 immediately, and then start data fetching process.
         """
         # print("Process Insert Command for File: ")
         # print("receive INSERT command for file: {}".format(Name.to_str(cmd.file.file_name)))
@@ -77,21 +74,19 @@ class InsertCommandHandle(ProtocolHandle):
         sequence_number = cmd.sequence_number
         fetch_path = cmd.fetch_path.prefix
 
-        print("[cmd][INSERT] file {}".format(Name.to_str(file_name)))
+        self.logger.info("[cmd][INSERT] file {}".format(Name.to_str(file_name)))
 
         # TODO: check duplicate sequence number
 
-        # is there are enough sessions
+        # are there enough sessions?
         if desired_copies == 0:
-            print("desired_copies is 0")
+            self.logger.warning("desired_copies is 0")
             return
 
         sessions = self.global_view.get_sessions()
 
-        # print("{0} sessions".format(len(sessions)))
-
         if len(sessions) < (desired_copies * 2):
-            print("not enough node sessions") # TODO: notify the client?
+            self.logger.warning("not enough node sessions") # TODO: notify the client?
             return
 
         # generate unique insertion_id
@@ -154,7 +149,7 @@ class InsertCommandHandle(ProtocolHandle):
         add_message.header = MessageTypes.ADD
         add_message.body = add_message_body.encode()
         # apply globalview and send msg thru SVS
-        next_state_vector = self.message_handle.svs.getCore().getStateVector().get(self.config['session_id']) + 1
+        next_state_vector = self.main_loop.svs.getCore().getStateVector().get(self.config['session_id']) + 1
         self.global_view.add_insertion(
             insertion_id,
             Name.to_str(file_name),
@@ -169,9 +164,9 @@ class InsertCommandHandle(ProtocolHandle):
         )
         if pickself:
             # self.global_view.store_file(insertion_id, self.config['session_id'])
-            self.data_storage.add_metainfos(insertion_id, Name.to_str(file_name), packets, digests, Name.to_str(fetch_path))
+            self.main_loop.fetch_file(insertion_id, Name.to_str(file_name), packets, digests, Name.to_str(fetch_path))
         self.global_view.set_backups(insertion_id, backup_list)
-        self.message_handle.svs.publishData(add_message.encode())
+        self.main_loop.svs.publishData(add_message.encode())
         bak = ""
         for backup in backup_list:
             bak = bak + backup[0] + ","
@@ -187,7 +182,7 @@ class InsertCommandHandle(ProtocolHandle):
             slf=0,
             bak=bak
         )
-        print(val)
+        self.logger.info(val)
 
 
 

@@ -1,10 +1,3 @@
-"""
-    Repo command encoding.
-    @Author Daniel Achee
-    @Author Caton Zhong
-    @Date   2021-1-25
-"""
-
 from ndn.encoding import TlvModel, ModelField, NameField, UintField, RepeatedField, BytesField
 
 class RepoTypeNumber:
