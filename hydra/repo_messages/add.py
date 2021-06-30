@@ -1,5 +1,5 @@
+from hydra.global_view.global_view import GlobalView
 from typing import Callable
-from ndn_distributed_repo.global_view.global_view import GlobalView
 from ndn.encoding import *
 from .message_base import MessageBodyBase
 from .store import StoreMessageBodyTlv

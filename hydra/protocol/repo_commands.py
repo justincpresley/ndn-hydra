@@ -29,4 +29,3 @@ class RepoCommand(TlvModel):
   file = ModelField(RepoTypeNumber.FILE, File)
   sequence_number = UintField(RepoTypeNumber.SEQUENCE_NUMBER)
   fetch_path = ModelField(RepoTypeNumber.FETCH_PATH, FetchPath)
-

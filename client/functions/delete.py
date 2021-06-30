@@ -9,8 +9,8 @@
 
 import asyncio
 import logging
-from ndn_distributed_repo.protocol import RepoCommand, File, FetchPath
-from ndn_distributed_repo.utils import PubSub
+from hydra.protocol import RepoCommand, File, FetchPath
+from hydra.utils import PubSub
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
 

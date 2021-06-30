@@ -1,11 +1,13 @@
+
 import asyncio as aio
 import logging
 from secrets import choice
 from ..global_view import GlobalView
+from ..protocol import File
 from ndn.app import NDNApp
 from ndn.encoding import Name, tlv_var, ContentType, Component
 from ndn_python_repo import Storage
-from ndn_distributed_repo.protocol import File, FileList
+
 
 class QueryHandle(object):
     """

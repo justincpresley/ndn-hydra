@@ -8,7 +8,7 @@
 # -----------------------------------------------------------------------------
 
 from time import sleep
-from ndn_distributed_repo.global_view.global_view import GlobalView
+from hydra.global_view.global_view import GlobalView
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Name
 
