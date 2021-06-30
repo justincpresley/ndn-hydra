@@ -16,4 +16,5 @@ __pycache__/
 .DS_Store
 
 # docs
+docs/_build/*
 notes/*
