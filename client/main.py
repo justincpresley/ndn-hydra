@@ -29,21 +29,26 @@ def parse_cmd_opts() -> Namespace:
 
     # Define All Subparsers
     insertsp = subparsers.add_parser('insert')
+    insertsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True, help="A proper Name of The Repo Prefix.")
     insertsp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
     insertsp.add_argument("-p","--path",action="store",dest="path",required=True, help="The path of the file desired to be the input.")
 
     deletesp = subparsers.add_parser('delete')
+    deletesp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True, help="A proper Name of The Repo Prefix.")
     deletesp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
 
     fetchsp = subparsers.add_parser('fetch')
+    fetchsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True, help="A proper Name of The Repo Prefix.")
     fetchsp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
     fetchsp.add_argument("-p","--path",action="store",dest="path",default="./client/example/fetchedFile", required=False, help="The path you want the file to be placed.")
 
     querysp = subparsers.add_parser('query')
+    querysp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True, help="A proper Name of The Repo Prefix.")
     querysp.add_argument("-s","--sessionid",action="store",dest="sessionid",default=None, required=False, help="The session ID of the node you want to query. Best-route by default.")
     querysp.add_argument("-q","--query",action="store",dest="query",required=True, help="The Query you want to send to the Repo.")
 
     dumpsp = subparsers.add_parser('dump')
+    dumpsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True, help="A proper Name of The Repo Prefix.")
     dumpsp.add_argument("-s","--sessionid",action="store",dest="sessionid",required=True, help="The session ID of the node.")
 
     # Getting all Arguments
@@ -57,7 +62,7 @@ def parse_cmd_opts() -> Namespace:
     return vars
 
 async def run_client(app: NDNApp, args: Namespace) -> None:
-  repo_prefix = Name.from_str("/hydra")
+  repo_prefix = Name.from_str(args.repo)
   client_prefix = Name.from_str("/client")
   filename = None
   desired_copies = 2
