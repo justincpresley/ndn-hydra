@@ -57,7 +57,7 @@ def parse_cmd_opts() -> Namespace:
     return vars
 
 async def run_client(app: NDNApp, args: Namespace) -> None:
-  repo_prefix = Name.from_str("/pndrepo")
+  repo_prefix = Name.from_str("/hydra")
   client_prefix = Name.from_str("/client")
   filename = None
   desired_copies = 2
