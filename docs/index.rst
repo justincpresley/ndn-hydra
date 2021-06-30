@@ -17,6 +17,7 @@ usability, and efficiency.
    src/readme.rst
    src/install.rst
    src/configuration.rst
+   src/specification/specification.rst
    src/examples.rst
    src/authors.rst
    src/future.rst
@@ -27,5 +28,6 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
+* :ref:`modindex`
 
 .. _hydra: https://github.com/UCLA-IRL/hydra
