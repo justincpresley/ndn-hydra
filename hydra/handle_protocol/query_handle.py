@@ -5,7 +5,7 @@ from ..global_view import GlobalView
 from ndn.app import NDNApp
 from ndn.encoding import Name, tlv_var, ContentType, Component
 from ndn_python_repo import Storage
-from ndn_distributed_repo.protocol import File, FileList
+from hydra.protocol import File, FileList
 
 class QueryHandle(object):
     """

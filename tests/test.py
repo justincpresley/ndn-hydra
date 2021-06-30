@@ -32,5 +32,3 @@ insertions = gv.get_insertions()
 
 backupable_insertions = gv.get_backupable_insertions()
 print(json.dumps(backupable_insertions))
-
-

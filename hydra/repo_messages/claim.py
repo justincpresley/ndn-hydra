@@ -1,7 +1,7 @@
 import copy
-from ndn_distributed_repo.data_storage.data_storage import DataStorage
+from hydra.data_storage.data_storage import DataStorage
 import time
-from ndn_distributed_repo.global_view.global_view import GlobalView
+from hydra.global_view.global_view import GlobalView
 from ndn.encoding import *
 from .message_base import MessageBodyBase
 

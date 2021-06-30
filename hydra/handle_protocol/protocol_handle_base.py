@@ -1,6 +1,6 @@
 import asyncio as aio
 import logging
-from ndn_distributed_repo.data_storage.data_storage import DataStorage
+from hydra.data_storage.data_storage import DataStorage
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, NonStrictName, FormalName
 from ndn.encoding.tlv_model import DecodeError

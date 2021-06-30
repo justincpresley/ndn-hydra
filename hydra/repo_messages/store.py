@@ -1,9 +1,9 @@
-from ndn_distributed_repo.data_storage.data_storage import DataStorage
-from ndn_distributed_repo.global_view.global_view import GlobalView
+from hydra.data_storage.data_storage import DataStorage
+from hydra.global_view.global_view import GlobalView
 from ndn.encoding import *
 from .message_base import MessageBodyBase
 
-class RemoveMessageBodyTypes:
+class StoreMessageBodyTypes:
     SESSION_ID = 83
     NODE_NAME = 84
     EXPIRE_AT = 85
@@ -11,17 +11,17 @@ class RemoveMessageBodyTypes:
 
     INSERTION_ID = 90
 
-class RemoveMessageBodyTlv(TlvModel):
-    session_id = BytesField(RemoveMessageBodyTypes.SESSION_ID)
-    node_name = BytesField(RemoveMessageBodyTypes.NODE_NAME)
-    expire_at = UintField(RemoveMessageBodyTypes.EXPIRE_AT)
-    favor = BytesField(RemoveMessageBodyTypes.FAVOR)
-    insertion_id = BytesField(RemoveMessageBodyTypes.INSERTION_ID)
+class StoreMessageBodyTlv(TlvModel):
+    session_id = BytesField(StoreMessageBodyTypes.SESSION_ID)
+    node_name = BytesField(StoreMessageBodyTypes.NODE_NAME)
+    expire_at = UintField(StoreMessageBodyTypes.EXPIRE_AT)
+    favor = BytesField(StoreMessageBodyTypes.FAVOR)
+    insertion_id = BytesField(StoreMessageBodyTypes.INSERTION_ID)
 
-class RemoveMessageBody(MessageBodyBase):
+class StoreMessageBody(MessageBodyBase):
     def __init__(self, nid:str, seq:int, raw_bytes:bytes):
-        super(RemoveMessageBody, self).__init__(nid, seq)
-        self.message_body = RemoveMessageBodyTlv.parse(raw_bytes)
+        super(StoreMessageBody, self).__init__(nid, seq)
+        self.message_body = StoreMessageBodyTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, data_storage: DataStorage, svs, config):
         session_id = self.message_body.session_id.tobytes().decode()
@@ -29,7 +29,7 @@ class RemoveMessageBody(MessageBodyBase):
         expire_at = self.message_body.expire_at
         favor = float(self.message_body.favor.tobytes().decode())
         insertion_id = self.message_body.insertion_id.tobytes().decode()
-        val = "[MSG][REMOVE]  iid={iid}".format(
+        val = "[MSG][STORE]   sid={sid};iid={iid}".format(
             sid=session_id,
             iid=insertion_id
         )
@@ -38,10 +38,10 @@ class RemoveMessageBody(MessageBodyBase):
         insertion = global_view.get_insertion(insertion_id)
         if (insertion == None) or (insertion['is_deleted'] == True):
             # add store to pending_stores
-            print('nothing to remove')
+            print('add to pending store')
+            global_view.add_pending_store(insertion_id, session_id)
         else:
-            global_view.delete_insertion(insertion_id)
-            # TODO: remove from data_storage
+            global_view.store_file(insertion_id, session_id)
         # update session
         global_view.update_session(session_id, node_name, expire_at, favor, self.seq)
         return

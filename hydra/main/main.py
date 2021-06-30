@@ -1,8 +1,8 @@
 import argparse
 import asyncio as aio
 import logging
-from ndn_distributed_repo.handle_data_storage.data_storage_handle import DataStorageHandle
-from ndn_distributed_repo.data_storage.data_storage import DataStorage
+from hydra.handle_data_storage.data_storage_handle import DataStorageHandle
+from hydra.data_storage.data_storage import DataStorage
 from time import sleep
 from typing import Dict
 import pkg_resources
@@ -10,7 +10,7 @@ import sys
 from threading import Thread
 from ndn.app import NDNApp
 from ndn.encoding import Name
-from ndn_distributed_repo import *
+from hydra import *
 from ndn_python_repo import SqliteStorage
 
 def process_cmd_opts():

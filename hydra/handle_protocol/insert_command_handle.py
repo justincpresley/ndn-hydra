@@ -1,6 +1,6 @@
 import asyncio as aio
 import logging
-from ndn_distributed_repo.data_storage import data_storage
+from hydra.data_storage import data_storage
 import random
 import secrets
 import sys
