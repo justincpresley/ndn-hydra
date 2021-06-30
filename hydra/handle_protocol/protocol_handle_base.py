@@ -1,6 +1,5 @@
 import asyncio as aio
 import logging
-from hydra.data_storage.data_storage import DataStorage
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, NonStrictName, FormalName
 from ndn.encoding.tlv_model import DecodeError
@@ -14,11 +13,12 @@ class ProtocolHandle(object):
     """
     Interface for protocol interest handles
     """
-    def __init__(self, app: NDNApp, data_storage: DataStorage, pb: PubSub, config: dict):
+    def __init__(self, app: NDNApp, data_storage: Storage, pb: PubSub, config: dict):
         self.app = app
         self.data_storage = data_storage
         self.pb = pb
         self.config = config
+        self.logger = logging.getLogger()
 
     async def listen(self, prefix: Name):
         raise NotImplementedError

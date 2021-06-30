@@ -52,6 +52,9 @@ class FetchClient(object):
       end_index = None
       data_name, meta_info, content, data_bytes = await self.app.express_interest(
         name_at_repo, need_raw_packet=True, can_be_prefix=False, must_be_fresh=False, lifetime=1000)
+
+      
+      # print(content.tobytes())
       if meta_info.content_type == ContentType.NACK:
         print("Distributed Repo does not have that file.")
         return
@@ -59,10 +62,16 @@ class FetchClient(object):
         name_at_repo = Name.from_str(bytes(content).decode())
         end_index = Component.to_number(meta_info.final_block_id)
       else:
+        # print(type(content))
+        
         name_at_repo = name_at_repo[:-1]
         start_index = start_index + 1
         end_index = Component.to_number(meta_info.final_block_id)
+
+        # print(name_at_repo)
         b_array.extend(content)
+
+      # print(Name.to_str(data_name))
 
       # Fetch the rest of the file.
       if start_index <= end_index:

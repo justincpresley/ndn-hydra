@@ -69,7 +69,7 @@ async def run_client(app: NDNApp, args: Namespace) -> None:
     insertClient = InsertClient(app, client_prefix, repo_prefix)
     await insertClient.insert_file(filename, desired_copies, args.path)
     print("Client finished Insert Command!")
-    await asyncio.sleep(20)
+    await asyncio.sleep(60)
 
   elif args.function == "delete":
     deleteClient = DeleteClient(app, client_prefix, repo_prefix)

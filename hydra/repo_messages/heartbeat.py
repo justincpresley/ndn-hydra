@@ -1,4 +1,4 @@
-from hydra.data_storage.data_storage import DataStorage
+from typing import Callable
 from hydra.global_view.global_view import GlobalView
 from ndn.encoding import *
 from .message_base import MessageBodyBase
@@ -21,7 +21,7 @@ class HeartbeatMessageBody(MessageBodyBase):
         super(HeartbeatMessageBody, self).__init__(nid, seq)
         self.message_body = HeartbeatMessageBodyTlv.parse(raw_bytes)
 
-    async def apply(self, global_view: GlobalView, data_storage: DataStorage, svs, config):
+    async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
         session_id = self.message_body.session_id.tobytes().decode()
         node_name = self.message_body.node_name.tobytes().decode()
         expire_at = self.message_body.expire_at
@@ -32,7 +32,7 @@ class HeartbeatMessageBody(MessageBodyBase):
             exp=expire_at,
             fav=favor
         )
-        # print(val)
+        self.logger.debug(val)
         global_view.update_session(session_id, node_name, expire_at, favor, self.seq)
         # sessions = global_view.get_sessions()
         # print(json.dumps(sessions))

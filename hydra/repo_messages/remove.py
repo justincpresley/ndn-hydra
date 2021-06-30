@@ -1,4 +1,4 @@
-from hydra.data_storage.data_storage import DataStorage
+from typing import Callable
 from hydra.global_view.global_view import GlobalView
 from ndn.encoding import *
 from .message_base import MessageBodyBase
@@ -23,7 +23,7 @@ class RemoveMessageBody(MessageBodyBase):
         super(RemoveMessageBody, self).__init__(nid, seq)
         self.message_body = RemoveMessageBodyTlv.parse(raw_bytes)
 
-    async def apply(self, global_view: GlobalView, data_storage: DataStorage, svs, config):
+    async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
         session_id = self.message_body.session_id.tobytes().decode()
         node_name = self.message_body.node_name.tobytes().decode()
         expire_at = self.message_body.expire_at
@@ -33,12 +33,12 @@ class RemoveMessageBody(MessageBodyBase):
             sid=session_id,
             iid=insertion_id
         )
-        print(val)
+        self.logger.info(val)
         # if insertion
         insertion = global_view.get_insertion(insertion_id)
         if (insertion == None) or (insertion['is_deleted'] == True):
             # add store to pending_stores
-            print('nothing to remove')
+            self.logger.warning('nothing to remove')
         else:
             global_view.delete_insertion(insertion_id)
             # TODO: remove from data_storage

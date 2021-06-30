@@ -1,11 +1,13 @@
+
 import asyncio as aio
 import logging
 from secrets import choice
 from ..global_view import GlobalView
+from ..protocol import File
 from ndn.app import NDNApp
 from ndn.encoding import Name, tlv_var, ContentType, Component
 from ndn_python_repo import Storage
-from hydra.protocol import File, FileList
+
 
 class QueryHandle(object):
     """
@@ -21,6 +23,8 @@ class QueryHandle(object):
         self.global_view = global_view
         self.session_id = config['session_id']
         self.repo_prefix = config['repo_prefix']
+
+        self.logger = logging.getLogger()
 
         self.command_comp = "/query"
         self.sid_comp = "/sid"
@@ -49,13 +53,13 @@ class QueryHandle(object):
         query = self._get_query_from_interest(Name.to_str(int_name))
         querytype = Component.to_str(Name.from_str(query)[0])
         if querytype == "sids":
-            print(f'[cmd][QUERY] query received: sids')
+            self.logger.info(f'[cmd][QUERY] query received: sids')
             sessions = self.global_view.get_sessions()
             sidliststr = " ".join([key["id"] for key in sessions])
             self.app.put_data(int_name, content=bytes(sidliststr.encode()), freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "files":
-            print(f'[cmd][QUERY] query received: files')
+            self.logger.info(f'[cmd][QUERY] query received: files')
             insertions = self.global_view.get_insertions()
             filelist = FileList()
             filelist.list = []
@@ -70,7 +74,7 @@ class QueryHandle(object):
             self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "file":
-            print(f'[cmd][QUERY] query received: file')
+            self.logger.info(f'[cmd][QUERY] query received: file')
             insertions = self.global_view.get_insertions()
             filename = query[5:]
             filecontent = None
@@ -87,7 +91,7 @@ class QueryHandle(object):
             self.app.put_data(int_name, content=filecontent, freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "prefix":
-            print(f'[cmd][QUERY] query received: prefix')
+            self.logger.info(f'[cmd][QUERY] query received: prefix')
             insertions = self.global_view.get_insertions()
             prefix = query[7:]
             filelist = FileList()
@@ -104,7 +108,7 @@ class QueryHandle(object):
             self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
             return
         else:
-            print(f'[cmd][QUERY] unknown query received')
+            self.logger.info(f'[cmd][QUERY] unknown query received')
             self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
             return
 

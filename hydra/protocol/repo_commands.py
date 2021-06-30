@@ -1,10 +1,3 @@
-"""
-    Repo command encoding.
-    @Author Daniel Achee
-    @Author Caton Zhong
-    @Date   2021-1-25
-"""
-
 from ndn.encoding import TlvModel, ModelField, NameField, UintField, RepeatedField, BytesField
 
 class RepoTypeNumber:
@@ -36,4 +29,3 @@ class RepoCommand(TlvModel):
   file = ModelField(RepoTypeNumber.FILE, File)
   sequence_number = UintField(RepoTypeNumber.SEQUENCE_NUMBER)
   fetch_path = ModelField(RepoTypeNumber.FETCH_PATH, FetchPath)
-

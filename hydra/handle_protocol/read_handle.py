@@ -1,10 +1,9 @@
 import asyncio as aio
 import logging
 from secrets import choice
-from ..data_storage import DataStorage
 from ..global_view import GlobalView
 from ndn.app import NDNApp
-from ndn.encoding import Name, tlv_var, ContentType, Component
+from ndn.encoding import Name, tlv_var, ContentType, Component, parse_data
 from ndn_python_repo import Storage
 
 
@@ -12,7 +11,7 @@ class ReadHandle(object):
     """
     ReadHandle processes ordinary interests, and return corresponding data if exists.
     """
-    def __init__(self, app: NDNApp, data_storage: DataStorage, global_view: GlobalView, config: dict):
+    def __init__(self, app: NDNApp, data_storage: Storage, global_view: GlobalView, config: dict):
         """
         :param app: NDNApp.
         :param data_storage: Storage.
@@ -24,6 +23,8 @@ class ReadHandle(object):
         self.global_view = global_view
         self.session_id = config['session_id']
         self.repo_prefix = config['repo_prefix']
+
+        self.logger = logging.getLogger()
 
         self.command_comp = "/fetch"
         self.sid_comp = "/sid"
@@ -37,14 +38,14 @@ class ReadHandle(object):
         :param prefix: NonStrictName.
         """
         self.app.route(prefix)(self._on_interest)
-        logging.info(f'Read handle: listening to {Name.to_str(prefix)}')
+        self.logger.info(f'Read handle: listening to {Name.to_str(prefix)}')
 
     def unlisten(self, prefix):
         """
         :param name: NonStrictName.
         """
         aio.ensure_future(self.app.unregister(prefix))
-        logging.info(f'Read handle: stop listening to {Name.to_str(prefix)}')
+        self.logger.info(f'Read handle: stop listening to {Name.to_str(prefix)}')
 
     def _on_interest(self, int_name, int_param, _app_param):
         """
@@ -65,32 +66,44 @@ class ReadHandle(object):
 
         if best_id == self.session_id:
             if segment_comp == "/seg=0":
-                print(f'[cmd][FETCH] serving data to client')
+                self.logger.info(f'[cmd][FETCH] serving data to client')
 
             # serve content from my storage
-            storage_content = self.data_storage.get_v(file_name + segment_comp)
+            # storage_content = self.data_storage.get_v(file_name + segment_comp)
+
+            
+
+            data_bytes = self.data_storage.get_data_packet(file_name + segment_comp, int_param.can_be_prefix)
+
+            
+            if data_bytes == None:
+                return
+            
+            self.logger.info(f'Read handle: serve data {Name.to_str(int_name)}')
+            _, _, content, _ = parse_data(data_bytes)
+            # print("serve"+file_name + segment_comp+"   "+Name.to_str(name))
             final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
-            self.app.put_data(int_name, content=storage_content, content_type=ContentType.BLOB, final_block_id=final_id)
-            logging.info(f'Read handle: served data {Name.to_str(int_name)}')
+            self.app.put_data(int_name, content=content, content_type=ContentType.BLOB, final_block_id=final_id)
             return
+
         elif best_id == None:
             if segment_comp == "/seg=0":
-                print(f'[cmd][FETCH] nacked client due to no file in repo')
+                self.logger.info(f'[cmd][FETCH] nacked client due to no file in repo')
 
             # nack due to lack of avaliability
             self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
-            logging.info(f'Read handle: data not found {Name.to_str(int_name)}')
+            self.logger.info(f'Read handle: data not found {Name.to_str(int_name)}')
             return
         else:
             if segment_comp == "/seg=0":
-                print(f'[cmd][FETCH] linked to another node in the repo')
+                self.logger.info(f'[cmd][FETCH] linked to another node in the repo')
 
             # create a link to a node who has the content
             new_name = self.repo_prefix + self.sid_comp + "/" + best_id + self.command_comp + file_name
             link_content = bytes(new_name.encode())
             final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)
-            logging.info(f'Read handle: redirected {Name.to_str(int_name)}')
+            self.logger.info(f'Read handle: redirected {Name.to_str(int_name)}')
             return
 
     def _get_file_name_from_interest(self, int_name):
