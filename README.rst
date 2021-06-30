@@ -7,4 +7,4 @@ Please see our documentation_.
 
 .. _python-ndn: https://github.com/named-data/python-ndn
 
-.. _documentation: https://hydra.readthedocs.io/en/latest
+.. _documentation: https://ndn-hydra.readthedocs.io/en/latest
