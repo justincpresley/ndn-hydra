@@ -22,6 +22,7 @@ usability, and efficiency.
    src/examples.rst
    src/authors.rst
    src/future.rst
+   src/contributing.rst
 
 
 
