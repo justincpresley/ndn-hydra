@@ -19,7 +19,7 @@ from typing import List
 with io.open("docs/version.py", "rt", encoding="utf8") as f:
     version = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
 
-with io.open("README.md", "rt", encoding="utf8") as f:
+with io.open("README.rst", "rt", encoding="utf8") as f:
     long_description = f.read()
 
 def _parse_requirements(filename: str) -> List[str]:
