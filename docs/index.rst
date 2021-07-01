@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to ndn-hydra_'s documentation!
-===========================================================
+======================================
 
 Hydra is a distributed repo implementation in NDN.
 Our design focuses on three attributes: resiliency, scalability,

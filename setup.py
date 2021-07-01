@@ -31,6 +31,7 @@ setup(
     version=version,
     description='ndn-hydra: An NDN distributed repository with resiliency coded in python.',
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     url='https://github.com/UCLA-IRL/ndn-hydra',
     author='Justin C Presley',
     author_email='justincpresley@gmail.com',
@@ -55,7 +56,12 @@ setup(
     packages=find_packages(exclude=['tests']),
     install_requires=_parse_requirements('docs/requirements.txt'),
     python_requires=">=3.7",
-    entry_points={ 'console_scripts': ['ndn-hydra = ndn-hydra.main.main:main'] },
+    entry_points={
+        'console_scripts': [
+            'ndn-hydra = ndn_hydra.main.main:main',
+            'ndn-hydra-client = client.main.main.main'
+        ]
+    },
     include_package_data=True,
     zip_safe=False
 )
