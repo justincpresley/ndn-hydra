@@ -13,8 +13,8 @@
 import asyncio
 import logging
 from hashlib import blake2b
-from hydra.protocol import RepoCommand, File, FetchPath
-from hydra.utils import PubSub
+from ndn_hydra.protocol import RepoCommand, File, FetchPath
+from ndn_hydra.utils import PubSub
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
 

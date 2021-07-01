@@ -11,7 +11,7 @@
 # ----------------------------------------------------------
 
 from time import sleep
-from hydra.global_view.global_view import GlobalView
+from ndn_hydra.global_view.global_view import GlobalView
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Name
 

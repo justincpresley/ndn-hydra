@@ -16,7 +16,7 @@ import os
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType
 from ndn.types import InterestNack, InterestTimeout, InterestCanceled, ValidationFailure
-from hydra.protocol import File, FileList
+from ndn_hydra.protocol import File, FileList
 
 class QueryClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:
