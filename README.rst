@@ -11,4 +11,4 @@ Please see our documentation_.
 
 .. _ndn-python-svs: https://github.com/justincpresley/ndn-python-svs
 
-.. _documentation: https://ndn-hydra.readthedocs.io/en/latest
+.. _documentation: https://ndn-hydra.readthedocs.io
