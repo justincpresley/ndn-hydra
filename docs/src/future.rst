@@ -4,10 +4,10 @@ Future Plans
 Implemention Advancements
 -------------------------
 
-There are many improvements to hydra that need to be made.
+There are many improvements to ndn-hydra that need to be made.
     * Improve File Fetching
     * Implement Security
-    * More Tests
+    * Add more Github Tests
     * Better documentation
 
 Performance Testing

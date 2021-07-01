@@ -1,16 +1,19 @@
-# -----------------------------------------------------------------------------
-# NDN Distributed Repo delete client.
-#
-# @Author Justin C Presley
-# @Author Daniel Achee
-# @Author Zixuan Zhong
-# @Date   2021-01-25
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------
+# NDN Hydra Delete Client
+# ----------------------------------------------------------
+# @Project: NDN Hydra
+# @Date:    2021-01-25
+# @Author:  Zixuan Zhong
+# @Author:  Justin C Presley
+# @Author:  Daniel Achee
+# @Source-Code: https://github.com/UCLA-IRL/ndn-hydra
+# @Pip-Library: https://pypi.org/project/ndn-hydra/
+# ----------------------------------------------------------
 
 import asyncio
 import logging
-from hydra.protocol import RepoCommand, File, FetchPath
-from hydra.utils import PubSub
+from ndn_hydra.protocol import RepoCommand, File, FetchPath
+from ndn_hydra.utils import PubSub
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
 

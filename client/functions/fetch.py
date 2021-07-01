@@ -1,11 +1,14 @@
-# -----------------------------------------------------------------------------
-# NDN Distributed Repo fetch client.
-#
-# @Author Justin C Presley
-# @Author Daniel Achee
-# @Author Zixuan Zhong
-# @Date   2021-01-25
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------
+# NDN Hydra Fetch Client
+# ----------------------------------------------------------
+# @Project: NDN Hydra
+# @Date:    2021-01-25
+# @Author:  Zixuan Zhong
+# @Author:  Justin C Presley
+# @Author:  Daniel Achee
+# @Source-Code: https://github.com/UCLA-IRL/ndn-hydra
+# @Pip-Library: https://pypi.org/project/ndn-hydra/
+# ----------------------------------------------------------
 
 import asyncio as aio
 import logging
@@ -53,7 +56,7 @@ class FetchClient(object):
       data_name, meta_info, content, data_bytes = await self.app.express_interest(
         name_at_repo, need_raw_packet=True, can_be_prefix=False, must_be_fresh=False, lifetime=1000)
 
-      
+
       # print(content.tobytes())
       if meta_info.content_type == ContentType.NACK:
         print("Distributed Repo does not have that file.")
@@ -63,7 +66,7 @@ class FetchClient(object):
         end_index = Component.to_number(meta_info.final_block_id)
       else:
         # print(type(content))
-        
+
         name_at_repo = name_at_repo[:-1]
         start_index = start_index + 1
         end_index = Component.to_number(meta_info.final_block_id)

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------
-# NDN Hydra Git Ignored
+# NDN Hydra Message Body Base
 # ----------------------------------------------------------
 # @Project: NDN Hydra
 # @Date:    2021-01-25
@@ -10,29 +10,13 @@
 # @Pip-Library: https://pypi.org/project/ndn-hydra/
 # ----------------------------------------------------------
 
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+import logging
 
-# C extensions
-*.so
+class MessageBodyBase:
+    def __init__(self, nid:str, seq:int):
+        self.nid = nid
+        self.seq = seq
+        self.logger = logging.getLogger()
 
-# PhpStorm
-.idea
-
-# VSCode
-.vscode
-
-# MacOS
-.DS_Store
-
-# docs
-docs/_build/*
-notes/*
-
-#build stuff
-build/*
-*.egg-info
-*.egg-info/*
-dist/*
+    async def apply(self, global_view):
+        raise NotImplementedError

@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to hydra_'s documentation!
-===========================================================
+Welcome to ndn-hydra_'s documentation!
+======================================
 
 Hydra is a distributed repo implementation in NDN.
 Our design focuses on three attributes: resiliency, scalability,
@@ -17,9 +17,12 @@ usability, and efficiency.
    src/readme.rst
    src/install.rst
    src/configuration.rst
+   src/specification/specification.rst
+   src/misc_pkgs/misc_pkgs.rst
    src/examples.rst
    src/authors.rst
    src/future.rst
+   src/contributing.rst
 
 
 
@@ -27,5 +30,6 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
+* :ref:`modindex`
 
-.. _hydra: https://github.com/UCLA-IRL/hydra
+.. _ndn-hydra: https://github.com/UCLA-IRL/ndn-hydra

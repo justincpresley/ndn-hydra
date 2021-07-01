@@ -1,14 +1,17 @@
-# -----------------------------------------------------------------------------
-# NDN Distributed Repo dump client.
-#
-# @Author Justin C Presley
-# @Author Daniel Achee
-# @Author Zixuan Zhong
-# @Date   2021-01-25
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------
+# NDN Hydra Dump Client
+# ----------------------------------------------------------
+# @Project: NDN Hydra
+# @Date:    2021-01-25
+# @Author:  Zixuan Zhong
+# @Author:  Justin C Presley
+# @Author:  Daniel Achee
+# @Source-Code: https://github.com/UCLA-IRL/ndn-hydra
+# @Pip-Library: https://pypi.org/project/ndn-hydra/
+# ----------------------------------------------------------
 
 from time import sleep
-from hydra.global_view.global_view import GlobalView
+from ndn_hydra.global_view.global_view import GlobalView
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Name
 

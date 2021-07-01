@@ -1,11 +1,14 @@
-# -----------------------------------------------------------------------------
-# NDN Distributed Repo query client.
-#
-# @Author Justin C Presley
-# @Author Daniel Achee
-# @Author Zixuan Zhong
-# @Date   2021-01-25
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------
+# NDN Hydra Query Client
+# ----------------------------------------------------------
+# @Project: NDN Hydra
+# @Date:    2021-01-25
+# @Author:  Zixuan Zhong
+# @Author:  Justin C Presley
+# @Author:  Daniel Achee
+# @Source-Code: https://github.com/UCLA-IRL/ndn-hydra
+# @Pip-Library: https://pypi.org/project/ndn-hydra/
+# ----------------------------------------------------------
 
 import asyncio as aio
 import logging
@@ -13,7 +16,7 @@ import os
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType
 from ndn.types import InterestNack, InterestTimeout, InterestCanceled, ValidationFailure
-from hydra.protocol import File, FileList
+from ndn_hydra.protocol import File, FileList
 
 class QueryClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:

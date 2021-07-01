@@ -4,7 +4,7 @@ Configuration
 Repo Prefix Strategy
 --------------------
 
-Before running hydra on any node, we must register the repo prefix as multicast.
+Before running Hydra on any node, we must register the repo prefix as multicast.
 You can do that by doing the following..
 
 .. code-block:: bash
