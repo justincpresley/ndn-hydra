@@ -9,19 +9,19 @@ Dependencies
 Instruction for use
 --------------------
 
-(WIP) Install the latest release with pip:
+Install the latest release with pip_:
 
 .. code-block:: bash
 
     $ /usr/bin/pip3 install ndn-hydra
 
-Optionally, you can install the latest development version from source:
+Optionally, you can install the latest development version from source_:
 (note: also add root folder of this github repo to PYTHONPATH environment variable)
 
 .. code-block:: bash
 
-    $ git clone https://github.com/UCLA-IRL/hydra.git
-    $ cd hydra && /usr/bin/pip3 install -e .
+    $ git clone https://github.com/UCLA-IRL/ndn-hydra.git
+    $ cd ndn-hydra && /usr/bin/pip3 install -e .
 
 
 Instruction for developers
@@ -51,3 +51,5 @@ Compile the documentation with Sphinx:
     $ open _build/html/index.html
 
 .. _NFD: https://named-data.net/doc/NFD/current/INSTALL.html
+.. _source: https://github.com/UCLA-IRL/ndn-hydra
+.. _pip: https://pypi.python.org/pypi/ndn-hydra

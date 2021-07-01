@@ -1,5 +1,5 @@
 # ----------------------------------------------------------
-# NDN Hydra Git Ignored
+# NDN Hydra Version
 # ----------------------------------------------------------
 # @Project: NDN Hydra
 # @Date:    2021-01-25
@@ -10,23 +10,5 @@
 # @Pip-Library: https://pypi.org/project/ndn-hydra/
 # ----------------------------------------------------------
 
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# PhpStorm
-.idea
-
-# VSCode
-.vscode
-
-# MacOS
-.DS_Store
-
-# docs
-docs/_build/*
-notes/*
+# Version of Hydra according to pip
+__version__ = "0.0.1"

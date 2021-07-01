@@ -1,6 +1,4 @@
 # ----------------------------------------------------------
-# NDN Hydra Git Ignored
-# ----------------------------------------------------------
 # @Project: NDN Hydra
 # @Date:    2021-01-25
 # @Author:  Zixuan Zhong
@@ -10,23 +8,4 @@
 # @Pip-Library: https://pypi.org/project/ndn-hydra/
 # ----------------------------------------------------------
 
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# PhpStorm
-.idea
-
-# VSCode
-.vscode
-
-# MacOS
-.DS_Store
-
-# docs
-docs/_build/*
-notes/*
+from .global_view import GlobalView

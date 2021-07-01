@@ -1,5 +1,15 @@
-# Configuration file for the Sphinx documentation builder.
-#
+# ----------------------------------------------------------
+# NDN Hydra Configuration File for the Sphinx Documentation
+# ----------------------------------------------------------
+# @Project: NDN Hydra
+# @Date:    2021-01-25
+# @Author:  Zixuan Zhong
+# @Author:  Justin C Presley
+# @Author:  Daniel Achee
+# @Source-Code: https://github.com/UCLA-IRL/ndn-hydra
+# @Pip-Library: https://pypi.org/project/ndn-hydra/
+# ----------------------------------------------------------
+
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
@@ -9,7 +19,6 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
@@ -17,8 +26,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'hydra'#Hydra - An NDN Distributed Repo
-copyright = '2021, The hydra authors'
+project = 'ndn-hydra'
+copyright = '2021, The ndn-hydra authors'
 author = 'Zixuan Zhong, Justin Presley, Daniel Achee'
 
 # -- General configuration ---------------------------------------------------

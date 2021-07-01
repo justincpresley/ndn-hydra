@@ -1,11 +1,14 @@
-# -----------------------------------------------------------------------------
-# NDN Distributed Repo client.
-#
-# @Author Justin C Presley
-# @Author Daniel Achee
-# @Author Zixuan Zhong
-# @Date   2021-01-25
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------
+# NDN Hydra Client
+# ----------------------------------------------------------
+# @Project: NDN Hydra
+# @Date:    2021-01-25
+# @Author:  Zixuan Zhong
+# @Author:  Justin C Presley
+# @Author:  Daniel Achee
+# @Source-Code: https://github.com/UCLA-IRL/ndn-hydra
+# @Pip-Library: https://pypi.org/project/ndn-hydra/
+# ----------------------------------------------------------
 
 import asyncio
 from argparse import ArgumentParser, Namespace
@@ -14,7 +17,6 @@ import logging
 from os import path
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component
-
 from functions.insert import InsertClient
 from functions.delete import DeleteClient
 from functions.fetch import FetchClient

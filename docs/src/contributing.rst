@@ -11,4 +11,4 @@ Simply create a pull / issue on our github_.
 Thank you ahead of time for continuing Hydra!
 
 
-.. _github: https://github.com/UCLA-IRL/hydra
+.. _github: https://github.com/UCLA-IRL/ndn-hydra

@@ -22,16 +22,16 @@ This means we can eliminate routing for a quick run.
 
 .. code-block:: bash
 
-    $ cd hydra # inside root directory
+    $ cd ndn-hydra # inside root directory
     $ python3 ./hydra/main/main.py -rp <repo-prefix> -n <node-name> -s <sid>
 
-- *repo_prefix* : The registered-multicast group prefix for all under repo. All should be ran with the same prefix. (example: /hydrarepo)
+- *repo_prefix* : The registered-multicast group prefix for all under repo. All should be ran with the same prefix. (example: /hydra)
 - *node_name* : A unique, per node, name. Remains constant through restarts. (example: node1)
 - *sid* : A session id. Always unique, create new on restart. (example: 2c4f)
 
 **5. On a seperate terminal, run all client interactions**
 
-Client needs to also be in the root directory :literal:`cd hydra`.
+Client needs to also be in the root directory :literal:`cd ndn-hydra`.
 Running :literal:`python3 ./client/main.py` will help you see all choices you have.
 
 * Insertion
