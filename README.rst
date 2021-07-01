@@ -1,5 +1,5 @@
-ndn-hydra: a NDN distributed repo
-=================================
+ndn-hydra: an NDN distributed repo
+==================================
 
 A Named Data Networking (NDN) Distributed Repo implementation using python-ndn_.
 
