@@ -59,7 +59,7 @@ setup(
     entry_points={
         'console_scripts': [
             'ndn-hydra = ndn_hydra.main.main:main',
-            'ndn-hydra-client = client.main.main.main'
+            #'ndn-hydra-client = client.main.main.main'
         ]
     },
     include_package_data=True,
