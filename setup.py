@@ -53,15 +53,15 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     keywords='NDN HYDRA',
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
     install_requires=_parse_requirements('docs/requirements.txt'),
     python_requires=">=3.7",
     entry_points={
         'console_scripts': [
-            'ndn-hydra = ndn_hydra.main.main:main',
-            #'ndn-hydra-client = client.main.main.main'
+            'ndn-hydra-repo = src.ndn.hydra.repo.main.main:main',
+            'ndn-hydra-client = src.ndn.hydra.client.main:main'
         ]
     },
     include_package_data=True,
-    zip_safe=False
-)
+    zip_safe=False)
