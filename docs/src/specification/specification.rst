@@ -3,6 +3,7 @@ Specification
 
 .. toctree::
 
+    General Use     <general_use.rst>
     Global View     <global_view.rst>
     Handles         <handles.rst>
     Protocol        <protocol.rst>

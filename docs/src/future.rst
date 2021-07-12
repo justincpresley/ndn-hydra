@@ -1,8 +1,8 @@
 Future Plans
 ============
 
-Implemention Advancements
--------------------------
+Implementation Advancements
+---------------------------
 
 There are many improvements to ndn-hydra that need to be made.
     * Improve File Fetching
