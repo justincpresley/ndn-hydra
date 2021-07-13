@@ -59,8 +59,8 @@ setup(
     python_requires=">=3.7",
     entry_points={
         'console_scripts': [
-            'ndn-hydra-repo = src.ndn.hydra.repo.main.main:main',
-            'ndn-hydra-client = src.ndn.hydra.client.main:main'
+            'ndn-hydra-repo = ndn.hydra.repo.main.main:main',
+            'ndn-hydra-client = ndn.hydra.client.main:main'
         ]
     },
     include_package_data=True,
