@@ -21,7 +21,6 @@ from ndn.name_tree import NameTrie
 from ndn.types import InterestNack, InterestTimeout
 import os
 
-
 class PubSub(object):
     def __init__(self, app: NDNApp, prefix: NonStrictName=None, forwarding_hint: NonStrictName=None):
         """
@@ -53,7 +52,7 @@ class PubSub(object):
         :param prefix: NonStrictName. The identity of this ``PubSub`` instance.
         """
         self.publisher_prefix = prefix
-    
+
     def set_base_prefix(self, prefix: NonStrictName):
         """
         Avoid registering too many prefixes, by registering ``prefix`` with NFD. All other prefixes\
@@ -78,7 +77,7 @@ class PubSub(object):
                 await self.app.register(self.base_prefix, func=None)
             except ValueError as esc:
                 pass
-        
+
         try:
             if self.base_prefix != None and Name.is_prefix(self.base_prefix, self.publisher_prefix + ['msg']):
                 self.app.set_interest_filter(self.publisher_prefix + ['msg'], self._on_msg_interest)

@@ -13,7 +13,6 @@ from ndn.types import InterestNack, InterestTimeout
 from ndn.encoding import Name, NonStrictName, Component
 from typing import Optional
 
-
 async def concurrent_fetcher(app: NDNApp, name: NonStrictName, file_name: NonStrictName, start_block_id: int,
                              end_block_id: Optional[int], semaphore: aio.Semaphore, **kwargs):
     """
