@@ -14,9 +14,9 @@ from typing import Callable
 from ndn.encoding import *
 import json
 import time
-from src.ndn.hydra.repo.global_view.global_view import GlobalView
-from src.ndn.hydra.repo.repo_messages.message_base import MessageBodyBase
-from src.ndn.hydra.repo.repo_messages.store import StoreMessageBodyTlv
+from ndn.hydra.repo.global_view.global_view import GlobalView
+from ndn.hydra.repo.repo_messages.message_base import MessageBodyBase
+from ndn.hydra.repo.repo_messages.store import StoreMessageBodyTlv
 
 class AddMessageBodyTypes:
     SESSION_ID = 83

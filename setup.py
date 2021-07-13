@@ -35,6 +35,8 @@ setup(
     url='https://github.com/UCLA-IRL/ndn-hydra',
     author='Justin C Presley',
     author_email='justincpresley@gmail.com',
+    maintainer='Justin C Presley',
+    maintainer_email='justincpresley@gmail.com',
     download_url='https://pypi.python.org/pypi/ndn-hydra',
     project_urls={
         "Bug Tracker": "https://github.com/UCLA-IRL/ndn-hydra/issues",
@@ -63,5 +65,4 @@ setup(
             'ndn-hydra-client = ndn.hydra.client.main:main'
         ]
     },
-    include_package_data=True,
     zip_safe=False)

@@ -14,8 +14,8 @@ import copy
 from typing import Callable
 import time
 from ndn.encoding import *
-from src.ndn.hydra.repo.global_view.global_view import GlobalView
-from src.ndn.hydra.repo.repo_messages.message_base import MessageBodyBase
+from ndn.hydra.repo.global_view.global_view import GlobalView
+from ndn.hydra.repo.repo_messages.message_base import MessageBodyBase
 
 class ClaimMessageTypes:
     REQUEST = 1

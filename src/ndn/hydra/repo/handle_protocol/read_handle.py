@@ -16,7 +16,7 @@ from secrets import choice
 from ndn.app import NDNApp
 from ndn.encoding import Name, tlv_var, ContentType, Component, parse_data
 from ndn_python_repo import Storage
-from src.ndn.hydra.repo.global_view.global_view import GlobalView
+from ndn.hydra.repo.global_view.global_view import GlobalView
 
 class ReadHandle(object):
     """

@@ -21,9 +21,9 @@ from ndn.encoding import Name, Component
 from ndn.types import InterestNack, InterestTimeout
 from ndn.svs import SVSync
 from ndn_python_repo import Storage, SqliteStorage
-from src.ndn.hydra.repo.global_view.global_view import GlobalView
-from src.ndn.hydra.repo.repo_messages import *
-from src.ndn.hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
+from ndn.hydra.repo.global_view.global_view import GlobalView
+from ndn.hydra.repo.repo_messages import *
+from ndn.hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
 
 class MainLoop:
     def __init__(self, app: NDNApp, config: Dict, global_view: GlobalView, data_storage: Storage):

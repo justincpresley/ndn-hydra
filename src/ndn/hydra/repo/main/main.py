@@ -19,7 +19,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name
 from ndn_python_repo import SqliteStorage
 import sys, os
-from src.ndn.hydra.repo import *
+from ndn.hydra.repo import *
 
 
 def process_cmd_opts():
