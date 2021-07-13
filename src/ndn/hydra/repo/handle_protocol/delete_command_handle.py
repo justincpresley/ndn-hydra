@@ -17,15 +17,13 @@ import random
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component
 from ndn_python_repo import Storage
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from repo.protocol.repo_commands import RepoCommand
-from repo.utils.pubsub import PubSub
-from repo.repo_messages.remove import RemoveMessageBodyTlv
-from repo.repo_messages.message import MessageTlv, MessageTypes
-from repo.main.main_loop import MainLoop
-from repo.handle_protocol.protocol_handle_base import ProtocolHandle
-from repo.global_view.global_view import GlobalView
+from src.ndn.hydra.repo.protocol.repo_commands import RepoCommand
+from src.ndn.hydra.repo.utils.pubsub import PubSub
+from src.ndn.hydra.repo.repo_messages.remove import RemoveMessageBodyTlv
+from src.ndn.hydra.repo.repo_messages.message import MessageTlv, MessageTypes
+from src.ndn.hydra.repo.main.main_loop import MainLoop
+from src.ndn.hydra.repo.handle_protocol.protocol_handle_base import ProtocolHandle
+from src.ndn.hydra.repo.global_view.global_view import GlobalView
 
 class DeleteCommandHandle(ProtocolHandle):
     """

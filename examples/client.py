@@ -1,4 +1,6 @@
 # ----------------------------------------------------------
+# NDN Hydra Client
+# ----------------------------------------------------------
 # @Project: NDN Hydra
 # @Date:    2021-01-25
 # @Author:  Zixuan Zhong
@@ -8,4 +10,7 @@
 # @Pip-Library: https://pypi.org/project/ndn-hydra/
 # ----------------------------------------------------------
 
-from .main_loop import MainLoop
+import sys
+from src.ndn.hydra.client.main import main
+if __name__ == '__main__':
+    sys.exit(main())

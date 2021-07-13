@@ -1,8 +1,8 @@
 Client
 ======
 
-The Client is very forgiving. Running ``python3 ./src/ndn/hydra/client/main.py`` will tell you what options
-are available. Furthermore, running ``python3 ./src/ndn/hydra/client/main.py <function>`` with a appropriate
+The Client is very forgiving. Running ``python3 ./examples/client.py`` will tell you what options
+are available. Furthermore, running ``python3 ./examples/client.py <function>`` with a appropriate
 function out of the list {insert,delete,fetch,query} will tell you exactly what you need.
 
 Insertion
@@ -15,13 +15,13 @@ the client with insert.
 
 .. code-block:: bash
 
-    python3 ./src/ndn/hydra/client/main.py insert -r <repo-prefix> -f <file-name> -p <path>
+    python3 ./examples/client.py insert -r <repo-prefix> -f <file-name> -p <path>
 
 For example:
 
 .. code-block:: bash
 
-    python3 ./src/ndn/hydra/client/main.py insert -r /hydra -f /home/a.txt -p ./files/10kb.txt
+    python3 ./examples/client.py insert -r /hydra -f /home/a.txt -p ./examples/files/10kb.txt
 
 Deletion
 --------
@@ -33,13 +33,13 @@ the client with delete.
 
 .. code-block:: bash
 
-    python3 ./src/ndn/hydra/client/main.py delete -r <repo-prefix> -f <file-name>
+    python3 ./examples/client.py delete -r <repo-prefix> -f <file-name>
 
 For example:
 
 .. code-block:: bash
 
-    python3 ./src/ndn/hydra/client/main.py delete -r /hydra -f /home/a.txt
+    python3 ./examples/client.py delete -r /hydra -f /home/a.txt
 
 Queries
 -------
@@ -52,13 +52,13 @@ the client with a query.
 
 .. code-block:: bash
 
-    python3 ./src/ndn/hydra/client/main.py query -r <repo-prefix> -q <query>
+    python3 ./examples/client.py query -r <repo-prefix> -q <query>
 
 For example:
 
 .. code-block:: bash
 
-    python3 ./src/ndn/hydra/client/main.py query -r /hydra -q /files
+    python3 ./examples/client.py query -r /hydra -q /files
 
 Types implemented so far:
     ``* /files``
@@ -76,10 +76,10 @@ the client with a fetch.
 
 .. code-block:: bash
 
-    python3 ./src/ndn/hydra/client/main.py fetch -r <repo-prefix> -f <file-name> -p <path>
+    python3 ./examples/client.py fetch -r <repo-prefix> -f <file-name> -p <path>
 
 For example:
 
 .. code-block:: bash
 
-    python3 ./src/ndn/hydra/client/main.py fetch -r /hydra -f /home/a.txt -p ./sample.txt
+    python3 ./examples/client.py fetch -r /hydra -f /home/a.txt -p ./examples/output/sample.txt
