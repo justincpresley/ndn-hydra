@@ -1,8 +1,8 @@
 General Use
 ===========
 
-Importing
----------
+Python Importing
+----------------
 
 There are two packages that are joined together into the pip library ``ndn-hydra``.
     * **- ndn.hydra.client**
@@ -20,3 +20,7 @@ or simply:
 .. code-block:: python
 
     from ndn.hydra import *
+
+
+Command-Line
+------------

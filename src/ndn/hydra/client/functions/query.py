@@ -15,9 +15,7 @@ import logging
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType
 from ndn.types import InterestNack, InterestTimeout, InterestCanceled, ValidationFailure
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from repo.protocol.repo_commands import File, FileList
+from src.ndn.hydra.repo.protocol.repo_commands import File, FileList
 
 class HydraQueryClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:

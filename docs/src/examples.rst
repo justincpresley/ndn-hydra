@@ -23,7 +23,7 @@ This means we can eliminate routing for a quick run.
 .. code-block:: bash
 
     $ cd ndn-hydra # inside root directory
-    $ python3 ./src/ndn/hydra/repo/main/main.py -rp <repo-prefix> -n <node-name> -s <sid>
+    $ python3 ./examples/repo.py -rp <repo-prefix> -n <node-name> -s <sid>
 
 - *repo_prefix* : The registered-multicast group prefix for all under repo. All should be ran with the same prefix. (example: /hydra)
 - *node_name* : A unique, per node, name. Remains constant through restarts. (example: node1)
@@ -32,28 +32,28 @@ This means we can eliminate routing for a quick run.
 **5. On a seperate terminal, run all client interactions**
 
 Client needs to also be in the root directory :literal:`cd ndn-hydra`.
-Running :literal:`python3 ./src/ndn/hydra/client/main.py` will help you see all choices you have.
+Running :literal:`python3 ./examples/client.py` will help you see all choices you have.
 
 * Insertion
 
 .. code-block:: bash
 
-    $ python3 ./src/ndn/hydra/client/main.py insert -r <repo_prefix> -f /home/a.txt -p ./files/10mb.txt
+    $ python3 ./examples/client.py insert -r <repo_prefix> -f /home/a.txt -p ./examples/files/10mb.txt
 
 * Query
 
 .. code-block:: bash
 
-    $ python3 ./src/ndn/hydra/client/main.py query -r <repo_prefix> -q /files
+    $ python3 ./examples/client.py query -r <repo_prefix> -q /files
 
 * Fetch
 
 .. code-block:: bash
 
-    $ python3 ./src/ndn/hydra/client/main.py fetch -r <repo_prefix> -f /home/a.txt ./10mb.txt
+    $ python3 ./examples/client.py fetch -r <repo_prefix> -f /home/a.txt ./examples/output/10mb.txt
 
 * Deletion
 
 .. code-block:: bash
 
-    $ python3 ./src/ndn/hydra/client/main.py delete -r <repo_prefix> -f /home/a.txt
+    $ python3 ./examples/client.py delete -r <repo_prefix> -f /home/a.txt

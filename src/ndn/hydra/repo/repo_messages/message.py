@@ -11,14 +11,12 @@
 # ----------------------------------------------------------
 
 from ndn.encoding import *
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from repo.repo_messages.add import AddMessageBody
-from repo.repo_messages.remove import RemoveMessageBody
-from repo.repo_messages.store import StoreMessageBody
-from repo.repo_messages.claim import ClaimMessageBody
-from repo.repo_messages.heartbeat import HeartbeatMessageBody
-from repo.repo_messages.expire import ExpireMessageBody
+from src.ndn.hydra.repo.repo_messages.add import AddMessageBody
+from src.ndn.hydra.repo.repo_messages.remove import RemoveMessageBody
+from src.ndn.hydra.repo.repo_messages.store import StoreMessageBody
+from src.ndn.hydra.repo.repo_messages.claim import ClaimMessageBody
+from src.ndn.hydra.repo.repo_messages.heartbeat import HeartbeatMessageBody
+from src.ndn.hydra.repo.repo_messages.expire import ExpireMessageBody
 
 
 class MessageTypes:

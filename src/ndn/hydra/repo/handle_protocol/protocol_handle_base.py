@@ -17,10 +17,8 @@ from ndn.encoding import Name, Component, NonStrictName, FormalName
 from ndn.encoding.tlv_model import DecodeError
 from typing import List
 from ndn_python_repo import Storage
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from repo.protocol.repo_commands import RepoCommand
-from repo.utils.pubsub import PubSub
+from src.ndn.hydra.repo.protocol.repo_commands import RepoCommand
+from src.ndn.hydra.repo.utils.pubsub import PubSub
 
 class ProtocolHandle(object):
     """

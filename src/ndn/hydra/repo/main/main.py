@@ -19,8 +19,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name
 from ndn_python_repo import SqliteStorage
 import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from repo import *
+from src.ndn.hydra.repo import *
 
 
 def process_cmd_opts():

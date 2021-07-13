@@ -14,11 +14,9 @@ from typing import Callable
 from ndn.encoding import *
 import json
 import time
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from repo.global_view.global_view import GlobalView
-from repo.repo_messages.message_base import MessageBodyBase
-from repo.repo_messages.store import StoreMessageBodyTlv
+from src.ndn.hydra.repo.global_view.global_view import GlobalView
+from src.ndn.hydra.repo.repo_messages.message_base import MessageBodyBase
+from src.ndn.hydra.repo.repo_messages.store import StoreMessageBodyTlv
 
 class AddMessageBodyTypes:
     SESSION_ID = 83

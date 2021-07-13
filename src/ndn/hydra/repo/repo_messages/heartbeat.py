@@ -13,10 +13,8 @@
 from typing import Callable
 from ndn.encoding import *
 import json
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from repo.global_view.global_view import GlobalView
-from repo.repo_messages.message_base import MessageBodyBase
+from src.ndn.hydra.repo.global_view.global_view import GlobalView
+from src.ndn.hydra.repo.repo_messages.message_base import MessageBodyBase
 
 class HeartbeatMessageBodyTypes:
     SESSION_ID = 83
