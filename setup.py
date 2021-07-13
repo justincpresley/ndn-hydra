@@ -55,7 +55,7 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     keywords='NDN HYDRA',
-    packages=find_packages(exclude=['tests','examples','docs']),
+    packages=find_packages(exclude=['tests','examples','docs','notes']),
     install_requires=_parse_requirements('docs/requirements.txt'),
     python_requires=">=3.7",
     entry_points={
