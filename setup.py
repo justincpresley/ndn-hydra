@@ -35,6 +35,8 @@ setup(
     url='https://github.com/UCLA-IRL/ndn-hydra',
     author='Justin C Presley',
     author_email='justincpresley@gmail.com',
+    maintainer='Justin C Presley',
+    maintainer_email='justincpresley@gmail.com',
     download_url='https://pypi.python.org/pypi/ndn-hydra',
     project_urls={
         "Bug Tracker": "https://github.com/UCLA-IRL/ndn-hydra/issues",
@@ -53,15 +55,13 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     keywords='NDN HYDRA',
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
+    packages=find_packages(exclude=['tests','examples','docs']),
     install_requires=_parse_requirements('docs/requirements.txt'),
     python_requires=">=3.7",
     entry_points={
         'console_scripts': [
-            'ndn-hydra-repo = src.ndn.hydra.repo.main.main:main',
-            'ndn-hydra-client = src.ndn.hydra.client.main:main'
+            'ndn-hydra-repo = ndn_hydra.repo.main.main:main',
+            'ndn-hydra-client = ndn_hydra.client.main:main'
         ]
     },
-    include_package_data=True,
     zip_safe=False)

@@ -5,21 +5,21 @@ Python Importing
 ----------------
 
 There are two packages that are joined together into the pip library ``ndn-hydra``.
-    * **- ndn.hydra.client**
-    * **- ndn.hydra.repo**
+    * **- ndn_hydra.client**
+    * **- ndn_hydra.repo**
 
 A general pip import would look like this:
 
 .. code-block:: python
 
-    from ndn.hydra.client import *
-    from ndn.hydra.repo import *
+    from ndn_hydra.client import *
+    from ndn_hydra.repo import *
 
 or simply:
 
 .. code-block:: python
 
-    from ndn.hydra import *
+    from ndn_hydra import *
 
 
 Command-Line

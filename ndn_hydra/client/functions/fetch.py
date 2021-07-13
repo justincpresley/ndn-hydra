@@ -15,7 +15,7 @@ import logging
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType
 import os
-from src.ndn.hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
+from ndn_hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
 
 class HydraFetchClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:

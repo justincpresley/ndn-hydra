@@ -16,7 +16,7 @@ import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
 import sys, os
-from src.ndn.hydra.client.functions import *
+from ndn_hydra.client.functions import *
 
 def parse_hydra_cmd_opts() -> Namespace:
     # Command Line Parser
