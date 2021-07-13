@@ -16,8 +16,8 @@ from secrets import choice
 from ndn.app import NDNApp
 from ndn.encoding import Name, tlv_var, ContentType, Component
 from ndn_python_repo import Storage
-from ndn.hydra.repo.global_view.global_view import GlobalView
-from ndn.hydra.repo.protocol.repo_commands import File, FileList
+from ndn_hydra.repo.global_view.global_view import GlobalView
+from ndn_hydra.repo.protocol.repo_commands import File, FileList
 
 class QueryHandle(object):
     """

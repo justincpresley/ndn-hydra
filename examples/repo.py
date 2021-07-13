@@ -11,6 +11,6 @@
 # ----------------------------------------------------------
 
 import sys
-from ndn.hydra.repo.main.main import main
+from ndn_hydra.repo.main.main import main
 if __name__ == '__main__':
     sys.exit(main())

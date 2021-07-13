@@ -14,8 +14,8 @@ import asyncio
 import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
-from ndn.hydra.repo.protocol.repo_commands import RepoCommand, File, FetchPath
-from ndn.hydra.repo.utils.pubsub import PubSub
+from ndn_hydra.repo.protocol.repo_commands import RepoCommand, File, FetchPath
+from ndn_hydra.repo.utils.pubsub import PubSub
 
 class HydraDeleteClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:

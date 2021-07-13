@@ -11,12 +11,12 @@
 # ----------------------------------------------------------
 
 from ndn.encoding import *
-from ndn.hydra.repo.repo_messages.add import AddMessageBody
-from ndn.hydra.repo.repo_messages.remove import RemoveMessageBody
-from ndn.hydra.repo.repo_messages.store import StoreMessageBody
-from ndn.hydra.repo.repo_messages.claim import ClaimMessageBody
-from ndn.hydra.repo.repo_messages.heartbeat import HeartbeatMessageBody
-from ndn.hydra.repo.repo_messages.expire import ExpireMessageBody
+from ndn_hydra.repo.repo_messages.add import AddMessageBody
+from ndn_hydra.repo.repo_messages.remove import RemoveMessageBody
+from ndn_hydra.repo.repo_messages.store import StoreMessageBody
+from ndn_hydra.repo.repo_messages.claim import ClaimMessageBody
+from ndn_hydra.repo.repo_messages.heartbeat import HeartbeatMessageBody
+from ndn_hydra.repo.repo_messages.expire import ExpireMessageBody
 
 class MessageTypes:
     ADD = 1

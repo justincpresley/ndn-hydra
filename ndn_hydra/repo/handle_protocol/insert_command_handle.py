@@ -18,13 +18,13 @@ import time
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
 from ndn_python_repo import Storage
-from ndn.hydra.repo.handle_protocol.protocol_handle_base import ProtocolHandle
-from ndn.hydra.repo.protocol.repo_commands import RepoCommand
-from ndn.hydra.repo.utils.pubsub import PubSub
-from ndn.hydra.repo.global_view.global_view import GlobalView
-from ndn.hydra.repo.repo_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageBodyTlv
-from ndn.hydra.repo.repo_messages.message import MessageTlv, MessageTypes
-from ndn.hydra.repo.main.main_loop import MainLoop
+from ndn_hydra.repo.handle_protocol.protocol_handle_base import ProtocolHandle
+from ndn_hydra.repo.protocol.repo_commands import RepoCommand
+from ndn_hydra.repo.utils.pubsub import PubSub
+from ndn_hydra.repo.global_view.global_view import GlobalView
+from ndn_hydra.repo.repo_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageBodyTlv
+from ndn_hydra.repo.repo_messages.message import MessageTlv, MessageTypes
+from ndn_hydra.repo.main.main_loop import MainLoop
 
 class InsertCommandHandle(ProtocolHandle):
     """
