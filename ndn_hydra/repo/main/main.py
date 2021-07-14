@@ -66,7 +66,8 @@ def process_cmd_opts():
         args["node_name"] = process_others(vars.node_name)
         args["session_id"] = process_others(vars.session_id)
         workpath = "{home}/.ndn/repo{repo_prefix}/{session_id}".format(home=os.path.expanduser("~"), repo_prefix=args["repo_prefix"], session_id=args["session_id"])
-        args["logging_path"] = "{workpath}/session.log".format(workpath=workpath)
+        os.makedirs("{home}/.ndn/".format(home=os.path.expanduser("~")), exist_ok=True)
+        rgs["logging_path"] = "{workpath}/session.log".format(workpath=workpath)
         args["data_storage_path"] = "{workpath}/data.db".format(workpath=workpath)
         args["global_view_path"] = "{workpath}/global_view.db".format(workpath=workpath)
         args["svs_storage_path"] = "{workpath}/svs.db".format(workpath=workpath)
@@ -95,7 +96,6 @@ class HydraSessionThread(Thread):
         self.config = config
 
     def run(self) -> None:
-
         if len(os.path.dirname(self.config['logging_path'])) > 0 and not os.path.exists(os.path.dirname(self.config['logging_path'])):
             try:
                 os.makedirs(os.path.dirname(self.config['logging_path']))
@@ -156,7 +156,6 @@ def main() -> int:
     cmd_args = process_cmd_opts()
     config = default_config.copy()
     config.update(cmd_args)
-
     HydraSessionThread(config).start()
     return 0
 
