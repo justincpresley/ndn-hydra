@@ -1,13 +1,13 @@
 Install
 =======
 
-Dependencies
-------------
+Dependencies / Pre-Installs
+---------------------------
 
-* Install / Setup NFD_.
+* Install / Setup NFD_. This documentation assumes basic use of NFD.
 
 Instruction for use
---------------------
+-------------------
 
 Install the latest release with pip_:
 

@@ -24,3 +24,16 @@ or simply:
 
 Command-Line
 ------------
+
+The pip package automatically installs two command-line aliases for your convenience.
+    * **- ndn-hydra-client**
+    * **- ndn-hydra-repo**
+
+Each alias links back to it's corresponding package. Running each alias by itself will tell what arguments are missing.
+(note: registering ``/<repo-prefix>/group`` as multicast is still needed!)
+
+An example of running one alias is seen below.
+
+.. code-block:: bash
+
+    ndn-hydra-repo -rp "/hydra" -n "node_05" -s "a555"
