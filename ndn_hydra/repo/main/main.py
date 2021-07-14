@@ -15,6 +15,7 @@ import asyncio as aio
 import logging
 from typing import Dict
 from threading import Thread
+import pkg_resources
 from ndn.app import NDNApp
 from ndn.encoding import Name
 from ndn_python_repo import SqliteStorage
@@ -26,10 +27,11 @@ def process_cmd_opts():
     """
     Parse, process, and return cmd options.
     """
-    # def print_version():
-    #     pkg_name = 'ndn-hydra'
-    #     version = pkg_resources.require(pkg_name)[0].version
-    #     print(pkg_name + ' ' + version)
+    def get_version() -> str:
+        try:
+            return "ndn-hydra " + pkg_resources.require("ndn-hydra")[0].version
+        except pkg_resources.DistributionNotFound:
+            return "ndn-hydra source, undetermined"
 
     def process_prefix(input_string: str):
         if input_string[-1] == "/":
@@ -47,15 +49,17 @@ def process_cmd_opts():
 
     def parse_cmd_opts():
         # Command Line Parser
-        parser = argparse.ArgumentParser(add_help=False,description="ndn-hydra")
+        parser = argparse.ArgumentParser(add_help=False,description="ndn-hydra: Hydra, a distributed repo in NDN",epilog="Thank you for using Hydra.")
+        informationArgs = parser.add_argument_group("information arguments")
         requiredArgs = parser.add_argument_group("required arguments")
         optionalArgs = parser.add_argument_group("optional arguments")
-        informationArgs = parser.add_argument_group("information arguments")
 
         # Adding all Command Line Arguments
+        informationArgs.add_argument("-v","--version",action="version",version=get_version())
+        informationArgs.add_argument("-h","--help",action="help",help="show this help message and exit")
         requiredArgs.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True,help="repo (group) prefix. Example: \"/hydra\"")
-        requiredArgs.add_argument("-n", "--nodename",action="store",dest="node_name",required=True,help="node name. Example: \"node01\"")
-        requiredArgs.add_argument("-s", "--sessionid",action="store",dest="session_id",required=True,help="id of this session. Example: \"2c4f\"")
+        requiredArgs.add_argument("-n","--nodename",action="store",dest="node_name",required=True,help="node name. Example: \"node01\"")
+        requiredArgs.add_argument("-s","--sessionid",action="store",dest="session_id",required=True,help="id of this session. Example: \"2c4f\"")
 
         # Getting all Arguments
         vars = parser.parse_args()
@@ -66,7 +70,6 @@ def process_cmd_opts():
         args["node_name"] = process_others(vars.node_name)
         args["session_id"] = process_others(vars.session_id)
         workpath = "{home}/.ndn/repo{repo_prefix}/{session_id}".format(home=os.path.expanduser("~"), repo_prefix=args["repo_prefix"], session_id=args["session_id"])
-        os.makedirs("{home}/.ndn/".format(home=os.path.expanduser("~")), exist_ok=True)
         rgs["logging_path"] = "{workpath}/session.log".format(workpath=workpath)
         args["data_storage_path"] = "{workpath}/data.db".format(workpath=workpath)
         args["global_view_path"] = "{workpath}/global_view.db".format(workpath=workpath)
@@ -75,11 +78,6 @@ def process_cmd_opts():
         return args
 
     args = parse_cmd_opts()
-    """
-    if args.version:
-        print_version()
-        exit(0)
-    """
     return args
 
 async def listen(repo_prefix: Name, pb: PubSub, insert_handle: InsertCommandHandle, delete_handle: DeleteCommandHandle):
@@ -96,6 +94,7 @@ class HydraSessionThread(Thread):
         self.config = config
 
     def run(self) -> None:
+        os.makedirs("{home}/.ndn/".format(home=os.path.expanduser("~")), exist_ok=True)
         if len(os.path.dirname(self.config['logging_path'])) > 0 and not os.path.exists(os.path.dirname(self.config['logging_path'])):
             try:
                 os.makedirs(os.path.dirname(self.config['logging_path']))
@@ -108,7 +107,6 @@ class HydraSessionThread(Thread):
                             format='%(created)f  %(levelname)-8s  %(message)s',
                             filename=self.config['logging_path'],
                             filemode='w')
-
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
         logging.getLogger().addHandler(console)
