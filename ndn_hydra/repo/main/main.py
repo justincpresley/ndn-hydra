@@ -24,48 +24,63 @@ from ndn_hydra.repo import *
 
 
 def process_cmd_opts():
-    """
-    Parse, process, and return cmd options.
-    """
-    def get_version() -> str:
-        try:
-            return "ndn-hydra " + pkg_resources.require("ndn-hydra")[0].version
-        except pkg_resources.DistributionNotFound:
-            return "ndn-hydra source, undetermined"
-
+    def interpret_version() -> None:
+        set = True if "-v" in sys.argv else False
+        if set and (len(sys.argv)-1 < 2):
+            try: print("ndn-hydra " + pkg_resources.require("ndn-hydra")[0].version)
+            except pkg_resources.DistributionNotFound: print("ndn-hydra source,undetermined")
+            sys.exit(0)
+    def interpret_help() -> None:
+        set = True if "-h" in sys.argv else False
+        if set:
+            if (len(sys.argv)-1 < 2):
+                print("usage: ndn-hydra-repo [-h] [-v] -rp REPO_PREFIX -n NODE_NAME -s SESSION_ID")
+                print("    ndn-hydra-repo: hosting a node for hydra, the NDN distributed repo.")
+                print("    ('python3 ./examples/repo.py' instead of 'ndn-hydra-repo' if from source.)")
+                print("")
+                print("* informational args:")
+                print("  -h, --help                       |   shows this help message and exits.")
+                print("  -v, --version                    |   shows the current version and exits.")
+                print("")
+                print("* required args:")
+                print("  -rp, --repoprefix REPO_PREFIX    |   repo (group) prefix. Example: \"/hydra\"")
+                print("  -n, --nodename NODE_NAME         |   node name. Example: \"node01\"")
+                print("  -s, --sessionid SESSION_ID       |   id of this session. Example: \"2c4f\"")
+                print("")
+                print("Thank you for using hydra.")
+            sys.exit(0)
     def process_prefix(input_string: str):
         if input_string[-1] == "/":
             input_string = input_string[:-1]
         if input_string[0] != "/":
             input_string = "/" + input_string
         return input_string
-
     def process_others(input_string: str):
         if input_string[-1] == "/":
             input_string = input_string[:-1]
         if input_string[0] == "/":
             input_string = input_string[1:]
         return input_string
-
     def parse_cmd_opts():
         # Command Line Parser
-        parser = argparse.ArgumentParser(add_help=False,description="ndn-hydra: Hydra, a distributed repo in NDN",epilog="Thank you for using Hydra.")
-        informationArgs = parser.add_argument_group("information arguments")
-        requiredArgs = parser.add_argument_group("required arguments")
-        optionalArgs = parser.add_argument_group("optional arguments")
+        parser = argparse.ArgumentParser(prog="ndn-hydra-repo",add_help=False,allow_abbrev=False)
 
         # Adding all Command Line Arguments
-        informationArgs.add_argument("-v","--version",action="version",version=get_version())
-        informationArgs.add_argument("-h","--help",action="help",help="show this help message and exit")
-        requiredArgs.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True,help="repo (group) prefix. Example: \"/hydra\"")
-        requiredArgs.add_argument("-n","--nodename",action="store",dest="node_name",required=True,help="node name. Example: \"node01\"")
-        requiredArgs.add_argument("-s","--sessionid",action="store",dest="session_id",required=True,help="id of this session. Example: \"2c4f\"")
+        parser.add_argument("-h","--help",action="store_true",dest="help",default=False,required=False)
+        parser.add_argument("-v","--version",action="store_true",dest="version",default=False,required=False)
+        parser.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True)
+        parser.add_argument("-n","--nodename",action="store",dest="node_name",required=True)
+        parser.add_argument("-s","--sessionid",action="store",dest="session_id",required=True)
+
+        # Interpret Informational Arguments
+        interpret_version()
+        interpret_help()
 
         # Getting all Arguments
         vars = parser.parse_args()
-        args = {}
-
+        
         # Process args
+        args = {}
         args["repo_prefix"] = process_prefix(vars.repo_prefix)
         args["node_name"] = process_others(vars.node_name)
         args["session_id"] = process_others(vars.session_id)
@@ -74,7 +89,6 @@ def process_cmd_opts():
         args["data_storage_path"] = "{workpath}/data.db".format(workpath=workpath)
         args["global_view_path"] = "{workpath}/global_view.db".format(workpath=workpath)
         args["svs_storage_path"] = "{workpath}/svs.db".format(workpath=workpath)
-
         return args
 
     args = parse_cmd_opts()

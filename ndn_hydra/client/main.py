@@ -31,7 +31,8 @@ def parse_hydra_cmd_opts() -> Namespace:
         if set:
             if (len(sys.argv)-1 < 2):
                 print("usage: ndn-hydra-client [-h] [-v] {insert,delete,fetch,query} ...")
-                print("    ndn-hydra-client: a client made specifically for hydra.")
+                print("    ndn-hydra-client: a client made specifically for hydra, the NDN distributed repo.")
+                print("    ('python3 ./examples/client.py' instead of 'ndn-hydra-client' if from source.)")
                 print("")
                 print("* informational args:")
                 print("  -h, --help                      |   shows this help message and exits.")
