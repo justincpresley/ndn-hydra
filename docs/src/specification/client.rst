@@ -13,14 +13,16 @@ Both the Client and Repo have [-h] for help on how to run and [-v] for getting t
 Insertion
 ---------
 
-Inserts a local file given by the path within a hydra repo associated with the following Name.
+Inserts a local file given by the path within a hydra repo associated with the following Name. Insertion
+requires the number nodes to be ``2xNum_Copies`` and it is advised to have the number of copies at least be 2
+so that if one fails, nodes can download the file from the other node that has the file.
 
 Assuming this is ran being in the root directory, the following is a template on ways to run
 the client with insert.
 
 .. code-block:: bash
 
-    python3 ./examples/client.py insert -r <repo-prefix> -f <file-name> -p <path>
+    python3 ./examples/client.py insert -r <repo-prefix> -f <file-name> -p <path> [-c <num-copies>]
 
 For example:
 
