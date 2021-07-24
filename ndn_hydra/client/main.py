@@ -39,11 +39,13 @@ def parse_hydra_cmd_opts() -> Namespace:
                 print("  -v, --version                   |   shows the current version and exits.")
                 print("")
                 print("* function 'insert':")
-                print("     usage: ndn-hydra-client insert -r REPO -f FILENAME -p PATH")
+                print("     usage: ndn-hydra-client insert -r REPO -f FILENAME -p PATH [-c COPIES]")
                 print("     required args:")
                 print("        -r, --repoprefix REPO     |   a proper name of the repo prefix.")
                 print("        -f, --filename FILENAME   |   a proper name for the input file.")
                 print("        -p, --path PATH           |   path of the file desired to be the input i.e. input path.")
+                print("     optional args:")
+                print("        -c, --copies COPIES       |   number of copies for files, default 2.")
                 print("")
                 print("* function 'delete':")
                 print("     usage: ndn-hydra-client delete -r REPO -f FILENAME")
@@ -65,7 +67,7 @@ def parse_hydra_cmd_opts() -> Namespace:
                 print("        -r, --repoprefix REPO     |   a proper name of the repo prefix.")
                 print("        -q, --query QUERY         |   the type of query desired.")
                 print("     optional args:")
-                print("        -s, --sessionid SESSIONID |   certain sessionid-node targeted for query.")
+                print("        -s, --sessionid SESSIONID |   certain sessionid-node targeted for query, default closest node.")
                 print("")
                 print("Thank you for using hydra.")
             sys.exit(0)
@@ -80,6 +82,7 @@ def parse_hydra_cmd_opts() -> Namespace:
     insertsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
     insertsp.add_argument("-f","--filename",action="store",dest="filename",required=True)
     insertsp.add_argument("-p","--path",action="store",dest="path",required=True)
+    insertsp.add_argument("-c","--copies",action="store",dest="copies",required=False,default=2,type=int,nargs=None)
 
     deletesp = subparsers.add_parser('delete',add_help=False)
     deletesp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
@@ -128,7 +131,7 @@ async def run_hydra_client(app: NDNApp, args: Namespace) -> None:
   repo_prefix = Name.from_str(args.repo)
   client_prefix = Name.from_str("/client")
   filename = None
-  desired_copies = 2
+  desired_copies = args.copies
   client = HydraClient(app, client_prefix, repo_prefix)
 
   if args.function != "query":
