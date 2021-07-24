@@ -63,7 +63,7 @@ def parse_hydra_cmd_opts() -> Namespace:
                 print("        -p, --path PATH           |   path for the file to be placed i.e. output path.")
                 print("")
                 print("* function 'query':")
-                print("     usage: ndn-hydra-client query -r REPO -f FILENAME [-p PATH]")
+                print("     usage: ndn-hydra-client query -r REPO -q QUERY [-s SESSIONID]")
                 print("")
                 print("     required args:")
                 print("        -r, --repoprefix REPO     |   a proper name of the repo prefix.")
