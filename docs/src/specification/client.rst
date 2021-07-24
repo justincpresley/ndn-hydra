@@ -3,7 +3,12 @@ Client
 
 The Client is very forgiving. Running ``python3 ./examples/client.py`` will tell you what options
 are available. Furthermore, running ``python3 ./examples/client.py <function>`` with a appropriate
-function out of the list {insert,delete,fetch,query} will tell you exactly what you need.
+function out of the list {insert,delete,fetch,query} will tell you exactly what you need/what is missing.
+
+Information
+-----------
+
+Both the Client and Repo have [-h] for help on how to run and [-v] for getting the current version.
 
 Insertion
 ---------
@@ -52,7 +57,7 @@ the client with a query.
 
 .. code-block:: bash
 
-    python3 ./examples/client.py query -r <repo-prefix> -q <query>
+    python3 ./examples/client.py query -r <repo-prefix> -q <query> [-s <sessionid>]
 
 For example:
 
@@ -76,7 +81,7 @@ the client with a fetch.
 
 .. code-block:: bash
 
-    python3 ./examples/client.py fetch -r <repo-prefix> -f <file-name> -p <path>
+    python3 ./examples/client.py fetch -r <repo-prefix> -f <file-name> [-p <path>]
 
 For example:
 
