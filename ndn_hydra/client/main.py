@@ -93,7 +93,7 @@ def parse_hydra_cmd_opts() -> Namespace:
     fetchsp = subparsers.add_parser('fetch',add_help=False)
     fetchsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
     fetchsp.add_argument("-f","--filename",action="store",dest="filename",required=True)
-    fetchsp.add_argument("-p","--path",action="store",dest="path",default="./client/example/fetchedFile", required=False)
+    fetchsp.add_argument("-p","--path",action="store",dest="path",default="./fetchedHydraFile", required=False)
 
     querysp = subparsers.add_parser('query',add_help=False)
     querysp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
