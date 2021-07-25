@@ -78,7 +78,7 @@ def process_cmd_opts():
 
         # Getting all Arguments
         vars = parser.parse_args()
-        
+
         # Process args
         args = {}
         args["repo_prefix"] = process_prefix(vars.repo_prefix)
@@ -151,7 +151,7 @@ class HydraSessionThread(Thread):
             app.run_forever(after_start=main_loop.start())
         except FileNotFoundError:
             print('Error: could not connect to NFD.')
-
+            sys.exit()
 
 def main() -> int:
     default_config = {

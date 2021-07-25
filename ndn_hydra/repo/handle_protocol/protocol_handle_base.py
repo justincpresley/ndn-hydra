@@ -30,6 +30,5 @@ class ProtocolHandle(object):
         self.pb = pb
         self.config = config
         self.logger = logging.getLogger()
-
     async def listen(self, prefix: Name):
         raise NotImplementedError

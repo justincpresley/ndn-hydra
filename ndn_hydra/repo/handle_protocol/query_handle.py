@@ -48,14 +48,14 @@ class QueryHandle(object):
         :param prefix: NonStrictName.
         """
         self.app.route(prefix)(self._on_interest)
-        logging.info(f'Query handle: listening to {Name.to_str(prefix)}')
+        self.logger.info(f'Query handle: listening to {Name.to_str(prefix)}')
 
     def unlisten(self, prefix):
         """
         :param name: NonStrictName.
         """
         aio.ensure_future(self.app.unregister(prefix))
-        logging.info(f'Query handle: stop listening to {Name.to_str(prefix)}')
+        self.logger.info(f'Query handle: stop listening to {Name.to_str(prefix)}')
 
     def _on_interest(self, int_name, int_param, _app_param):
         if not int_param.must_be_fresh or not int_param.can_be_prefix:
