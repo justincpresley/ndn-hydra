@@ -108,8 +108,11 @@ def parse_hydra_cmd_opts() -> Namespace:
     # Configure Arguments
     if vars.function == "insert":
         if not os.path.isfile(vars.path):
-          print('Error: path specified is not an actual file. Unable to insert.')
-          sys.exit()
+            print('Error: path specified is not an actual file. Unable to insert.')
+            sys.exit()
+        if vars.copies < 2:
+            print('Error: insufficient number of copies, must be 2 or above.')
+            sys.exit()
     return vars
 
 class HydraClient():
