@@ -37,3 +37,12 @@ An example of running one alias is seen below.
 .. code-block:: bash
 
     ndn-hydra-repo -rp "/hydra" -n "node_05" -s "a555"
+
+
+Identity / Keys
+---------------
+
+A NDN Hydra node will require a identity (along with a key) that is the same as the ``node_name``.
+For now however, the default localhost/default key that NFD produces automatically is required in order
+to have a successful run. Deleting ``~/.ndn`` or the default keys will result in the inability to run
+a hydra node.

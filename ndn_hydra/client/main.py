@@ -16,33 +16,91 @@ import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
 import sys, os
+import pkg_resources
 from ndn_hydra.client.functions import *
 
 def parse_hydra_cmd_opts() -> Namespace:
+    def interpret_version() -> None:
+        set = True if "-v" in sys.argv else False
+        if set and (len(sys.argv)-1 < 2):
+            try: print("ndn-hydra " + pkg_resources.require("ndn-hydra")[0].version)
+            except pkg_resources.DistributionNotFound: print("ndn-hydra source,undetermined")
+            sys.exit(0)
+    def interpret_help() -> None:
+        set = True if "-h" in sys.argv else False
+        if set:
+            if (len(sys.argv)-1 < 2):
+                print("usage: ndn-hydra-client [-h] [-v] {insert,delete,fetch,query} ...")
+                print("    ndn-hydra-client: a client made specifically for hydra, the NDN distributed repo.")
+                print("    ('python3 ./examples/client.py' instead of 'ndn-hydra-client' if from source.)")
+                print("")
+                print("* informational args:")
+                print("  -h, --help                      |   shows this help message and exits.")
+                print("  -v, --version                   |   shows the current version and exits.")
+                print("")
+                print("* function 'insert':")
+                print("     usage: ndn-hydra-client insert -r REPO -f FILENAME -p PATH [-c COPIES]")
+                print("     required args:")
+                print("        -r, --repoprefix REPO     |   a proper name of the repo prefix.")
+                print("        -f, --filename FILENAME   |   a proper name for the input file.")
+                print("        -p, --path PATH           |   path of the file desired to be the input i.e. input path.")
+                print("     optional args:")
+                print("        -c, --copies COPIES       |   number of copies for files, default 2.")
+                print("")
+                print("* function 'delete':")
+                print("     usage: ndn-hydra-client delete -r REPO -f FILENAME")
+                print("     required args:")
+                print("        -r, --repoprefix REPO     |   a proper name of the repo prefix.")
+                print("        -f, --filename FILENAME   |   a proper name for selected file.")
+                print("")
+                print("* function 'fetch':")
+                print("     usage: ndn-hydra-client fetch -r REPO -f FILENAME [-p PATH]")
+                print("     required args:")
+                print("        -r, --repoprefix REPO     |   a proper name of the repo prefix.")
+                print("        -f, --filename FILENAME   |   a proper name for desired file.")
+                print("     optional args:")
+                print("        -p, --path PATH           |   path for the file to be placed i.e. output path.")
+                print("")
+                print("* function 'query':")
+                print("     usage: ndn-hydra-client query -r REPO -q QUERY [-s SESSIONID]")
+                print("     required args:")
+                print("        -r, --repoprefix REPO     |   a proper name of the repo prefix.")
+                print("        -q, --query QUERY         |   the type of query desired.")
+                print("     optional args:")
+                print("        -s, --sessionid SESSIONID |   certain sessionid-node targeted for query, default closest node.")
+                print("")
+                print("Thank you for using hydra.")
+            sys.exit(0)
     # Command Line Parser
-    parser = ArgumentParser(description="A Distributed Repo Client")
-    subparsers = parser.add_subparsers(title="Client Commands", dest="function")
-    subparsers.required = True
+    parser = ArgumentParser(prog="ndn-hydra-client",add_help=False,allow_abbrev=False)
+    parser.add_argument("-h","--help",action="store_true",dest="help",default=False,required=False)
+    parser.add_argument("-v","--version",action="store_true",dest="version",default=False,required=False)
+    subparsers = parser.add_subparsers(dest="function",required=True)
 
     # Define All Subparsers
-    insertsp = subparsers.add_parser('insert')
-    insertsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True, help="A proper Name of The Repo Prefix.")
-    insertsp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
-    insertsp.add_argument("-p","--path",action="store",dest="path",required=True, help="The path of the file desired to be the input.")
+    insertsp = subparsers.add_parser('insert',add_help=False)
+    insertsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
+    insertsp.add_argument("-f","--filename",action="store",dest="filename",required=True)
+    insertsp.add_argument("-p","--path",action="store",dest="path",required=True)
+    insertsp.add_argument("-c","--copies",action="store",dest="copies",required=False,default=2,type=int,nargs=None)
 
-    deletesp = subparsers.add_parser('delete')
-    deletesp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True, help="A proper Name of The Repo Prefix.")
-    deletesp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
+    deletesp = subparsers.add_parser('delete',add_help=False)
+    deletesp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
+    deletesp.add_argument("-f","--filename",action="store",dest="filename",required=True)
 
-    fetchsp = subparsers.add_parser('fetch')
-    fetchsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True, help="A proper Name of The Repo Prefix.")
-    fetchsp.add_argument("-f","--filename",action="store",dest="filename",required=True, help="A proper Name for the file.")
-    fetchsp.add_argument("-p","--path",action="store",dest="path",default="./client/example/fetchedFile", required=False, help="The path you want the file to be placed.")
+    fetchsp = subparsers.add_parser('fetch',add_help=False)
+    fetchsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
+    fetchsp.add_argument("-f","--filename",action="store",dest="filename",required=True)
+    fetchsp.add_argument("-p","--path",action="store",dest="path",default="./fetchedHydraFile", required=False)
 
-    querysp = subparsers.add_parser('query')
-    querysp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True, help="A proper Name of The Repo Prefix.")
-    querysp.add_argument("-s","--sessionid",action="store",dest="sessionid",default=None, required=False, help="The session ID of the node you want to query. Best-route by default.")
-    querysp.add_argument("-q","--query",action="store",dest="query",required=True, help="The Query you want to send to the Repo.")
+    querysp = subparsers.add_parser('query',add_help=False)
+    querysp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
+    querysp.add_argument("-q","--query",action="store",dest="query",required=True)
+    querysp.add_argument("-s","--sessionid",action="store",dest="sessionid",default=None, required=False)
+
+    # Interpret Informational Arguments
+    interpret_version()
+    interpret_help()
 
     # Getting all Arguments
     vars = parser.parse_args()
@@ -50,8 +108,11 @@ def parse_hydra_cmd_opts() -> Namespace:
     # Configure Arguments
     if vars.function == "insert":
         if not os.path.isfile(vars.path):
-          print('Error: path specified is not an actual file. Unable to insert.')
-          sys.exit()
+            print('Error: path specified is not an actual file. Unable to insert.')
+            sys.exit()
+        if vars.copies < 2:
+            print('Error: insufficient number of copies, must be 2 or above.')
+            sys.exit()
     return vars
 
 class HydraClient():
@@ -73,7 +134,7 @@ async def run_hydra_client(app: NDNApp, args: Namespace) -> None:
   repo_prefix = Name.from_str(args.repo)
   client_prefix = Name.from_str("/client")
   filename = None
-  desired_copies = 2
+  desired_copies = args.copies
   client = HydraClient(app, client_prefix, repo_prefix)
 
   if args.function != "query":

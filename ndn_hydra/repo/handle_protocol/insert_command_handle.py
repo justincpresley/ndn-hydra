@@ -45,6 +45,7 @@ class InsertCommandHandle(ProtocolHandle):
         self.prefix = None
         self.main_loop = main_loop
         self.global_view = global_view
+        self.repo_prefix = config['repo_prefix']
 
     async def listen(self, prefix: NonStrictName):
         """
@@ -53,10 +54,8 @@ class InsertCommandHandle(ProtocolHandle):
         :param name: NonStrictName. The name prefix to listen on.
         """
         self.prefix = prefix
-
-        # subscribe to insert messages
+        self.logger.info(f'Insert handle: subscribing to {Name.to_str(self.prefix) + "/insert"}')
         self.pb.subscribe(self.prefix + ['insert'], self._on_insert_msg)
-
         # start to announce process status
         # await self._schedule_announce_process_status(period=3)
 
@@ -194,7 +193,3 @@ class InsertCommandHandle(ProtocolHandle):
             bak=bak
         )
         self.logger.info(val)
-
-
-
-
