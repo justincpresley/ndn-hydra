@@ -108,7 +108,6 @@ class HydraSessionThread(Thread):
         self.config = config
 
     def run(self) -> None:
-        os.makedirs("{home}/.ndn/".format(home=os.path.expanduser("~")), exist_ok=True)
         if len(os.path.dirname(self.config['logging_path'])) > 0 and not os.path.exists(os.path.dirname(self.config['logging_path'])):
             try:
                 os.makedirs(os.path.dirname(self.config['logging_path']))
@@ -117,6 +116,7 @@ class HydraSessionThread(Thread):
             except FileExistsError:
                 pass
 
+        # logging
         logging.basicConfig(level=logging.INFO,
                             format='%(created)f  %(levelname)-8s  %(message)s',
                             filename=self.config['logging_path'],
@@ -125,12 +125,12 @@ class HydraSessionThread(Thread):
         console.setLevel(logging.INFO)
         logging.getLogger().addHandler(console)
 
-
+        # loop + NDN
         loop = aio.new_event_loop()
         aio.set_event_loop(loop)
         app = NDNApp()
 
-        # data_storage = SqliteStorage(self.config['data_storage_path']+"abc.db")
+        # databases
         data_storage = SqliteStorage(self.config['data_storage_path'])
         global_view = GlobalView(self.config['global_view_path'])
         pb = PubSub(app)
