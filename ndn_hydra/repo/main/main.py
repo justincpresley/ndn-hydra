@@ -144,11 +144,14 @@ class HydraSessionThread(Thread):
         delete_handle = DeleteCommandHandle(app, data_storage, pb, self.config, main_loop, global_view)
         query_handle = QueryHandle(app, global_view, self.config)
 
-        # start listening
-        aio.ensure_future(listen(Name.normalize(self.config['repo_prefix']), pb, insert_handle, delete_handle))
+        # Post-start
+        async def start_main_loop():
+            await listen(Name.normalize(self.config['repo_prefix']), pb, insert_handle, delete_handle)
+            await main_loop.start()
 
+        # start listening
         try:
-            app.run_forever(after_start=main_loop.start())
+            app.run_forever(after_start=start_main_loop())
         except FileNotFoundError:
             print('Error: could not connect to NFD.')
             sys.exit()

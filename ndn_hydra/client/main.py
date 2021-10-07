@@ -134,7 +134,9 @@ async def run_hydra_client(app: NDNApp, args: Namespace) -> None:
   repo_prefix = Name.from_str(args.repo)
   client_prefix = Name.from_str("/client")
   filename = None
-  desired_copies = args.copies
+  desired_copies = 2
+  if hasattr(args, 'copies'):
+    desired_copies = args.copies
   client = HydraClient(app, client_prefix, repo_prefix)
 
   if args.function != "query":
