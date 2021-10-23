@@ -13,7 +13,6 @@
 import asyncio as aio
 import logging
 import time
-import random
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component
 from ndn_python_repo import Storage

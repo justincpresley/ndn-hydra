@@ -14,8 +14,9 @@ import asyncio
 from argparse import ArgumentParser, Namespace
 import logging
 from ndn.app import NDNApp
-from ndn.encoding import Name, Component, FormalName
-import sys, os
+from ndn.encoding import Name, FormalName
+import sys
+import os
 import pkg_resources
 from ndn_hydra.client.functions import *
 

@@ -10,7 +10,6 @@
 # @Pip-Library: https://pypi.org/project/ndn-hydra/
 # ----------------------------------------------------------
 
-import asyncio as aio
 import logging
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType

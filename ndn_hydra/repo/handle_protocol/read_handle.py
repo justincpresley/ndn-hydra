@@ -14,7 +14,7 @@ import asyncio as aio
 import logging
 from secrets import choice
 from ndn.app import NDNApp
-from ndn.encoding import Name, tlv_var, ContentType, Component, parse_data
+from ndn.encoding import Name, ContentType, Component, parse_data
 from ndn_python_repo import Storage
 from ndn_hydra.repo.global_view.global_view import GlobalView
 
