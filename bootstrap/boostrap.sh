@@ -18,12 +18,11 @@ help()
 python3 bootstrap/json-writter.py
 sudo cp bootstrap/ndncert-client.conf /usr/local/etc/ndncert/client.conf
 
-while getopts c:p:h: flag
+while getopts c:p: flag
 do
     case "${flag}" in
         c) ssl_cert=${OPTARG};;
         p) ssl_prv=${OPTARG};;
-        h) help;;
         ?) help;;
     esac
 done
