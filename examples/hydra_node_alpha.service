@@ -1,9 +1,0 @@
-[Unit]
-Description=NDN Hydra Service (Node Alpha)
-
-[Service]
-Type=simple
-ExecStart=/home/hydra_op/ndn-hydra/venv/bin/ndn-hydra-repo -rp hydra-test@bruins -n alpha
-
-[Install]
-WantedBy=multi-user.target
