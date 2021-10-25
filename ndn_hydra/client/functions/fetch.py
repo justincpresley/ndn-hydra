@@ -10,7 +10,7 @@
 # @Pip-Library: https://pypi.org/project/ndn-hydra/
 # ----------------------------------------------------------
 
-import asyncio as aio
+from asyncio import Semaphore
 import logging
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType
@@ -80,9 +80,8 @@ class HydraFetchClient(object):
       # Fetch the rest of the file.
       semaphore = aio.Semaphore(10)
       if start_index <= end_index:
-          # semaphore = aio.Semaphore(10)
-          print("round " + str(start_index) + ", total " + str(end_index))
-          async for (_, _, content, _) in concurrent_fetcher(self, self.app, name_at_repo, start_index, end_index, aio.Semaphore(10)):
+          semaphore = Semaphore(10)
+          async for (_, _, content, _) in concurrent_fetcher(self.app, Name.from_str("/"), name_at_repo, start_index, end_index, semaphore):
             b_array.extend(content)
 
       # After b_array is filled, sort out what to do with the data.

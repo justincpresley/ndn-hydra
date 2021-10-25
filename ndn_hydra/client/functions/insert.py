@@ -10,7 +10,6 @@
 # @Pip-Library: https://pypi.org/project/ndn-hydra/
 # ----------------------------------------------------------
 
-import asyncio
 import logging
 from hashlib import blake2b
 from ndn.app import NDNApp

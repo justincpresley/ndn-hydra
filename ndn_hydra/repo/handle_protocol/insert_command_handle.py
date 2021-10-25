@@ -159,7 +159,10 @@ class InsertCommandHandle(ProtocolHandle):
         add_message.header = MessageTypes.ADD
         add_message.body = add_message_body.encode()
         # apply globalview and send msg thru SVS
-        next_state_vector = self.main_loop.svs.getCore().getStateVector().get(self.config['session_id']) + 1
+        try:
+            next_state_vector = self.main_loop.svs.getCore().getStateTable().getSeqNum(Name.to_str(Name.from_str(self.config['session_id']))) + 1
+        except TypeError:
+            next_state_vector = 0
         self.global_view.add_insertion(
             insertion_id,
             Name.to_str(file_name),

@@ -12,7 +12,6 @@
 
 from typing import Callable
 from ndn.encoding import *
-import json
 import time
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.repo_messages.message_base import MessageBodyBase

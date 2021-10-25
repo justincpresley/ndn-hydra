@@ -74,7 +74,10 @@ class MainLoop:
 
         # heartbeat_message_body = HeartbeatMessageBody(self.svs_node_id, self.state_vector, heartbeat_message_body.encode())
         # print("state_vector: {0}".format(self.svs.getCore().getStateVector().to_str()))
-        next_state_vector = self.svs.getCore().getStateVector().get(Name.to_str(Name.from_str(self.config['session_id']))) + 1
+        try:
+            next_state_vector = self.svs.getCore().getStateTable().getSeqNum(Name.to_str(Name.from_str(self.config['session_id']))) + 1
+        except TypeError:
+            next_state_vector = 0
         self.global_view.update_session(self.config['session_id'], self.config['node_name'], expire_at, favor, next_state_vector)
         self.svs.publishData(heartbeat_message.encode())
 

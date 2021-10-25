@@ -10,7 +10,7 @@
 # @Pip-Library: https://pypi.org/project/ndn-hydra/
 # ----------------------------------------------------------
 
-import argparse
+from argparse import ArgumentParser
 import asyncio as aio
 import logging
 from typing import Dict
@@ -21,6 +21,7 @@ from ndn.encoding import Name
 from ndn.utils import gen_nonce
 from ndn_python_repo import SqliteStorage
 import sys, os
+from ndn.svs import SVSyncLogger
 from ndn_hydra.repo import *
 
 
@@ -64,7 +65,7 @@ def process_cmd_opts():
         return input_string
     def parse_cmd_opts():
         # Command Line Parser
-        parser = argparse.ArgumentParser(prog="ndn-hydra-repo",add_help=False,allow_abbrev=False)
+        parser = ArgumentParser(prog="ndn-hydra-repo",add_help=False,allow_abbrev=False)
 
         # Adding all Command Line Arguments
         parser.add_argument("-h","--help",action="store_true",dest="help",default=False,required=False)
@@ -118,6 +119,7 @@ class HydraSessionThread(Thread):
                 pass
 
         # logging
+        SVSyncLogger.config(False, None, logging.INFO)
         logging.basicConfig(level=logging.INFO,
                             format='%(created)f  %(levelname)-8s  %(message)s',
                             filename=self.config['logging_path'],

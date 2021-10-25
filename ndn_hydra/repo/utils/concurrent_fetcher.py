@@ -6,7 +6,6 @@
 # -----------------------------------------------------------------------------
 
 import asyncio as aio
-from datetime import datetime
 import logging
 from ndn.app import NDNApp
 from ndn.types import InterestNack, InterestTimeout
@@ -54,12 +53,12 @@ async def concurrent_fetcher(app: NDNApp, name: NonStrictName, file_name: NonStr
                 received_or_fail.set()
                 return
             try:
-                logging.info('Express Interest: {}'.format(Name.to_str(int_name)))
+                #logging.info('Express Interest: {}'.format(Name.to_str(int_name)))
                 data_name, meta_info, content, data_bytes = await app.express_interest(
                     int_name, need_raw_packet=True, can_be_prefix=False, lifetime=1000, **kwargs)
 
                 # Save data and update final_id
-                logging.info('Received data: {}'.format(Name.to_str(data_name)))
+                #logging.info('Received data: {}'.format(Name.to_str(data_name)))
                 seq_to_data_packet[seq] = (data_name, meta_info, content, data_bytes, key)
                 if meta_info is not None and meta_info.final_block_id is not None:
                     final_id = Component.to_number(meta_info.final_block_id)
