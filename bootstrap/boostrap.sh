@@ -18,11 +18,12 @@ help()
 python3 bootstrap/json-writter.py
 sudo cp bootstrap/ndncert-client.conf /usr/local/etc/ndncert/client.conf
 
-while getopts c:p: flag
+while getopts c:p:h: flag
 do
     case "${flag}" in
         c) ssl_cert=${OPTARG};;
         p) ssl_prv=${OPTARG};;
+        h) help;;
         ?) help;;
     esac
 done
@@ -33,6 +34,4 @@ then
    exit 1
 fi
 
-echo "SSL Certificate path: $ssl_cert"
-echo "Private key for SSL Certificate: $ssl_prv"
 python3 bootstrap/auto.py -c $ssl_cert -p $ssl_prv
