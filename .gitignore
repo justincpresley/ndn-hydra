@@ -37,3 +37,4 @@ build/*
 *.egg-info
 *.egg-info/*
 dist/*
+venv/*

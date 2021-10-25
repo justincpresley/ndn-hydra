@@ -1,0 +1,10 @@
+[Unit]
+Description=NDN Hydra Service (Node Gamma)
+
+[Service]
+Type=simple
+ExecStart=/home/hydra_op/ndn-hydra/venv/bin/ndn-hydra-repo -rp hydra-test@bruins -n gamma
+
+[Install]
+WantedBy=multi-user.target
+~

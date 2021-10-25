@@ -18,6 +18,7 @@ from threading import Thread
 import pkg_resources
 from ndn.app import NDNApp
 from ndn.encoding import Name
+from ndn.utils import gen_nonce
 from ndn_python_repo import SqliteStorage
 import sys, os
 from ndn_hydra.repo import *
@@ -45,7 +46,7 @@ def process_cmd_opts():
                 print("* required args:")
                 print("  -rp, --repoprefix REPO_PREFIX    |   repo (group) prefix. Example: \"/hydra\"")
                 print("  -n, --nodename NODE_NAME         |   node name. Example: \"node01\"")
-                print("  -s, --sessionid SESSION_ID       |   id of this session. Example: \"2c4f\"")
+              # print("  -s, --sessionid SESSION_ID       |   id of this session. Example: \"2c4f\"")
                 print("")
                 print("Thank you for using hydra.")
             sys.exit(0)
@@ -70,7 +71,7 @@ def process_cmd_opts():
         parser.add_argument("-v","--version",action="store_true",dest="version",default=False,required=False)
         parser.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True)
         parser.add_argument("-n","--nodename",action="store",dest="node_name",required=True)
-        parser.add_argument("-s","--sessionid",action="store",dest="session_id",required=True)
+      # parser.add_argument("-s","--sessionid",action="store",dest="session_id",required=True)
 
         # Interpret Informational Arguments
         interpret_version()
@@ -83,7 +84,7 @@ def process_cmd_opts():
         args = {}
         args["repo_prefix"] = process_prefix(vars.repo_prefix)
         args["node_name"] = process_others(vars.node_name)
-        args["session_id"] = process_others(vars.session_id)
+        args["session_id"] = process_others(vars.node_name + str(gen_nonce()))
         workpath = "{home}/.ndn/repo{repo_prefix}/{session_id}".format(home=os.path.expanduser("~"), repo_prefix=args["repo_prefix"], session_id=args["session_id"])
         args["logging_path"] = "{workpath}/session.log".format(workpath=workpath)
         args["data_storage_path"] = "{workpath}/data.db".format(workpath=workpath)
