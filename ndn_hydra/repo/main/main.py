@@ -36,7 +36,7 @@ def process_cmd_opts():
         set = True if "-h" in sys.argv else False
         if set:
             if (len(sys.argv)-1 < 2):
-                print("usage: ndn-hydra-repo [-h] [-v] -rp REPO_PREFIX -n NODE_NAME -s SESSION_ID")
+                print("usage: ndn-hydra-repo [-h] [-v] -rp REPO_PREFIX -n NODE_NAME")
                 print("    ndn-hydra-repo: hosting a node for hydra, the NDN distributed repo.")
                 print("    ('python3 ./examples/repo.py' instead of 'ndn-hydra-repo' if from source.)")
                 print("")
@@ -47,7 +47,6 @@ def process_cmd_opts():
                 print("* required args:")
                 print("  -rp, --repoprefix REPO_PREFIX    |   repo (group) prefix. Example: \"/hydra\"")
                 print("  -n, --nodename NODE_NAME         |   node name. Example: \"node01\"")
-              # print("  -s, --sessionid SESSION_ID       |   id of this session. Example: \"2c4f\"")
                 print("")
                 print("Thank you for using hydra.")
             sys.exit(0)
@@ -72,7 +71,6 @@ def process_cmd_opts():
         parser.add_argument("-v","--version",action="store_true",dest="version",default=False,required=False)
         parser.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True)
         parser.add_argument("-n","--nodename",action="store",dest="node_name",required=True)
-      # parser.add_argument("-s","--sessionid",action="store",dest="session_id",required=True)
 
         # Interpret Informational Arguments
         interpret_version()

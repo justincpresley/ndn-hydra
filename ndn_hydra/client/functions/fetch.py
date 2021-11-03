@@ -78,7 +78,6 @@ class HydraFetchClient(object):
       # print(Name.to_str(data_name))
 
       # Fetch the rest of the file.
-      semaphore = aio.Semaphore(10)
       if start_index <= end_index:
           semaphore = Semaphore(10)
           async for (_, _, content, _) in concurrent_fetcher(self.app, Name.from_str("/"), name_at_repo, start_index, end_index, semaphore):
