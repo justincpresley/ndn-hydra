@@ -1,4 +1,4 @@
-ndn-svs>=0.3.6
+ndn-svs>=0.3.9
 ndn-python-repo>=0.2a5
 python-ndn>=0.3a1.post4
 sphinx-autodoc-typehints>=1.12.0
