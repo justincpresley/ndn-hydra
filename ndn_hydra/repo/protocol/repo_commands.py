@@ -10,6 +10,7 @@
 # ----------------------------------------------------------
 
 from ndn.encoding import TlvModel, ModelField, NameField, UintField, RepeatedField, BytesField
+from ndn_hydra.repo.repo_messages.add import FileTlv
 
 class RepoTypeNumber:
   REPO_COMMAND = 201
@@ -26,17 +27,16 @@ class RepoTypeNumber:
 class FetchPath(TlvModel):
   prefix = NameField()
 
-class File(TlvModel):
+class CommandFile(TlvModel):
   file_name = NameField()
-  desired_copies = UintField(RepoTypeNumber.DESIRED_COPIES)
   packets = UintField(RepoTypeNumber.PACKETS)
   digests = RepeatedField(BytesField(RepoTypeNumber.DIGEST))
   size = UintField(RepoTypeNumber.SIZE)
 
 class FileList(TlvModel):
-    list = RepeatedField(ModelField(RepoTypeNumber.FILE, File))
+    list = RepeatedField(ModelField(RepoTypeNumber.FILE, FileTlv))
 
 class RepoCommand(TlvModel):
-  file = ModelField(RepoTypeNumber.FILE, File)
+  file = ModelField(RepoTypeNumber.FILE, CommandFile)
   sequence_number = UintField(RepoTypeNumber.SEQUENCE_NUMBER)
   fetch_path = ModelField(RepoTypeNumber.FETCH_PATH, FetchPath)
