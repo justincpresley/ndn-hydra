@@ -15,7 +15,8 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, ContentType, Component
 from ndn_python_repo import Storage
 from ndn_hydra.repo.global_view.global_view import GlobalView
-from ndn_hydra.repo.protocol.repo_commands import File, FileList
+from ndn_hydra.repo.protocol.repo_commands import FileList
+from ndn_hydra.repo.repo_messages.add import FileTlv
 
 class QueryHandle(object):
     """
@@ -72,7 +73,7 @@ class QueryHandle(object):
             filelist = FileList()
             filelist.list = []
             for index in range(len(insertions)):
-                file = File()
+                file = FileTlv()
                 file.file_name = insertions[index]["file_name"]
                 file.desired_copies = insertions[index]["desired_copies"]
                 file.packets = insertions[index]["packets"]
@@ -88,7 +89,7 @@ class QueryHandle(object):
             filecontent = None
             for index in range(len(insertions)):
                 if Name.to_str(insertions[index]["file_name"]) == filename:
-                    file = File()
+                    file = FileTlv()
                     file.file_name = insertions[index]["file_name"]
                     file.desired_copies = insertions[index]["desired_copies"]
                     file.packets = insertions[index]["packets"]
@@ -106,7 +107,7 @@ class QueryHandle(object):
             filelist.list = []
             for index in range(len(insertions)):
                 if Name.is_prefix(Name.from_str(prefix), insertions[index]["file_name"]):
-                    file = File()
+                    file = FileTlv()
                     file.file_name = insertions[index]["file_name"]
                     file.desired_copies = insertions[index]["desired_copies"]
                     file.packets = insertions[index]["packets"]

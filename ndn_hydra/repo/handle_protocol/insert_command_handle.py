@@ -76,7 +76,6 @@ class InsertCommandHandle(ProtocolHandle):
         # print("receive INSERT command for file: {}".format(Name.to_str(cmd.file.file_name)))
 
         file_name = cmd.file.file_name
-        desired_copies = cmd.file.desired_copies
         packets = cmd.file.packets
         digests = cmd.file.digests
         size = cmd.file.size
@@ -87,13 +86,9 @@ class InsertCommandHandle(ProtocolHandle):
 
         # TODO: check duplicate sequence number
 
-        # are there enough sessions?
-        if desired_copies == 0:
-            self.logger.warning("desired_copies is 0")
-            return
-
         sessions = self.global_view.get_sessions()
 
+        desired_copies = 2
         if len(sessions) < (desired_copies * 2):
             self.logger.warning("not enough node sessions") # TODO: notify the client?
             return

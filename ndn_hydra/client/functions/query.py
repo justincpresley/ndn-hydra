@@ -13,7 +13,8 @@ import logging
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType
 from ndn.types import InterestNack, InterestTimeout, InterestCanceled, ValidationFailure
-from ndn_hydra.repo.protocol.repo_commands import File, FileList
+from ndn_hydra.repo.protocol.repo_commands import FileList
+from ndn_hydra.repo.repo_messages.add import FileTlv
 
 class HydraQueryClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:
@@ -63,7 +64,7 @@ class HydraQueryClient(object):
                  return
              elif querytype == "file":
                  if content:
-                     file = File.parse(content)
+                     file = FileTlv.parse(content)
                      print(f'File Exists, File meta-info')
                      print(f'\tfile_name: {Name.to_str(file.file_name)}')
                      print(f'\tsize: {file.size}')
