@@ -108,6 +108,7 @@ class ReadHandle(object):
             final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)
             self.logger.info(f'Read handle: redirected {Name.to_str(int_name)}')
+            self.logger.info(f'Read handle: new name {new_name}')
             return
 
     def _get_file_name_from_interest(self, int_name):
