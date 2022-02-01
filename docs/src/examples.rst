@@ -16,18 +16,16 @@ This means we can eliminate routing for a quick run.
 
 .. code-block:: bash
 
-    $ nfdc strategy set /<repo-prefix>/group /localhost/nfd/strategy/multicast/%FD%03
+    $ nfdc strategy set /hydra/group /localhost/nfd/strategy/multicast/%FD%03
 
 **4. Run the following on 4 or more terminals.**
 
 .. code-block:: bash
 
     $ cd ndn-hydra # inside root directory
-    $ python3 ./examples/repo.py -rp <repo-prefix> -n <node-name> -s <sid>
+    $ python3 ./examples/repo.py -rp /hydra -n <node-name>
 
-- *repo_prefix* : The registered-multicast group prefix for all under repo. All should be ran with the same prefix. (example: /hydra)
-- *node_name* : A unique, per node, name. Remains constant through restarts. (example: node1)
-- *sid* : A session id. Always unique, create new on restart. (example: 2c4f)
+- *node_name* : A unique, per node, name. Remains constant through restarts. (example: /node1)
 
 **5. On a seperate terminal, run all client interactions**
 
@@ -38,22 +36,22 @@ Running :literal:`python3 ./examples/client.py` will help you see all choices yo
 
 .. code-block:: bash
 
-    $ python3 ./examples/client.py insert -r <repo_prefix> -f /home/a.txt -p ./examples/files/10mb.txt
+    $ python3 ./examples/client.py insert -r /hydra -f /home/a.txt -p ./examples/files/10mb.txt
 
 * Query
 
 .. code-block:: bash
 
-    $ python3 ./examples/client.py query -r <repo_prefix> -q /files
+    $ python3 ./examples/client.py query -r /hydra -q /files
 
 * Fetch
 
 .. code-block:: bash
 
-    $ python3 ./examples/client.py fetch -r <repo_prefix> -f /home/a.txt ./examples/output/10mb.txt
+    $ python3 ./examples/client.py fetch -r /hydra -f /home/a.txt -p ./examples/output/10mb.txt
 
 * Deletion
 
 .. code-block:: bash
 
-    $ python3 ./examples/client.py delete -r <repo_prefix> -f /home/a.txt
+    $ python3 ./examples/client.py delete -r /hydra -f /home/a.txt
