@@ -14,7 +14,7 @@ import logging
 import time
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component
-from ndn_python_repo import Storage
+from ndn.storage import Storage
 from ndn_hydra.repo.protocol.repo_commands import RepoCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.repo_messages.remove import RemoveMessageBodyTlv

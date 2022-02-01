@@ -19,7 +19,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, Component
 from ndn.types import InterestNack, InterestTimeout
 from ndn.svs import SVSync
-from ndn_python_repo import Storage, SqliteStorage
+from ndn.storage import Storage, SqliteStorage
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.repo_messages import *
 from ndn_hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
@@ -74,7 +74,7 @@ class MainLoop:
         # heartbeat_message_body = HeartbeatMessageBody(self.svs_node_id, self.state_vector, heartbeat_message_body.encode())
         # print("state_vector: {0}".format(self.svs.getCore().getStateVector().to_str()))
         try:
-            next_state_vector = self.svs.getCore().getStateTable().getSeqNum(Name.to_str(Name.from_str(self.config['session_id']))) + 1
+            next_state_vector = self.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['session_id']))) + 1
         except TypeError:
             next_state_vector = 0
         self.global_view.update_session(self.config['session_id'], self.config['node_name'], expire_at, favor, next_state_vector)
@@ -236,18 +236,18 @@ class MainLoop:
 
     async def on_missing_svs_messages(self, missing_list):
         for i in missing_list:
-            while i.lowSeqNum <= i.highSeqNum:
+            while i.lowSeqno <= i.highSeqno:
                 # print('{}:{}, {}'.format(i.nid, i.lowSeqNum, i.highSeqNum))
-                message_bytes = await self.svs.fetchData(Name.from_str(i.nid), i.lowSeqNum)
+                message_bytes = await self.svs.fetchData(Name.from_str(i.nid), i.lowSeqno)
                 if message_bytes == None:
                     continue
                 nid = i.nid
-                seq = i.lowSeqNum
+                seq = i.lowSeqno
                 message = Message(nid, seq, message_bytes)
                 message_body = message.get_message_body()
                 aio.ensure_future(message_body.apply(self.global_view, self.fetch_file, self.svs, self.config))
                 # print('fetched GM {}:{}'.format(nid, seq))
-                i.lowSeqNum = i.lowSeqNum + 1
+                i.lowSeqno = i.lowSeqno + 1
 
     def svs_sending_callback(self, expire_at: int):
         self.expire_at = expire_at
@@ -292,7 +292,7 @@ class MainLoop:
             # print(content)
             # print(type(data_bytes))
             # print(data_bytes)
-            self.data_storage.put_data_packet(key, data_bytes)
+            self.data_storage.put_packet(key, data_bytes)
             # self.data_storage.put_data_packet(key, content.tobytes())
             fetched_segments += 1
         return fetched_segments
@@ -307,5 +307,5 @@ class MainLoop:
             return 0
         except InterestTimeout:
             return 0
-        self.data_storage.put_data_packet(key, data_bytes)
+        self.data_storage.put_packet(key, data_bytes)
         return 1

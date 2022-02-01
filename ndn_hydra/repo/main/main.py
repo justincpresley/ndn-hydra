@@ -18,7 +18,7 @@ import pkg_resources
 from ndn.app import NDNApp
 from ndn.encoding import Name
 from ndn.utils import gen_nonce
-from ndn_python_repo import SqliteStorage
+from ndn.storage import SqliteStorage
 import sys, os
 from ndn.svs import SVSyncLogger
 from ndn_hydra.repo import *

@@ -14,7 +14,7 @@ import logging
 from secrets import choice
 from ndn.app import NDNApp
 from ndn.encoding import Name, ContentType, Component, parse_data
-from ndn_python_repo import Storage
+from ndn.storage import Storage
 from ndn_hydra.repo.global_view.global_view import GlobalView
 
 class ReadHandle(object):
@@ -79,7 +79,7 @@ class ReadHandle(object):
                 self.logger.info(f'[cmd][FETCH] serving data to client')
 
             # serving my own data
-            data_bytes = self.data_storage.get_data_packet(file_name + segment_comp, int_param.can_be_prefix)
+            data_bytes = self.data_storage.get_packet(file_name + segment_comp, int_param.can_be_prefix)
             if data_bytes == None:
                 return
 

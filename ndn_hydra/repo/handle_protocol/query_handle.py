@@ -13,7 +13,7 @@ import asyncio as aio
 import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name, ContentType, Component
-from ndn_python_repo import Storage
+from ndn.storage import Storage
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.protocol.repo_commands import FileList
 from ndn_hydra.repo.repo_messages.add import FileTlv

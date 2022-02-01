@@ -16,7 +16,7 @@ import secrets
 import time
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
-from ndn_python_repo import Storage
+from ndn.storage import Storage
 from ndn_hydra.repo.handle_protocol.protocol_handle_base import ProtocolHandle
 from ndn_hydra.repo.protocol.repo_commands import RepoCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
@@ -154,7 +154,7 @@ class InsertCommandHandle(ProtocolHandle):
         add_message.body = add_message_body.encode()
         # apply globalview and send msg thru SVS
         try:
-            next_state_vector = self.main_loop.svs.getCore().getStateTable().getSeqNum(Name.to_str(Name.from_str(self.config['session_id']))) + 1
+            next_state_vector = self.main_loop.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['session_id']))) + 1
         except TypeError:
             next_state_vector = 0
         self.global_view.add_insertion(

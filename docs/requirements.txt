@@ -1,5 +1,5 @@
 ndn-svs>=0.3.15
-ndn-python-repo>=0.2a5
+ndn-storage>=0.2.3
 python-ndn>=0.3
 sphinx-autodoc-typehints>=1.12.0
 sphinx-rtd-theme>=1.0.0

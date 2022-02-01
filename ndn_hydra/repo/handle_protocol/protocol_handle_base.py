@@ -12,7 +12,7 @@
 import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name
-from ndn_python_repo import Storage
+from ndn.storage import Storage
 from ndn_hydra.repo.utils.pubsub import PubSub
 
 class ProtocolHandle(object):
