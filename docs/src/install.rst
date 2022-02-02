@@ -20,7 +20,7 @@ Optionally, you can install the latest development version from source_:
 
 .. code-block:: bash
 
-    $ git clone https://github.com/UCLA-IRL/ndn-hydra.git
+    $ git clone https://github.com/justincpresley/ndn-hydra.git
     $ cd ndn-hydra && /usr/bin/pip3 install -e .
 
 
@@ -51,5 +51,5 @@ Compile the documentation with Sphinx:
     $ open _build/html/index.html
 
 .. _NFD: https://named-data.net/doc/NFD/current/INSTALL.html
-.. _source: https://github.com/UCLA-IRL/ndn-hydra
+.. _source: https://github.com/justincpresley/ndn-hydra
 .. _pip: https://pypi.python.org/pypi/ndn-hydra

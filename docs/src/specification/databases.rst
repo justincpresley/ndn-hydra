@@ -7,7 +7,7 @@ Storage
 A Hydra node keeps 3 databases in order to function properly. All databases are stored under the directory ``~/.ndn/repo<repo_prefix>/<session_id>``.
 
 The databases:
-    * **The SVS Database**
+    * **The SVS (Group Message) Database**
     * **The Global View Database**
     * **The Files Database**
 

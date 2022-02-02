@@ -16,13 +16,13 @@ This means we can eliminate routing for a quick run.
 
 .. code-block:: bash
 
-    $ nfdc strategy set /hydra/group /localhost/nfd/strategy/multicast/%FD%03
+    $ nfdc strategy set /hydra/group /localhost/nfd/strategy/multicast
 
 **4. Run the following on 4 or more terminals.**
 
 .. code-block:: bash
 
-    $ cd ndn-hydra # inside root directory
+    $ cd ndn-hydra
     $ python3 ./examples/repo.py -rp /hydra -n <node-name>
 
 - *node_name* : A unique, per node, name. Remains constant through restarts. (example: /node1)

@@ -32,4 +32,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 
-.. _ndn-hydra: https://github.com/UCLA-IRL/ndn-hydra
+.. _ndn-hydra: https://github.com/justincpresley/ndn-hydra

@@ -1,13 +1,13 @@
-# ----------------------------------------------------------
+# -------------------------------------------------------------
 # NDN Hydra Configuration File for the Sphinx Documentation
-# ----------------------------------------------------------
-# @Project: NDN Hydra
-# @Date:    2021-01-25
-# @Authors: Please check AUTHORS.rst
-# @Source-Code:   https://github.com/UCLA-IRL/ndn-hydra
-# @Documentation: https://ndn-hydra.readthedocs.io/
-# @Pip-Library:   https://pypi.org/project/ndn-hydra/
-# ----------------------------------------------------------
+# -------------------------------------------------------------
+#  @Project: NDN Hydra
+#  @Date:    2021-01-25
+#  @Authors: Please check AUTHORS.rst
+#  @Source-Code:   https://github.com/justincpresley/ndn-hydra
+#  @Documentation: https://ndn-hydra.readthedocs.io
+#  @Pip-Library:   https://pypi.org/project/ndn-hydra
+# -------------------------------------------------------------
 
 # This file only contains a selection of the most common options. For a full
 # list see the documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html
@@ -25,8 +25,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'ndn-hydra'
-copyright = '2021, The ndn-hydra authors'
-author = 'Zixuan Zhong, Justin Presley, Daniel Achee'
+copyright = '2022, The ndn-hydra authors'
+author = 'Justin Presley, Zixuan Zhong, Daniel Achee'
 
 # -- General configuration ---------------------------------------------------
 

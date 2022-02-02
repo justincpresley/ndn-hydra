@@ -14,7 +14,7 @@ Insertion
 ---------
 
 Inserts a local file given by the path within a hydra repo associated with the following Name. Insertion
-requires the number nodes to be ``2xNum_Copies`` and it is required to have the number of copies at least be 2
+requires the number nodes to be ``2 x Num_Copies`` and it is required to have the number of copies at least be 2
 so that if one fails, nodes can download the file from the other node that has the file.
 
 Assuming this is ran being in the root directory, the following is a template on ways to run
