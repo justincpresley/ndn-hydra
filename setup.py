@@ -31,15 +31,15 @@ setup(
     description='ndn-hydra: An NDN distributed repository with resiliency coded in python.',
     long_description=long_description,
     long_description_content_type='text/x-rst',
-    url='https://github.com/UCLA-IRL/ndn-hydra',
+    url='https://github.com/justincpresley/ndn-hydra',
     author='Justin C Presley',
     author_email='justincpresley@gmail.com',
     maintainer='Justin C Presley',
     maintainer_email='justincpresley@gmail.com',
     download_url='https://pypi.python.org/pypi/ndn-hydra',
     project_urls={
-        "Bug Tracker": "https://github.com/UCLA-IRL/ndn-hydra/issues",
-        "Source Code": "https://github.com/UCLA-IRL/ndn-hydra",
+        "Bug Tracker": "https://github.com/justincpresley/ndn-hydra/issues",
+        "Source Code": "https://github.com/justincpresley/ndn-hydra",
     },
     license='Apache License 2.0',
     classifiers=[
@@ -49,14 +49,14 @@ setup(
         'Topic :: Internet',
         'Topic :: System :: Networking',
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10'
     ],
     keywords='NDN HYDRA',
     packages=find_packages(exclude=['tests','examples','docs','notes']),
     install_requires=_parse_requirements('docs/requirements.txt'),
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     entry_points={
         'console_scripts': [
             'ndn-hydra-repo = ndn_hydra.repo.main.main:main',
