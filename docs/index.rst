@@ -6,8 +6,8 @@
 Welcome to ndn-hydra_'s documentation!
 ======================================
 
-Hydra is a distributed repo implementation in NDN.
-Our design focuses on three attributes: resiliency, scalability,
+Hydra is a distributed repo implementation in NDN and coded in Python.
+Our design focuses on four attributes: resiliency, scalability,
 usability, and efficiency.
 
 .. toctree::
