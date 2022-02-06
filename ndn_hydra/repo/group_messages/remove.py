@@ -14,7 +14,7 @@ from ndn.encoding import *
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 
-class RemoveMessageBodyTypes:
+class RemoveMessageTypes:
     SESSION_ID = 83
     NODE_NAME = 84
     EXPIRE_AT = 85
@@ -22,24 +22,24 @@ class RemoveMessageBodyTypes:
 
     INSERTION_ID = 90
 
-class RemoveMessageBodyTlv(TlvModel):
-    session_id = BytesField(RemoveMessageBodyTypes.SESSION_ID)
-    node_name = BytesField(RemoveMessageBodyTypes.NODE_NAME)
-    expire_at = UintField(RemoveMessageBodyTypes.EXPIRE_AT)
-    favor = BytesField(RemoveMessageBodyTypes.FAVOR)
-    insertion_id = BytesField(RemoveMessageBodyTypes.INSERTION_ID)
+class RemoveMessageTlv(TlvModel):
+    session_id = BytesField(RemoveMessageTypes.SESSION_ID)
+    node_name = BytesField(RemoveMessageTypes.NODE_NAME)
+    expire_at = UintField(RemoveMessageTypes.EXPIRE_AT)
+    favor = BytesField(RemoveMessageTypes.FAVOR)
+    insertion_id = BytesField(RemoveMessageTypes.INSERTION_ID)
 
-class RemoveMessageBody(SpecificMessage):
+class RemoveMessage(SpecificMessage):
     def __init__(self, nid:str, seqno:int, raw_bytes:bytes):
-        super(RemoveMessageBody, self).__init__(nid, seqno)
-        self.message_body = RemoveMessageBodyTlv.parse(raw_bytes)
+        super(RemoveMessage, self).__init__(nid, seqno)
+        self.message = RemoveMessageTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
-        session_id = self.message_body.session_id.tobytes().decode()
-        node_name = self.message_body.node_name.tobytes().decode()
-        expire_at = self.message_body.expire_at
-        favor = float(self.message_body.favor.tobytes().decode())
-        insertion_id = self.message_body.insertion_id.tobytes().decode()
+        session_id = self.message.session_id.tobytes().decode()
+        node_name = self.message.node_name.tobytes().decode()
+        expire_at = self.message.expire_at
+        favor = float(self.message.favor.tobytes().decode())
+        insertion_id = self.message.insertion_id.tobytes().decode()
         val = "[MSG][REMOVE]  iid={iid}".format(
             sid=session_id,
             iid=insertion_id

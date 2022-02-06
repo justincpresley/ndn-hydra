@@ -14,9 +14,8 @@ from ndn.encoding import *
 import time
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
-from ndn_hydra.repo.group_messages.store import StoreMessageBodyTlv
 
-class AddMessageBodyTypes:
+class AddMessageTypes:
     SESSION_ID = 83
     NODE_NAME = 84
     EXPIRE_AT = 85
@@ -38,52 +37,52 @@ class AddMessageBodyTypes:
 
 class FileTlv(TlvModel):
     file_name = NameField()
-    desired_copies = UintField(AddMessageBodyTypes.DESIRED_COPIES, default=3)
-    packets = UintField(AddMessageBodyTypes.PACKETS)
-    digests = RepeatedField(BytesField(AddMessageBodyTypes.DIGEST))
-    size = UintField(AddMessageBodyTypes.SIZE)
+    desired_copies = UintField(AddMessageTypes.DESIRED_COPIES, default=3)
+    packets = UintField(AddMessageTypes.PACKETS)
+    digests = RepeatedField(BytesField(AddMessageTypes.DIGEST))
+    size = UintField(AddMessageTypes.SIZE)
 
 class FetchPathTlv(TlvModel):
     prefix = NameField()
 
 class BackupTlv(TlvModel):
-    session_id = BytesField(AddMessageBodyTypes.BACKUP_SESSION_ID)
-    nonce = BytesField(AddMessageBodyTypes.BACKUP_NONCE)
+    session_id = BytesField(AddMessageTypes.BACKUP_SESSION_ID)
+    nonce = BytesField(AddMessageTypes.BACKUP_NONCE)
 
-class AddMessageBodyTlv(TlvModel):
-    session_id = BytesField(AddMessageBodyTypes.SESSION_ID)
-    node_name = BytesField(AddMessageBodyTypes.NODE_NAME)
-    expire_at = UintField(AddMessageBodyTypes.EXPIRE_AT)
-    favor = BytesField(AddMessageBodyTypes.FAVOR)
-    insertion_id = BytesField(AddMessageBodyTypes.INSERTION_ID)
-    file = ModelField(AddMessageBodyTypes.FILE, FileTlv)
+class AddMessageTlv(TlvModel):
+    session_id = BytesField(AddMessageTypes.SESSION_ID)
+    node_name = BytesField(AddMessageTypes.NODE_NAME)
+    expire_at = UintField(AddMessageTypes.EXPIRE_AT)
+    favor = BytesField(AddMessageTypes.FAVOR)
+    insertion_id = BytesField(AddMessageTypes.INSERTION_ID)
+    file = ModelField(AddMessageTypes.FILE, FileTlv)
 
-    sequence_number = UintField(AddMessageBodyTypes.SEQUENCE_NUMBER)
-    fetch_path = ModelField(AddMessageBodyTypes.FETCH_PATH, FetchPathTlv)
-    is_stored_by_origin = UintField(AddMessageBodyTypes.IS_STORED_BY_ORIGIN)
-    backup_list = RepeatedField(ModelField(AddMessageBodyTypes.BACKUP, BackupTlv))
+    sequence_number = UintField(AddMessageTypes.SEQUENCE_NUMBER)
+    fetch_path = ModelField(AddMessageTypes.FETCH_PATH, FetchPathTlv)
+    is_stored_by_origin = UintField(AddMessageTypes.IS_STORED_BY_ORIGIN)
+    backup_list = RepeatedField(ModelField(AddMessageTypes.BACKUP, BackupTlv))
 
-class AddMessageBody(SpecificMessage):
+class AddMessage(SpecificMessage):
     def __init__(self, nid:str, seqno:int, raw_bytes:bytes):
-        super(AddMessageBody, self).__init__(nid, seqno)
-        self.message_body = AddMessageBodyTlv.parse(raw_bytes)
+        super(AddMessage, self).__init__(nid, seqno)
+        self.message = AddMessageTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
-        session_id = self.message_body.session_id.tobytes().decode()
-        node_name = self.message_body.node_name.tobytes().decode()
-        expire_at = self.message_body.expire_at
-        favor = float(self.message_body.favor.tobytes().decode())
-        insertion_id = self.message_body.insertion_id.tobytes().decode()
-        file = self.message_body.file
+        session_id = self.message.session_id.tobytes().decode()
+        node_name = self.message.node_name.tobytes().decode()
+        expire_at = self.message.expire_at
+        favor = float(self.message.favor.tobytes().decode())
+        insertion_id = self.message.insertion_id.tobytes().decode()
+        file = self.message.file
         file_name = file.file_name
         desired_copies = file.desired_copies
         packets = file.packets
         digests = file.digests
         size = file.size
-        sequence_number = self.message_body.sequence_number
-        fetch_path = self.message_body.fetch_path.prefix
-        is_stored_by_origin = False if (self.message_body.is_stored_by_origin == 0) else True
-        backups = self.message_body.backup_list
+        sequence_number = self.message.sequence_number
+        fetch_path = self.message.fetch_path.prefix
+        is_stored_by_origin = False if (self.message.is_stored_by_origin == 0) else True
+        backups = self.message.backup_list
         backup_list = []
         bak = ""
         for backup in backups:
@@ -141,16 +140,16 @@ class AddMessageBody(SpecificMessage):
             # # store tlv
             # expire_at = int(time.time()+(config['period']*2))
             # favor = 1.85
-            # store_message_body = StoreMessageBodyTlv()
-            # store_message_body.session_id = config['session_id'].encode()
-            # store_message_body.node_name = config['node_name'].encode()
-            # store_message_body.expire_at = expire_at
-            # store_message_body.favor = str(favor).encode()
-            # store_message_body.insertion_id = insertion_id.encode()
+            # store_message = StoreMessageTlv()
+            # store_message.session_id = config['session_id'].encode()
+            # store_message.node_name = config['node_name'].encode()
+            # store_message.expire_at = expire_at
+            # store_message.favor = str(favor).encode()
+            # store_message.insertion_id = insertion_id.encode()
             # # store msg
             # store_message = MessageTlv()
-            # store_message.header = MessageTypes.STORE
-            # store_message.body = store_message_body.encode()
+            # store_message.type = MessageTypes.STORE
+            # store_message.value = store_message.encode()
             # # apply globalview and send msg thru SVS
             # # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
 

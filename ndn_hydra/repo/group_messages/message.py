@@ -14,12 +14,12 @@ from __future__ import annotations
 from ndn.encoding import *
 from typing import Optional
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
-from ndn_hydra.repo.group_messages.add import AddMessageBody
-from ndn_hydra.repo.group_messages.remove import RemoveMessageBody
-from ndn_hydra.repo.group_messages.store import StoreMessageBody
-from ndn_hydra.repo.group_messages.claim import ClaimMessageBody
-from ndn_hydra.repo.group_messages.heartbeat import HeartbeatMessageBody
-from ndn_hydra.repo.group_messages.expire import ExpireMessageBody
+from ndn_hydra.repo.group_messages.add import AddMessage
+from ndn_hydra.repo.group_messages.remove import RemoveMessage
+from ndn_hydra.repo.group_messages.store import StoreMessage
+from ndn_hydra.repo.group_messages.claim import ClaimMessage
+from ndn_hydra.repo.group_messages.heartbeat import HeartbeatMessage
+from ndn_hydra.repo.group_messages.expire import ExpireMessage
 
 class MessageTypes:
     ADD = 1
@@ -37,16 +37,16 @@ class Message(TlvModel):
         message = Message.parse(message_bytes)
         message_type, message_bytes = message.type, bytes(message.value)
         if message_type == MessageTypes.ADD:
-            return AddMessageBody(nid, seqno, message_bytes)
+            return AddMessage(nid, seqno, message_bytes)
         elif message_type == MessageTypes.REMOVE:
-            return RemoveMessageBody(nid, seqno, message_bytes)
+            return RemoveMessage(nid, seqno, message_bytes)
         elif message_type == MessageTypes.STORE:
-            return StoreMessageBody(nid, seqno, message_bytes)
+            return StoreMessage(nid, seqno, message_bytes)
         elif message_type == MessageTypes.CLAIM:
-            return ClaimMessageBody(nid, seqno, message_bytes)
+            return ClaimMessage(nid, seqno, message_bytes)
         elif message_type == MessageTypes.HEARTBEAT:
-            return HeartbeatMessageBody(nid, seqno, message_bytes)
+            return HeartbeatMessage(nid, seqno, message_bytes)
         elif message_type == MessageTypes.EXPIRE:
-            return ExpireMessageBody(nid, seqno, message_bytes)
+            return ExpireMessage(nid, seqno, message_bytes)
         else:
             return None

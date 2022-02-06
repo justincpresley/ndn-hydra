@@ -16,11 +16,11 @@ from ndn.encoding import *
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 
-class ClaimMessageTypes:
+class ClaimTypes:
     REQUEST = 1
     COMMITMENT = 2
 
-class ClaimMessageBodyTypes:
+class ClaimMessageTypes:
     SESSION_ID = 83
     NODE_NAME = 84
     EXPIRE_AT = 85
@@ -34,34 +34,34 @@ class ClaimMessageBodyTypes:
     AUTHORIZER_NONCE = 95
 
 
-class ClaimMessageBodyTlv(TlvModel):
-    session_id = BytesField(ClaimMessageBodyTypes.SESSION_ID)
-    node_name = BytesField(ClaimMessageBodyTypes.NODE_NAME)
-    expire_at = UintField(ClaimMessageBodyTypes.EXPIRE_AT)
-    favor = BytesField(ClaimMessageBodyTypes.FAVOR)
-    insertion_id = BytesField(ClaimMessageBodyTypes.INSERTION_ID)
-    type = UintField(ClaimMessageBodyTypes.TYPE)
-    claimer_session_id = BytesField(ClaimMessageBodyTypes.CLAIMER_SESSION_ID)
-    claimer_nonce = BytesField(ClaimMessageBodyTypes.CLAIMER_NONCE)
-    authorizer_session_id = BytesField(ClaimMessageBodyTypes.AUTHORIZER_SESSION_ID)
-    authorizer_nonce = BytesField(ClaimMessageBodyTypes.AUTHORIZER_NONCE)
+class ClaimMessageTlv(TlvModel):
+    session_id = BytesField(ClaimMessageTypes.SESSION_ID)
+    node_name = BytesField(ClaimMessageTypes.NODE_NAME)
+    expire_at = UintField(ClaimMessageTypes.EXPIRE_AT)
+    favor = BytesField(ClaimMessageTypes.FAVOR)
+    insertion_id = BytesField(ClaimMessageTypes.INSERTION_ID)
+    type = UintField(ClaimMessageTypes.TYPE)
+    claimer_session_id = BytesField(ClaimMessageTypes.CLAIMER_SESSION_ID)
+    claimer_nonce = BytesField(ClaimMessageTypes.CLAIMER_NONCE)
+    authorizer_session_id = BytesField(ClaimMessageTypes.AUTHORIZER_SESSION_ID)
+    authorizer_nonce = BytesField(ClaimMessageTypes.AUTHORIZER_NONCE)
 
-class ClaimMessageBody(SpecificMessage):
+class ClaimMessage(SpecificMessage):
     def __init__(self, nid:str, seqno:int, raw_bytes:bytes):
-        super(ClaimMessageBody, self).__init__(nid, seqno)
-        self.message_body = ClaimMessageBodyTlv.parse(raw_bytes)
+        super(ClaimMessage, self).__init__(nid, seqno)
+        self.message = ClaimMessageTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
-        session_id = self.message_body.session_id.tobytes().decode()
-        node_name = self.message_body.node_name.tobytes().decode()
-        expire_at = self.message_body.expire_at
-        favor = float(self.message_body.favor.tobytes().decode())
-        insertion_id = self.message_body.insertion_id.tobytes().decode()
-        type = self.message_body.type
-        claimer_session_id = self.message_body.claimer_session_id.tobytes().decode()
-        claimer_nonce = self.message_body.claimer_nonce.tobytes().decode()
-        authorizer_session_id = self.message_body.authorizer_session_id.tobytes().decode()
-        authorizer_nonce = self.message_body.authorizer_nonce.tobytes().decode()
+        session_id = self.message.session_id.tobytes().decode()
+        node_name = self.message.node_name.tobytes().decode()
+        expire_at = self.message.expire_at
+        favor = float(self.message.favor.tobytes().decode())
+        insertion_id = self.message.insertion_id.tobytes().decode()
+        type = self.message.type
+        claimer_session_id = self.message.claimer_session_id.tobytes().decode()
+        claimer_nonce = self.message.claimer_nonce.tobytes().decode()
+        authorizer_session_id = self.message.authorizer_session_id.tobytes().decode()
+        authorizer_nonce = self.message.authorizer_nonce.tobytes().decode()
         insertion = global_view.get_insertion(insertion_id)
         if type == ClaimMessageTypes.COMMITMENT:
             rank = len(insertion['backuped_bys'])
@@ -90,16 +90,16 @@ class ClaimMessageBody(SpecificMessage):
                     # claim tlv
                     expire_at = int(time.time()+(config['period']*2))
                     favor = 1.85
-                    claim_message_body = copy.copy(self.message_body)
-                    claim_message_body.session_id = config['session_id'].encode()
-                    claim_message_body.node_name = config['node_name'].encode()
-                    claim_message_body.expire_at = expire_at
-                    claim_message_body.favor = str(favor).encode()
-                    claim_message_body.type = ClaimMessageTypes.COMMITMENT
+                    claim_message = copy.copy(self.message)
+                    claim_message.session_id = config['session_id'].encode()
+                    claim_message.node_name = config['node_name'].encode()
+                    claim_message.expire_at = expire_at
+                    claim_message.favor = str(favor).encode()
+                    claim_message.type = ClaimTypes.COMMITMENT
                     # claim msg
                     claim_message = MessageTlv()
-                    claim_message.header = MessageTypes.CLAIM
-                    claim_message.body = claim_message_body.encode()
+                    claim_message.type = MessageTypes.CLAIM
+                    claim_message.value = claim_message.encode()
                     svs.publishData(claim_message.encode())
                     val = "[MSG][CLAIM.C]*sid={sid};iid={iid}".format(
                         sid=claimer_session_id,

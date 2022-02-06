@@ -14,7 +14,7 @@ from ndn.encoding import *
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 from ndn_hydra.repo.global_view.global_view import GlobalView
 
-class StoreMessageBodyTypes:
+class StoreMessageTypes:
     SESSION_ID = 83
     NODE_NAME = 84
     EXPIRE_AT = 85
@@ -22,24 +22,24 @@ class StoreMessageBodyTypes:
 
     INSERTION_ID = 90
 
-class StoreMessageBodyTlv(TlvModel):
-    session_id = BytesField(StoreMessageBodyTypes.SESSION_ID)
-    node_name = BytesField(StoreMessageBodyTypes.NODE_NAME)
-    expire_at = UintField(StoreMessageBodyTypes.EXPIRE_AT)
-    favor = BytesField(StoreMessageBodyTypes.FAVOR)
-    insertion_id = BytesField(StoreMessageBodyTypes.INSERTION_ID)
+class StoreMessageTlv(TlvModel):
+    session_id = BytesField(StoreMessageTypes.SESSION_ID)
+    node_name = BytesField(StoreMessageTypes.NODE_NAME)
+    expire_at = UintField(StoreMessageTypes.EXPIRE_AT)
+    favor = BytesField(StoreMessageTypes.FAVOR)
+    insertion_id = BytesField(StoreMessageTypes.INSERTION_ID)
 
-class StoreMessageBody(SpecificMessage):
+class StoreMessage(SpecificMessage):
     def __init__(self, nid:str, seqno:int, raw_bytes:bytes):
-        super(StoreMessageBody, self).__init__(nid, seqno)
-        self.message_body = StoreMessageBodyTlv.parse(raw_bytes)
+        super(StoreMessage, self).__init__(nid, seqno)
+        self.message = StoreMessageTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
-        session_id = self.message_body.session_id.tobytes().decode()
-        node_name = self.message_body.node_name.tobytes().decode()
-        expire_at = self.message_body.expire_at
-        favor = float(self.message_body.favor.tobytes().decode())
-        insertion_id = self.message_body.insertion_id.tobytes().decode()
+        session_id = self.message.session_id.tobytes().decode()
+        node_name = self.message.node_name.tobytes().decode()
+        expire_at = self.message.expire_at
+        favor = float(self.message.favor.tobytes().decode())
+        insertion_id = self.message.insertion_id.tobytes().decode()
         val = "[MSG][STORE]   sid={sid};iid={iid}".format(
             sid=session_id,
             iid=insertion_id

@@ -15,28 +15,28 @@ import json
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 
-class HeartbeatMessageBodyTypes:
+class HeartbeatMessageTypes:
     SESSION_ID = 83
     NODE_NAME = 84
     EXPIRE_AT = 85
     FAVOR = 86
 
-class HeartbeatMessageBodyTlv(TlvModel):
-    session_id = BytesField(HeartbeatMessageBodyTypes.SESSION_ID)
-    node_name = BytesField(HeartbeatMessageBodyTypes.NODE_NAME)
-    expire_at = UintField(HeartbeatMessageBodyTypes.EXPIRE_AT)
-    favor = BytesField(HeartbeatMessageBodyTypes.FAVOR)
+class HeartbeatMessageTlv(TlvModel):
+    session_id = BytesField(HeartbeatMessageTypes.SESSION_ID)
+    node_name = BytesField(HeartbeatMessageTypes.NODE_NAME)
+    expire_at = UintField(HeartbeatMessageTypes.EXPIRE_AT)
+    favor = BytesField(HeartbeatMessageTypes.FAVOR)
 
-class HeartbeatMessageBody(SpecificMessage):
+class HeartbeatMessage(SpecificMessage):
     def __init__(self, nid:str, seqno:int, raw_bytes:bytes):
-        super(HeartbeatMessageBody, self).__init__(nid, seqno)
-        self.message_body = HeartbeatMessageBodyTlv.parse(raw_bytes)
+        super(HeartbeatMessage, self).__init__(nid, seqno)
+        self.message = HeartbeatMessageTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
-        session_id = self.message_body.session_id.tobytes().decode()
-        node_name = self.message_body.node_name.tobytes().decode()
-        expire_at = self.message_body.expire_at
-        favor = float(self.message_body.favor.tobytes().decode())
+        session_id = self.message.session_id.tobytes().decode()
+        node_name = self.message.node_name.tobytes().decode()
+        expire_at = self.message.expire_at
+        favor = float(self.message.favor.tobytes().decode())
         val = "[MSG][HB] sid={sid};name={nam};exp={exp};fav={fav}".format(
             sid=session_id,
             nam=node_name,

@@ -17,7 +17,7 @@ from ndn.encoding import Name, NonStrictName, Component
 from ndn.storage import Storage
 from ndn_hydra.repo.protocol.repo_commands import RepoCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
-from ndn_hydra.repo.group_messages.remove import RemoveMessageBodyTlv
+from ndn_hydra.repo.group_messages.remove import RemoveMessageTlv
 from ndn_hydra.repo.group_messages.message import Message, MessageTypes
 from ndn_hydra.repo.main.main_loop import MainLoop
 from ndn_hydra.repo.handle_protocol.protocol_handle_base import ProtocolHandle
@@ -88,18 +88,18 @@ class DeleteCommandHandle(ProtocolHandle):
         # add tlv
         expire_at = int(time.time()+(self.config['period']*2))
         favor = 1.85
-        remove_message_body = RemoveMessageBodyTlv()
-        remove_message_body.session_id = self.config['session_id'].encode()
-        remove_message_body.node_name = self.config['node_name'].encode()
-        remove_message_body.expire_at = expire_at
-        remove_message_body.favor = str(favor).encode()
-        remove_message_body.insertion_id = insertion_id.encode()
+        remove_message = RemoveMessageTlv()
+        remove_message.session_id = self.config['session_id'].encode()
+        remove_message.node_name = self.config['node_name'].encode()
+        remove_message.expire_at = expire_at
+        remove_message.favor = str(favor).encode()
+        remove_message.insertion_id = insertion_id.encode()
         # add msg
-        remove_message = Message()
-        remove_message.type = MessageTypes.REMOVE
-        remove_message.value = remove_message_body.encode()
+        message = Message()
+        message.type = MessageTypes.REMOVE
+        message.value = remove_message.encode()
         self.global_view.delete_insertion(insertion_id)
-        self.main_loop.svs.publishData(remove_message.encode())
+        self.main_loop.svs.publishData(message.encode())
         val = "[MSG][REMOVE]* iid={iid}".format(
             iid=insertion_id
         )
