@@ -18,10 +18,10 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
 from ndn.storage import Storage
 from ndn_hydra.repo.handles.protocol_handle_base import ProtocolHandle
-from ndn_hydra.repo.protocol.base_models import InsertCommand
+from ndn_hydra.repo.protocol.base_models import InsertCommand, FileTlv
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.global_view.global_view import GlobalView
-from ndn_hydra.repo.group_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageTlv
+from ndn_hydra.repo.group_messages.add import FetchPathTlv, BackupTlv, AddMessageTlv
 from ndn_hydra.repo.group_messages.message import Message, MessageTypes
 from ndn_hydra.repo.main.main_loop import MainLoop
 

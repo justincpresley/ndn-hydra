@@ -10,8 +10,14 @@
 # -------------------------------------------------------------
 
 from ndn.encoding import TlvModel, ModelField, NameField, UintField, RepeatedField, BytesField
-from ndn_hydra.repo.group_messages.add import FileTlv
 from ndn_hydra.repo.protocol.tlv import HydraTlvTypes
+
+class FileTlv(TlvModel):
+    file_name = NameField()
+    desired_copies = UintField(HydraTlvTypes.DESIRED_COPIES, default=3)
+    packets = UintField(HydraTlvTypes.PACKETS)
+    digests = RepeatedField(BytesField(HydraTlvTypes.DIGEST))
+    size = UintField(HydraTlvTypes.SIZE)
 
 class CommandFile(TlvModel):
   file_name = NameField()

@@ -12,7 +12,7 @@
 class HydraTlvTypes:
     GROUP_FILE = 201
     FILE = 202
-    COPIES = 203
+    DESIRED_COPIES = 203
     PACKETS = 204
     DIGEST = 205
     SIZE = 206

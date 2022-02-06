@@ -14,6 +14,7 @@ from ndn.encoding import *
 import time
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
+from ndn_hydra.repo.protocol.base_models import FileTlv
 
 class AddMessageTypes:
     SESSION_ID = 83
@@ -34,13 +35,6 @@ class AddMessageTypes:
     BACKUP = 100
     BACKUP_SESSION_ID = 101
     BACKUP_NONCE = 102
-
-class FileTlv(TlvModel):
-    file_name = NameField()
-    desired_copies = UintField(AddMessageTypes.DESIRED_COPIES, default=3)
-    packets = UintField(AddMessageTypes.PACKETS)
-    digests = RepeatedField(BytesField(AddMessageTypes.DIGEST))
-    size = UintField(AddMessageTypes.SIZE)
 
 class FetchPathTlv(TlvModel):
     prefix = NameField()
