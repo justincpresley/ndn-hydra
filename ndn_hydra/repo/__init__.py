@@ -8,7 +8,7 @@
 # -------------------------------------------------------------
 
 from .global_view import *
-from .handle_protocol import *
+from .handles import *
 from .main import *
 from .protocol import *
 from .group_messages import *
