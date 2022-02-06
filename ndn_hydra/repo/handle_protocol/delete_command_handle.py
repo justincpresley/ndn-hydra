@@ -18,7 +18,7 @@ from ndn.storage import Storage
 from ndn_hydra.repo.protocol.repo_commands import RepoCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.group_messages.remove import RemoveMessageBodyTlv
-from ndn_hydra.repo.group_messages.message import MessageTlv, MessageTypes
+from ndn_hydra.repo.group_messages.message import Message, MessageTypes
 from ndn_hydra.repo.main.main_loop import MainLoop
 from ndn_hydra.repo.handle_protocol.protocol_handle_base import ProtocolHandle
 from ndn_hydra.repo.global_view.global_view import GlobalView
@@ -95,9 +95,9 @@ class DeleteCommandHandle(ProtocolHandle):
         remove_message_body.favor = str(favor).encode()
         remove_message_body.insertion_id = insertion_id.encode()
         # add msg
-        remove_message = MessageTlv()
-        remove_message.header = MessageTypes.REMOVE
-        remove_message.body = remove_message_body.encode()
+        remove_message = Message()
+        remove_message.type = MessageTypes.REMOVE
+        remove_message.value = remove_message_body.encode()
         self.global_view.delete_insertion(insertion_id)
         self.main_loop.svs.publishData(remove_message.encode())
         val = "[MSG][REMOVE]* iid={iid}".format(

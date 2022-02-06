@@ -9,7 +9,11 @@
 #  @Pip-Library:   https://pypi.org/project/ndn-hydra
 # -------------------------------------------------------------
 
+from __future__ import annotations
+
 from ndn.encoding import *
+from typing import Optional
+from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 from ndn_hydra.repo.group_messages.add import AddMessageBody
 from ndn_hydra.repo.group_messages.remove import RemoveMessageBody
 from ndn_hydra.repo.group_messages.store import StoreMessageBody
@@ -25,33 +29,24 @@ class MessageTypes:
     HEARTBEAT = 5
     EXPIRE = 6
 
-class MessageTlv(TlvModel):
-    header = UintField(0x80)
-    body = BytesField(0x81)
-
-class Message:
-    def __init__(self, nid:str, seq:int, raw_bytes:bytes):
-        self.nid = nid
-        self.seq = seq
-        self.message = MessageTlv.parse(raw_bytes)
-
-    def get_message_header(self):
-        return self.message.header
-
-    def get_message_body(self):
-        message_type = self.message.header
-        raw_bytes = self.message.body.tobytes()
+class Message(TlvModel):
+    type = UintField(0x80)
+    value = BytesField(0x81)
+    @staticmethod
+    def specify(nid:str, seqno:int, message_bytes:bytes) -> Optional[SpecificMessage]:
+        message = Message.parse(message_bytes)
+        message_type, message_bytes = message.type, bytes(message.value)
         if message_type == MessageTypes.ADD:
-            return AddMessageBody(self.nid, self.seq, raw_bytes)
+            return AddMessageBody(nid, seqno, message_bytes)
         elif message_type == MessageTypes.REMOVE:
-            return RemoveMessageBody(self.nid, self.seq, raw_bytes)
+            return RemoveMessageBody(nid, seqno, message_bytes)
         elif message_type == MessageTypes.STORE:
-            return StoreMessageBody(self.nid, self.seq, raw_bytes)
+            return StoreMessageBody(nid, seqno, message_bytes)
         elif message_type == MessageTypes.CLAIM:
-            return ClaimMessageBody(self.nid, self.seq, raw_bytes)
+            return ClaimMessageBody(nid, seqno, message_bytes)
         elif message_type == MessageTypes.HEARTBEAT:
-            return HeartbeatMessageBody(self.nid, self.seq, raw_bytes)
+            return HeartbeatMessageBody(nid, seqno, message_bytes)
         elif message_type == MessageTypes.EXPIRE:
-            return ExpireMessageBody(self.nid, self.seq, raw_bytes)
+            return ExpireMessageBody(nid, seqno, message_bytes)
         else:
             return None

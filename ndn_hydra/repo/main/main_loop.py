@@ -67,9 +67,9 @@ class MainLoop:
         heartbeat_message_body.favor = str(favor).encode()
 
         # hb msg
-        heartbeat_message = MessageTlv()
-        heartbeat_message.header = MessageTypes.HEARTBEAT
-        heartbeat_message.body = heartbeat_message_body.encode()
+        heartbeat_message = Message()
+        heartbeat_message.type = MessageTypes.HEARTBEAT
+        heartbeat_message.value = heartbeat_message_body.encode()
 
         # heartbeat_message_body = HeartbeatMessageBody(self.svs_node_id, self.state_vector, heartbeat_message_body.encode())
         # print("state_vector: {0}".format(self.svs.getCore().getStateVector().to_str()))
@@ -95,9 +95,9 @@ class MainLoop:
             expire_message_body.favor = str(favor).encode()
             expire_message_body.expired_session_id = expired_session['id'].encode()
             # expire msg
-            expire_message = MessageTlv()
-            expire_message.header = MessageTypes.EXPIRE
-            expire_message.body = expire_message_body.encode()
+            expire_message = Message()
+            expire_message.type = MessageTypes.EXPIRE
+            expire_message.value = expire_message_body.encode()
             # apply globalview and send msg thru SVS
             self.global_view.expire_session(expired_session['id'])
             self.svs.publishData(expire_message.encode())
@@ -166,9 +166,9 @@ class MainLoop:
             claim_message_body.authorizer_session_id = authorizer['session_id'].encode()
             claim_message_body.authorizer_nonce = authorizer['nonce'].encode()
             # claim msg
-            claim_message = MessageTlv()
-            claim_message.header = MessageTypes.CLAIM
-            claim_message.body = claim_message_body.encode()
+            claim_message = Message()
+            claim_message.type = MessageTypes.CLAIM
+            claim_message.value = claim_message_body.encode()
             self.svs.publishData(claim_message.encode())
             val = "[MSG][CLAIM.R]*sid={sid};iid={iid}".format(
                 sid=self.config['session_id'],
@@ -217,9 +217,9 @@ class MainLoop:
             store_message_body.favor = str(favor).encode()
             store_message_body.insertion_id = insertion_id.encode()
             # store msg
-            store_message = MessageTlv()
-            store_message.header = MessageTypes.STORE
-            store_message.body = store_message_body.encode()
+            store_message = Message()
+            store_message.type = MessageTypes.STORE
+            store_message.value = store_message_body.encode()
             # apply globalview and send msg thru SVS
             # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
 
@@ -243,9 +243,8 @@ class MainLoop:
                     continue
                 nid = i.nid
                 seq = i.lowSeqno
-                message = Message(nid, seq, message_bytes)
-                message_body = message.get_message_body()
-                aio.ensure_future(message_body.apply(self.global_view, self.fetch_file, self.svs, self.config))
+                message = Message.specify(nid, seq, message_bytes)
+                aio.ensure_future(message.apply(self.global_view, self.fetch_file, self.svs, self.config))
                 # print('fetched GM {}:{}'.format(nid, seq))
                 i.lowSeqno = i.lowSeqno + 1
 

@@ -22,7 +22,7 @@ from ndn_hydra.repo.protocol.repo_commands import RepoCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageBodyTlv
-from ndn_hydra.repo.group_messages.message import MessageTlv, MessageTypes
+from ndn_hydra.repo.group_messages.message import Message, MessageTypes
 from ndn_hydra.repo.main.main_loop import MainLoop
 
 class InsertCommandHandle(ProtocolHandle):
@@ -149,9 +149,9 @@ class InsertCommandHandle(ProtocolHandle):
         add_message_body.is_stored_by_origin = 0
         add_message_body.backup_list = backups
         # add msg
-        add_message = MessageTlv()
-        add_message.header = MessageTypes.ADD
-        add_message.body = add_message_body.encode()
+        add_message = Message()
+        add_message.type = MessageTypes.ADD
+        add_message.value = add_message_body.encode()
         # apply globalview and send msg thru SVS
         try:
             next_state_vector = self.main_loop.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['session_id']))) + 1
