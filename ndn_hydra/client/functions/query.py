@@ -14,7 +14,7 @@ from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType
 from ndn.types import InterestNack, InterestTimeout, InterestCanceled, ValidationFailure
 from ndn_hydra.repo.protocol.repo_commands import FileList
-from ndn_hydra.repo.repo_messages.add import FileTlv
+from ndn_hydra.repo.group_messages.add import FileTlv
 
 class HydraQueryClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:

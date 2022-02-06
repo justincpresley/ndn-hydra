@@ -21,8 +21,8 @@ from ndn_hydra.repo.handle_protocol.protocol_handle_base import ProtocolHandle
 from ndn_hydra.repo.protocol.repo_commands import RepoCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.global_view.global_view import GlobalView
-from ndn_hydra.repo.repo_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageBodyTlv
-from ndn_hydra.repo.repo_messages.message import MessageTlv, MessageTypes
+from ndn_hydra.repo.group_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageBodyTlv
+from ndn_hydra.repo.group_messages.message import MessageTlv, MessageTypes
 from ndn_hydra.repo.main.main_loop import MainLoop
 
 class InsertCommandHandle(ProtocolHandle):

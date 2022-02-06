@@ -10,7 +10,7 @@
 # -------------------------------------------------------------
 
 from ndn.encoding import TlvModel, ModelField, NameField, UintField, RepeatedField, BytesField
-from ndn_hydra.repo.repo_messages.add import FileTlv
+from ndn_hydra.repo.group_messages.add import FileTlv
 
 class RepoTypeNumber:
   REPO_COMMAND = 201
