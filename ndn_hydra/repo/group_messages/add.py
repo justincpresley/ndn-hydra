@@ -14,7 +14,7 @@ from ndn.encoding import *
 import time
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
-from ndn_hydra.repo.protocol.base_models import FileTlv
+from ndn_hydra.repo.protocol.base_models import GroupFile
 
 class AddMessageTypes:
     SESSION_ID = 83
@@ -49,7 +49,7 @@ class AddMessageTlv(TlvModel):
     expire_at = UintField(AddMessageTypes.EXPIRE_AT)
     favor = BytesField(AddMessageTypes.FAVOR)
     insertion_id = BytesField(AddMessageTypes.INSERTION_ID)
-    file = ModelField(AddMessageTypes.FILE, FileTlv)
+    file = ModelField(AddMessageTypes.FILE, GroupFile)
 
     sequence_number = UintField(AddMessageTypes.SEQUENCE_NUMBER)
     fetch_path = ModelField(AddMessageTypes.FETCH_PATH, FetchPathTlv)

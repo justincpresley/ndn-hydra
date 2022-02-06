@@ -13,7 +13,7 @@ import logging
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType
 from ndn.types import InterestNack, InterestTimeout, InterestCanceled, ValidationFailure
-from ndn_hydra.repo.protocol.base_models import FileList, FileTlv
+from ndn_hydra.repo.protocol.base_models import GroupFileList, GroupFile
 
 class HydraQueryClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:
@@ -48,7 +48,7 @@ class HydraQueryClient(object):
                  print(f'{bytes(content).decode().split()}')
                  return
              elif querytype == "files":
-                 filelist = FileList.parse(content)
+                 filelist = GroupFileList.parse(content)
                  counter = 1
                  if filelist.list:
                      print(f'List of All Files')
@@ -63,7 +63,7 @@ class HydraQueryClient(object):
                  return
              elif querytype == "file":
                  if content:
-                     file = FileTlv.parse(content)
+                     file = GroupFile.parse(content)
                      print(f'File Exists, File meta-info')
                      print(f'\tfile_name: {Name.to_str(file.file_name)}')
                      print(f'\tsize: {file.size}')
@@ -72,7 +72,7 @@ class HydraQueryClient(object):
                      print(f'File Does Not Exists in The Repo')
                  return
              elif querytype == "prefix":
-                 filelist = FileList.parse(content)
+                 filelist = GroupFileList.parse(content)
                  counter = 1
                  if filelist.list:
                      print(f'List of All Files with prefix {Name.to_str(query[1:])}')

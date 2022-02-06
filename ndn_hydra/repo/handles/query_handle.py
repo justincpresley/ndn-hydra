@@ -15,7 +15,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, ContentType, Component
 from ndn.storage import Storage
 from ndn_hydra.repo.global_view.global_view import GlobalView
-from ndn_hydra.repo.protocol.base_models import FileList, FileTlv
+from ndn_hydra.repo.protocol.base_models import GroupFileList, GroupFile
 
 class QueryHandle(object):
     """
@@ -69,10 +69,10 @@ class QueryHandle(object):
         elif querytype == "files":
             self.logger.info(f'[cmd][QUERY] query received: files')
             insertions = self.global_view.get_insertions()
-            filelist = FileList()
+            filelist = GroupFileList()
             filelist.list = []
             for index in range(len(insertions)):
-                file = FileTlv()
+                file = GroupFile()
                 file.file_name = insertions[index]["file_name"]
                 file.desired_copies = insertions[index]["desired_copies"]
                 file.packets = insertions[index]["packets"]
@@ -88,7 +88,7 @@ class QueryHandle(object):
             filecontent = None
             for index in range(len(insertions)):
                 if Name.to_str(insertions[index]["file_name"]) == filename:
-                    file = FileTlv()
+                    file = GroupFile()
                     file.file_name = insertions[index]["file_name"]
                     file.desired_copies = insertions[index]["desired_copies"]
                     file.packets = insertions[index]["packets"]
@@ -102,11 +102,11 @@ class QueryHandle(object):
             self.logger.info(f'[cmd][QUERY] query received: prefix')
             insertions = self.global_view.get_insertions()
             prefix = query[7:]
-            filelist = FileList()
+            filelist = GroupFileList()
             filelist.list = []
             for index in range(len(insertions)):
                 if Name.is_prefix(Name.from_str(prefix), insertions[index]["file_name"]):
-                    file = FileTlv()
+                    file = GroupFile()
                     file.file_name = insertions[index]["file_name"]
                     file.desired_copies = insertions[index]["desired_copies"]
                     file.packets = insertions[index]["packets"]

@@ -18,7 +18,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
 from ndn.storage import Storage
 from ndn_hydra.repo.handles.protocol_handle_base import ProtocolHandle
-from ndn_hydra.repo.protocol.base_models import InsertCommand, FileTlv
+from ndn_hydra.repo.protocol.base_models import InsertCommand, GroupFile
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.add import FetchPathTlv, BackupTlv, AddMessageTlv
@@ -136,7 +136,7 @@ class InsertCommandHandle(ProtocolHandle):
         add_message.expire_at = expire_at
         add_message.favor = str(favor).encode()
         add_message.insertion_id = insertion_id.encode()
-        add_message.file = FileTlv()
+        add_message.file = GroupFile()
         add_message.file.file_name = file_name
         add_message.file.desired_copies = desired_copies
         add_message.file.packets = packets

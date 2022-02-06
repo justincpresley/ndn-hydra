@@ -13,7 +13,7 @@ import logging
 from hashlib import blake2b
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
-from ndn_hydra.repo.protocol.base_models import InsertCommand, CommandFile
+from ndn_hydra.repo.protocol.base_models import InsertCommand, File
 from ndn_hydra.repo.utils.pubsub import PubSub
 
 SEGMENT_SIZE = 8192
@@ -71,7 +71,7 @@ class HydraInsertClient(object):
         if seg_no < seg_cnt:
             self.app.put_raw_packet(self.packets[seg_no])
 
-      file = CommandFile()
+      file = File()
       file.file_name = file_name
       file.packets = packets
       file.digests = self.digests
