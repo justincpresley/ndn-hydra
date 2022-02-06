@@ -18,7 +18,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
 from ndn.storage import Storage
 from ndn_hydra.repo.handles.protocol_handle_base import ProtocolHandle
-from ndn_hydra.repo.protocol.repo_commands import RepoCommand
+from ndn_hydra.repo.protocol.base_models import RepoCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageTlv
@@ -80,7 +80,7 @@ class InsertCommandHandle(ProtocolHandle):
         digests = cmd.file.digests
         size = cmd.file.size
         sequence_number = cmd.sequence_number
-        fetch_path = cmd.fetch_path.prefix
+        fetch_path = cmd.fetch_path
 
         self.logger.info("[cmd][INSERT] file {}".format(Name.to_str(file_name)))
 

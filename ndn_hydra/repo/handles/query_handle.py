@@ -15,7 +15,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, ContentType, Component
 from ndn.storage import Storage
 from ndn_hydra.repo.global_view.global_view import GlobalView
-from ndn_hydra.repo.protocol.repo_commands import FileList
+from ndn_hydra.repo.protocol.base_models import FileList
 from ndn_hydra.repo.group_messages.add import FileTlv
 
 class QueryHandle(object):

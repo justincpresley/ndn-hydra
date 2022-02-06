@@ -15,7 +15,7 @@ import time
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component
 from ndn.storage import Storage
-from ndn_hydra.repo.protocol.repo_commands import RepoCommand
+from ndn_hydra.repo.protocol.base_models import RepoCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.group_messages.remove import RemoveMessageTlv
 from ndn_hydra.repo.group_messages.message import Message, MessageTypes

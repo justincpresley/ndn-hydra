@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from ndn.encoding import *
 from typing import Optional
+from ndn_hydra.repo.protocol.tlv import HydraTlvTypes
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 from ndn_hydra.repo.group_messages.add import AddMessage
 from ndn_hydra.repo.group_messages.remove import RemoveMessage
@@ -30,8 +31,8 @@ class MessageTypes:
     EXPIRE = 6
 
 class Message(TlvModel):
-    type = UintField(0x80)
-    value = BytesField(0x81)
+    type = UintField(HydraTlvTypes.MESSAGE_TYPE)
+    value = BytesField(HydraTlvTypes.MESSAGE)
     @staticmethod
     def specify(nid:str, seqno:int, message_bytes:bytes) -> Optional[SpecificMessage]:
         message = Message.parse(message_bytes)

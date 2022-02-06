@@ -12,7 +12,7 @@
 import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
-from ndn_hydra.repo.protocol.repo_commands import RepoCommand, CommandFile, FetchPath
+from ndn_hydra.repo.protocol.base_models import RepoCommand, CommandFile
 from ndn_hydra.repo.utils.pubsub import PubSub
 
 class HydraDeleteClient(object):
@@ -38,12 +38,10 @@ class HydraDeleteClient(object):
       file.packets = 0
       file.digests = []
       file.size = 0
-      fetch_path = FetchPath()
-      fetch_path.prefix = self.client_prefix + [Component.from_str("upload")] + file_name
       cmd = RepoCommand()
       cmd.file = file
       cmd.sequence_number = 0
-      cmd.fetch_path = fetch_path
+      cmd.fetch_path = self.client_prefix + [Component.from_str("upload")] + file_name
       cmd_bytes = cmd.encode()
 
       # publish msg to repo's delete topic
