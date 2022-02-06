@@ -22,7 +22,11 @@ class CommandFile(TlvModel):
 class FileList(TlvModel):
     list = RepeatedField(ModelField(HydraTlvTypes.FILE, FileTlv))
 
-class RepoCommand(TlvModel):
-  file = ModelField(HydraTlvTypes.FILE, CommandFile)
-  sequence_number = UintField(HydraTlvTypes.SEQUENCE_NUMBER)
-  fetch_path = NameField()
+class InsertCommand(TlvModel):
+    file = ModelField(HydraTlvTypes.FILE, CommandFile)
+    sequence_number = UintField(HydraTlvTypes.SEQUENCE_NUMBER)
+    fetch_path = NameField()
+
+class DeleteCommand(TlvModel):
+    file_name = NameField()
+    sequence_number = UintField(HydraTlvTypes.SEQUENCE_NUMBER)

@@ -15,7 +15,7 @@ import time
 from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component
 from ndn.storage import Storage
-from ndn_hydra.repo.protocol.base_models import RepoCommand
+from ndn_hydra.repo.protocol.base_models import DeleteCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.group_messages.remove import RemoveMessageTlv
 from ndn_hydra.repo.group_messages.message import Message, MessageTypes
@@ -61,7 +61,7 @@ class DeleteCommandHandle(ProtocolHandle):
     def _on_delete_msg(self, msg):
 
         try:
-            cmd = RepoCommand.parse(msg)
+            cmd = DeleteCommand.parse(msg)
             # if cmd.name == None:
             #     raise DecodeError()
         except (DecodeError, IndexError) as exc:
@@ -69,12 +69,12 @@ class DeleteCommandHandle(ProtocolHandle):
             return
         aio.ensure_future(self._process_delete(cmd))
 
-    async def _process_delete(self, cmd: RepoCommand):
+    async def _process_delete(self, cmd: DeleteCommand):
         """
         Process delete command.
         """
 
-        file_name = cmd.file.file_name
+        file_name = cmd.file_name
         sequence_number = cmd.sequence_number
 
         self.logger.info("[cmd][DELETE] file {}".format(Name.to_str(file_name)))

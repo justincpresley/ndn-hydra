@@ -18,7 +18,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
 from ndn.storage import Storage
 from ndn_hydra.repo.handles.protocol_handle_base import ProtocolHandle
-from ndn_hydra.repo.protocol.base_models import RepoCommand
+from ndn_hydra.repo.protocol.base_models import InsertCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.add import FileTlv, FetchPathTlv, BackupTlv, AddMessageTlv
@@ -60,7 +60,7 @@ class InsertCommandHandle(ProtocolHandle):
 
     def _on_insert_msg(self, msg):
         try:
-            cmd = RepoCommand.parse(msg)
+            cmd = InsertCommand.parse(msg)
             #if cmd.file == None:
             #    raise DecodeError()
         except (DecodeError, IndexError) as exc:
@@ -68,7 +68,7 @@ class InsertCommandHandle(ProtocolHandle):
             return
         aio.ensure_future(self._process_insert(cmd))
 
-    async def _process_insert(self, cmd: RepoCommand):
+    async def _process_insert(self, cmd: InsertCommand):
         """
         Process insert command.
         """
