@@ -47,8 +47,8 @@ class ClaimMessageBodyTlv(TlvModel):
     authorizer_nonce = BytesField(ClaimMessageBodyTypes.AUTHORIZER_NONCE)
 
 class ClaimMessageBody(SpecificMessage):
-    def __init__(self, nid:str, seq:int, raw_bytes:bytes):
-        super(ClaimMessageBody, self).__init__(nid, seq)
+    def __init__(self, nid:str, seqno:int, raw_bytes:bytes):
+        super(ClaimMessageBody, self).__init__(nid, seqno)
         self.message_body = ClaimMessageBodyTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):

@@ -30,8 +30,8 @@ class StoreMessageBodyTlv(TlvModel):
     insertion_id = BytesField(StoreMessageBodyTypes.INSERTION_ID)
 
 class StoreMessageBody(SpecificMessage):
-    def __init__(self, nid:str, seq:int, raw_bytes:bytes):
-        super(StoreMessageBody, self).__init__(nid, seq)
+    def __init__(self, nid:str, seqno:int, raw_bytes:bytes):
+        super(StoreMessageBody, self).__init__(nid, seqno)
         self.message_body = StoreMessageBodyTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
