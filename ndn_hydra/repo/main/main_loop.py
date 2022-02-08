@@ -21,7 +21,7 @@ from ndn.types import InterestNack, InterestTimeout
 from ndn.svs import SVSync
 from ndn.storage import Storage, SqliteStorage
 from ndn_hydra.repo.global_view.global_view import GlobalView
-from ndn_hydra.repo.repo_messages import *
+from ndn_hydra.repo.group_messages import *
 from ndn_hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
 
 class MainLoop:
@@ -60,25 +60,25 @@ class MainLoop:
         expire_at = int(time.time()+(self.config['period']*2))
         self.expire_at = expire_at
         favor = 1.85
-        heartbeat_message_body = HeartbeatMessageBodyTlv()
-        heartbeat_message_body.session_id = self.config['session_id'].encode()
-        heartbeat_message_body.node_name = self.config['node_name'].encode()
-        heartbeat_message_body.expire_at = expire_at
-        heartbeat_message_body.favor = str(favor).encode()
+        heartbeat_message = HeartbeatMessageTlv()
+        heartbeat_message.session_id = self.config['session_id'].encode()
+        heartbeat_message.node_name = self.config['node_name'].encode()
+        heartbeat_message.expire_at = expire_at
+        heartbeat_message.favor = str(favor).encode()
 
         # hb msg
-        heartbeat_message = MessageTlv()
-        heartbeat_message.header = MessageTypes.HEARTBEAT
-        heartbeat_message.body = heartbeat_message_body.encode()
+        message = Message()
+        message.type = MessageTypes.HEARTBEAT
+        message.value = heartbeat_message.encode()
 
-        # heartbeat_message_body = HeartbeatMessageBody(self.svs_node_id, self.state_vector, heartbeat_message_body.encode())
+        # heartbeat_message = HeartbeatMessage(self.svs_node_id, self.state_vector, heartbeat_message.encode())
         # print("state_vector: {0}".format(self.svs.getCore().getStateVector().to_str()))
         try:
             next_state_vector = self.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['session_id']))) + 1
         except TypeError:
             next_state_vector = 0
         self.global_view.update_session(self.config['session_id'], self.config['node_name'], expire_at, favor, next_state_vector)
-        self.svs.publishData(heartbeat_message.encode())
+        self.svs.publishData(message.encode())
 
     def detect_expired_sessions(self):
         deadline = int(time.time()) - (self.config['period'])
@@ -88,19 +88,19 @@ class MainLoop:
             # expire tlv
             expire_at = int(time.time()+(self.config['period']*2))
             favor = 1.85
-            expire_message_body = ExpireMessageBodyTlv()
-            expire_message_body.session_id = self.config['session_id'].encode()
-            expire_message_body.node_name = self.config['node_name'].encode()
-            expire_message_body.expire_at = expire_at
-            expire_message_body.favor = str(favor).encode()
-            expire_message_body.expired_session_id = expired_session['id'].encode()
+            expire_message = ExpireMessageTlv()
+            expire_message.session_id = self.config['session_id'].encode()
+            expire_message.node_name = self.config['node_name'].encode()
+            expire_message.expire_at = expire_at
+            expire_message.favor = str(favor).encode()
+            expire_message.expired_session_id = expired_session['id'].encode()
             # expire msg
-            expire_message = MessageTlv()
-            expire_message.header = MessageTypes.EXPIRE
-            expire_message.body = expire_message_body.encode()
+            message = Message()
+            message.type = MessageTypes.EXPIRE
+            message.value = expire_message.encode()
             # apply globalview and send msg thru SVS
             self.global_view.expire_session(expired_session['id'])
-            self.svs.publishData(expire_message.encode())
+            self.svs.publishData(message.encode())
             val = "[MSG][EXPIRE]* sid={sid};exp_sid={esid}".format(
                 sid=self.config['session_id'],
                 esid=expired_session['id']
@@ -154,22 +154,22 @@ class MainLoop:
             # claim tlv
             expire_at = int(time.time()+(self.config['period']*2))
             favor = 1.85
-            claim_message_body = ClaimMessageBodyTlv()
-            claim_message_body.session_id = self.config['session_id'].encode()
-            claim_message_body.node_name = self.config['node_name'].encode()
-            claim_message_body.expire_at = expire_at
-            claim_message_body.favor = str(favor).encode()
-            claim_message_body.insertion_id = backupable_insertion['id'].encode()
-            claim_message_body.type = ClaimMessageTypes.REQUEST
-            claim_message_body.claimer_session_id = self.config['session_id'].encode()
-            claim_message_body.claimer_nonce = secrets.token_hex(4).encode()
-            claim_message_body.authorizer_session_id = authorizer['session_id'].encode()
-            claim_message_body.authorizer_nonce = authorizer['nonce'].encode()
+            claim_message = ClaimMessageTlv()
+            claim_message.session_id = self.config['session_id'].encode()
+            claim_message.node_name = self.config['node_name'].encode()
+            claim_message.expire_at = expire_at
+            claim_message.favor = str(favor).encode()
+            claim_message.insertion_id = backupable_insertion['id'].encode()
+            claim_message.type = ClaimTypes.REQUEST
+            claim_message.claimer_session_id = self.config['session_id'].encode()
+            claim_message.claimer_nonce = secrets.token_hex(4).encode()
+            claim_message.authorizer_session_id = authorizer['session_id'].encode()
+            claim_message.authorizer_nonce = authorizer['nonce'].encode()
             # claim msg
-            claim_message = MessageTlv()
-            claim_message.header = MessageTypes.CLAIM
-            claim_message.body = claim_message_body.encode()
-            self.svs.publishData(claim_message.encode())
+            message = Message()
+            message.type = MessageTypes.CLAIM
+            message.value = claim_message.encode()
+            self.svs.publishData(message.encode())
             val = "[MSG][CLAIM.R]*sid={sid};iid={iid}".format(
                 sid=self.config['session_id'],
                 iid=backupable_insertion['id']
@@ -210,21 +210,21 @@ class MainLoop:
             # store msg
             expire_at = int(time.time()+(self.config['period']*2))
             favor = 1.85
-            store_message_body = StoreMessageBodyTlv()
-            store_message_body.session_id = self.config['session_id'].encode()
-            store_message_body.node_name = self.config['node_name'].encode()
-            store_message_body.expire_at = expire_at
-            store_message_body.favor = str(favor).encode()
-            store_message_body.insertion_id = insertion_id.encode()
+            store_message = StoreMessageTlv()
+            store_message.session_id = self.config['session_id'].encode()
+            store_message.node_name = self.config['node_name'].encode()
+            store_message.expire_at = expire_at
+            store_message.favor = str(favor).encode()
+            store_message.insertion_id = insertion_id.encode()
             # store msg
-            store_message = MessageTlv()
-            store_message.header = MessageTypes.STORE
-            store_message.body = store_message_body.encode()
+            message = Message()
+            message.type = MessageTypes.STORE
+            message.value = store_message.encode()
             # apply globalview and send msg thru SVS
             # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
 
             self.global_view.store_file(insertion_id, self.config['session_id'])
-            self.svs.publishData(store_message.encode())
+            self.svs.publishData(message.encode())
             val = "[MSG][STORE]*  sid={sid};iid={iid}".format(
                 sid=self.config['session_id'],
                 iid=insertion_id
@@ -243,9 +243,8 @@ class MainLoop:
                     continue
                 nid = i.nid
                 seq = i.lowSeqno
-                message = Message(nid, seq, message_bytes)
-                message_body = message.get_message_body()
-                aio.ensure_future(message_body.apply(self.global_view, self.fetch_file, self.svs, self.config))
+                message = Message.specify(nid, seq, message_bytes)
+                aio.ensure_future(message.apply(self.global_view, self.fetch_file, self.svs, self.config))
                 # print('fetched GM {}:{}'.format(nid, seq))
                 i.lowSeqno = i.lowSeqno + 1
 

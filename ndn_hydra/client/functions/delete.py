@@ -12,7 +12,7 @@
 import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
-from ndn_hydra.repo.protocol.repo_commands import RepoCommand, CommandFile, FetchPath
+from ndn_hydra.repo.protocol.base_models import DeleteCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
 
 class HydraDeleteClient(object):
@@ -33,17 +33,9 @@ class HydraDeleteClient(object):
       Delete a file asscoiated with a file name from the remote repo
       """
       # send command interest
-      file = CommandFile()
-      file.file_name = file_name
-      file.packets = 0
-      file.digests = []
-      file.size = 0
-      fetch_path = FetchPath()
-      fetch_path.prefix = self.client_prefix + [Component.from_str("upload")] + file_name
-      cmd = RepoCommand()
-      cmd.file = file
+      cmd = DeleteCommand()
+      cmd.file_name = file_name
       cmd.sequence_number = 0
-      cmd.fetch_path = fetch_path
       cmd_bytes = cmd.encode()
 
       # publish msg to repo's delete topic
