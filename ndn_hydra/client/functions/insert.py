@@ -78,7 +78,6 @@ class HydraInsertClient(object):
       file.size = size
       cmd = InsertCommand()
       cmd.file = file
-      cmd.sequence_number = 0
       cmd.fetch_path = fetch_file_prefix
       cmd_bytes = cmd.encode()
 

@@ -14,7 +14,7 @@ from ndn.encoding import *
 import time
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
-from ndn_hydra.repo.protocol.base_models import GroupFile
+from ndn_hydra.repo.protocol.base_models import File
 
 class AddMessageTypes:
     SESSION_ID = 83
@@ -49,8 +49,9 @@ class AddMessageTlv(TlvModel):
     expire_at = UintField(AddMessageTypes.EXPIRE_AT)
     favor = BytesField(AddMessageTypes.FAVOR)
     insertion_id = BytesField(AddMessageTypes.INSERTION_ID)
-    file = ModelField(AddMessageTypes.FILE, GroupFile)
+    file = ModelField(AddMessageTypes.FILE, File)
 
+    desired_copies = UintField(AddMessageTypes.DESIRED_COPIES)
     sequence_number = UintField(AddMessageTypes.SEQUENCE_NUMBER)
     fetch_path = ModelField(AddMessageTypes.FETCH_PATH, FetchPathTlv)
     is_stored_by_origin = UintField(AddMessageTypes.IS_STORED_BY_ORIGIN)
@@ -69,10 +70,10 @@ class AddMessage(SpecificMessage):
         insertion_id = self.message.insertion_id.tobytes().decode()
         file = self.message.file
         file_name = file.file_name
-        desired_copies = file.desired_copies
         packets = file.packets
         digests = file.digests
         size = file.size
+        desired_copies = self.message.desired_copies
         sequence_number = self.message.sequence_number
         fetch_path = self.message.fetch_path.prefix
         is_stored_by_origin = False if (self.message.is_stored_by_origin == 0) else True

@@ -35,7 +35,6 @@ class HydraDeleteClient(object):
       # send command interest
       cmd = DeleteCommand()
       cmd.file_name = file_name
-      cmd.sequence_number = 0
       cmd_bytes = cmd.encode()
 
       # publish msg to repo's delete topic

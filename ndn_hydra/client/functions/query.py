@@ -13,7 +13,7 @@ import logging
 from ndn.app import NDNApp
 from ndn.encoding import FormalName, Component, Name, ContentType
 from ndn.types import InterestNack, InterestTimeout, InterestCanceled, ValidationFailure
-from ndn_hydra.repo.protocol.base_models import GroupFileList, GroupFile
+from ndn_hydra.repo.protocol.base_models import FileList, File
 
 class HydraQueryClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:
@@ -48,14 +48,13 @@ class HydraQueryClient(object):
                  print(f'{bytes(content).decode().split()}')
                  return
              elif querytype == "files":
-                 filelist = GroupFileList.parse(content)
+                 filelist = FileList.parse(content)
                  counter = 1
                  if filelist.list:
                      print(f'List of All Files')
                      for file in filelist.list:
                          print(f'File {counter} meta-info')
                          print(f'\tfile_name: {Name.to_str(file.file_name)}')
-                         print(f'\tdesired_copies: {file.desired_copies}')
                          print(f'\tsize: {file.size}')
                          counter = counter + 1
                  else:
@@ -63,23 +62,21 @@ class HydraQueryClient(object):
                  return
              elif querytype == "file":
                  if content:
-                     file = GroupFile.parse(content)
+                     file = File.parse(content)
                      print(f'File Exists, File meta-info')
                      print(f'\tfile_name: {Name.to_str(file.file_name)}')
                      print(f'\tsize: {file.size}')
-                     print(f'\tdesired_copies: {file.desired_copies}')
                  else:
                      print(f'File Does Not Exists in The Repo')
                  return
              elif querytype == "prefix":
-                 filelist = GroupFileList.parse(content)
+                 filelist = FileList.parse(content)
                  counter = 1
                  if filelist.list:
                      print(f'List of All Files with prefix {Name.to_str(query[1:])}')
                      for file in filelist.list:
                          print(f'File {counter} meta-info')
                          print(f'\tfile_name: {Name.to_str(file.file_name)}')
-                         print(f'\tdesired_copies: {file.desired_copies}')
                          print(f'\tsize: {file.size}')
                          counter = counter + 1
                  else:

@@ -15,7 +15,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, ContentType, Component
 from ndn.storage import Storage
 from ndn_hydra.repo.global_view.global_view import GlobalView
-from ndn_hydra.repo.protocol.base_models import GroupFileList, GroupFile
+from ndn_hydra.repo.protocol.base_models import FileList, File
 
 class QueryHandle(object):
     """
@@ -69,12 +69,11 @@ class QueryHandle(object):
         elif querytype == "files":
             self.logger.info(f'[cmd][QUERY] query received: files')
             insertions = self.global_view.get_insertions()
-            filelist = GroupFileList()
+            filelist = FileList()
             filelist.list = []
             for index in range(len(insertions)):
-                file = GroupFile()
+                file = File()
                 file.file_name = insertions[index]["file_name"]
-                file.desired_copies = insertions[index]["desired_copies"]
                 file.packets = insertions[index]["packets"]
                 file.digests = insertions[index]["digests"]
                 file.size = insertions[index]["size"]
@@ -88,9 +87,8 @@ class QueryHandle(object):
             filecontent = None
             for index in range(len(insertions)):
                 if Name.to_str(insertions[index]["file_name"]) == filename:
-                    file = GroupFile()
+                    file = File()
                     file.file_name = insertions[index]["file_name"]
-                    file.desired_copies = insertions[index]["desired_copies"]
                     file.packets = insertions[index]["packets"]
                     file.digests = insertions[index]["digests"]
                     file.size = insertions[index]["size"]
@@ -102,13 +100,12 @@ class QueryHandle(object):
             self.logger.info(f'[cmd][QUERY] query received: prefix')
             insertions = self.global_view.get_insertions()
             prefix = query[7:]
-            filelist = GroupFileList()
+            filelist = FileList()
             filelist.list = []
             for index in range(len(insertions)):
                 if Name.is_prefix(Name.from_str(prefix), insertions[index]["file_name"]):
-                    file = GroupFile()
+                    file = File()
                     file.file_name = insertions[index]["file_name"]
-                    file.desired_copies = insertions[index]["desired_copies"]
                     file.packets = insertions[index]["packets"]
                     file.digests = insertions[index]["digests"]
                     file.size = insertions[index]["size"]
