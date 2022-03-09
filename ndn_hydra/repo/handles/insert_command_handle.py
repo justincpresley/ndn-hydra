@@ -18,7 +18,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, NonStrictName, Component, DecodeError
 from ndn.storage import Storage
 from ndn_hydra.repo.handles.protocol_handle_base import ProtocolHandle
-from ndn_hydra.repo.protocol.base_models import InsertCommand, GroupFile
+from ndn_hydra.repo.protocol.base_models import InsertCommand, File
 from ndn_hydra.repo.utils.pubsub import PubSub
 from ndn_hydra.repo.global_view.global_view import GlobalView
 from ndn_hydra.repo.group_messages.add import FetchPathTlv, BackupTlv, AddMessageTlv
@@ -79,7 +79,6 @@ class InsertCommandHandle(ProtocolHandle):
         packets = cmd.file.packets
         digests = cmd.file.digests
         size = cmd.file.size
-        sequence_number = cmd.sequence_number
         fetch_path = cmd.fetch_path
 
         self.logger.info("[cmd][INSERT] file {}".format(Name.to_str(file_name)))
@@ -87,8 +86,9 @@ class InsertCommandHandle(ProtocolHandle):
         # TODO: check duplicate sequence number
 
         sessions = self.global_view.get_sessions()
-
         desired_copies = 2
+        sequence_number = 0
+
         if len(sessions) < (desired_copies * 2):
             self.logger.warning("not enough node sessions") # TODO: notify the client?
             return
@@ -136,12 +136,12 @@ class InsertCommandHandle(ProtocolHandle):
         add_message.expire_at = expire_at
         add_message.favor = str(favor).encode()
         add_message.insertion_id = insertion_id.encode()
-        add_message.file = GroupFile()
+        add_message.file = File()
         add_message.file.file_name = file_name
-        add_message.file.desired_copies = desired_copies
         add_message.file.packets = packets
         add_message.file.digests = digests
         add_message.file.size = size
+        add_message.desired_copies = desired_copies
         add_message.sequence_number = sequence_number
         add_message.fetch_path = FetchPathTlv()
         add_message.fetch_path.prefix = fetch_path

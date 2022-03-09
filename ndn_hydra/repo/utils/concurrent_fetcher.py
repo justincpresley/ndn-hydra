@@ -1,9 +1,17 @@
-# -----------------------------------------------------------------------------
-# Concurrent segment fetcher.
-#
-# @Author jonnykong@cs.ucla.edu
-# @Date   2019-10-15
-# -----------------------------------------------------------------------------
+# -------------------------------------------------------------
+# NDN Hydra Concurrent Segment Fetcher
+# -------------------------------------------------------------
+#  @Project: NDN Hydra
+#  @Date:    2021-01-25
+#  @Authors: Please check AUTHORS.rst
+#  @Source-Code:   https://github.com/justincpresley/ndn-hydra
+#  @Documentation: https://ndn-hydra.readthedocs.io
+#  @Pip-Library:   https://pypi.org/project/ndn-hydra
+# -------------------------------------------------------------
+# NOTE: This concurrent_fetcher was originally written by
+#       jonnykong@cs.ucla.edu on 2019-10-15 and later modified
+#       to meet the demands of Hydra.
+# -------------------------------------------------------------
 
 import asyncio as aio
 import logging
@@ -12,19 +20,9 @@ from ndn.types import InterestNack, InterestTimeout
 from ndn.encoding import Name, NonStrictName, Component
 from typing import Optional
 
+#An async-generator to fetch data packets concurrently.
 async def concurrent_fetcher(app: NDNApp, name: NonStrictName, file_name: NonStrictName, start_block_id: int,
                              end_block_id: Optional[int], semaphore: aio.Semaphore, **kwargs):
-    """
-    An async-generator to fetch data packets between "`name`/`start_block_id`" and "`name`/`end_block_id`"\
-        concurrently.
-
-    :param app: NDNApp.
-    :param name: NonStrictName. Name prefix of Data.
-    :param start_block_id: int. The start segment number.
-    :param end_block_id: Optional[int]. The end segment number. If not specified, continue fetching\
-        until an interest receives timeout or nack or 3 times.
-    :return: Yield ``(FormalName, MetaInfo, Content, RawPacket)`` tuples in order.
-    """
     cur_id = start_block_id
     final_id = end_block_id if end_block_id is not None else 0x7fffffff
     is_failed = False

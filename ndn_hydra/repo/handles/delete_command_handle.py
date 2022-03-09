@@ -75,7 +75,6 @@ class DeleteCommandHandle(ProtocolHandle):
         """
 
         file_name = cmd.file_name
-        sequence_number = cmd.sequence_number
 
         self.logger.info("[cmd][DELETE] file {}".format(Name.to_str(file_name)))
 

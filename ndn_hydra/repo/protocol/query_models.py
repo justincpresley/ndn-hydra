@@ -1,5 +1,5 @@
 # -------------------------------------------------------------
-# NDN Hydra Tlv Types
+# NDN Hydra Query Tlv Models
 # -------------------------------------------------------------
 #  @Project: NDN Hydra
 #  @Date:    2021-01-25
@@ -9,11 +9,4 @@
 #  @Pip-Library:   https://pypi.org/project/ndn-hydra
 # -------------------------------------------------------------
 
-class HydraTlvTypes:
-    MESSAGE = 200
-    MESSAGE_TYPE = 201
-    FILE = 202
-    PACKETS = 203
-    DIGEST = 204
-    SIZE = 205
-    CODE = 206
+# TODO: form models needed by queries
