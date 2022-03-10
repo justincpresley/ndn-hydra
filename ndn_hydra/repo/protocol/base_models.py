@@ -29,4 +29,11 @@ class DeleteCommand(TlvModel):
     file_name = NameField()
 
 class CommandStatus(TlvModel):
-    code = UintField(HydraTlvTypes.CODE)
+    code = UintField(HydraTlvTypes.STATUS_CODE)
+
+class FirstContact(TlvModel):
+    prefix = NameField()
+    cmduri = UintField(HydraTlvTypes.CMD_URI)
+
+class NotificationSpecification(TlvModel):
+    cmduri = UintField(HydraTlvTypes.CMD_URI)
