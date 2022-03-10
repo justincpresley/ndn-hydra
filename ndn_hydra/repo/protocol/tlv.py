@@ -16,4 +16,5 @@ class HydraTlvTypes:
     PACKETS = 203
     DIGEST = 204
     SIZE = 205
-    CODE = 206
+    STATUS_CODE = 206
+    CMD_URI= 207
