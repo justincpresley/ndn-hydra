@@ -64,7 +64,6 @@ CREATE TABLE IF NOT EXISTS pending_stores (
 """
 
 class GlobalView:
-
     def __init__(self, db: str):
         self.db = os.path.expanduser(db)
         if len(os.path.dirname(self.db)) > 0 and not os.path.exists(os.path.dirname(self.db)):

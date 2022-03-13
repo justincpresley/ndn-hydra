@@ -25,12 +25,12 @@ from ndn_hydra.repo.group_messages import *
 from ndn_hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
 
 class MainLoop:
-    def __init__(self, app: NDNApp, config: Dict, global_view: GlobalView, data_storage: Storage):
+    def __init__(self, app: NDNApp, config: Dict, global_view: GlobalView, data_storage: Storage, svs_storage: Storage):
         self.app = app
         self.config = config
         self.global_view = global_view
         self.data_storage = data_storage
-        self.svs_storage = SqliteStorage(self.config['svs_storage_path'])
+        self.svs_storage = svs_storage
         self.svs = None
         self.expire_at = 0
         self.logger = logging.getLogger()

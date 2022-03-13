@@ -33,7 +33,7 @@ class CommandStatus(TlvModel):
 
 class FirstContact(TlvModel):
     prefix = NameField()
-    cmduri = UintField(HydraTlvTypes.CMD_URI)
+    cmduri = BytesField(HydraTlvTypes.CMD_URI)
 
 class NotificationSpecification(TlvModel):
-    cmduri = UintField(HydraTlvTypes.CMD_URI)
+    cmduri = BytesField(HydraTlvTypes.CMD_URI)

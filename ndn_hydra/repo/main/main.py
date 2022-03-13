@@ -133,10 +133,11 @@ class HydraSessionThread(Thread):
         # databases
         data_storage = SqliteStorage(self.config['data_storage_path'])
         global_view = GlobalView(self.config['global_view_path'])
+        svs_storage = SqliteStorage(self.config['svs_storage_path'])
         pb = PubSub(app)
 
         # main_loop (svs)
-        main_loop = MainLoop(app, self.config, global_view, data_storage)
+        main_loop = MainLoop(app, self.config, global_view, data_storage, svs_storage)
 
         # protocol (reads, commands & queries)
         read_handle = ReadHandle(app, data_storage, global_view, self.config)
