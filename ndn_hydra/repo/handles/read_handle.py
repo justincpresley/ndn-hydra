@@ -38,6 +38,7 @@ class ReadHandle(object):
 
         self.command_comp = "/fetch"
         self.sid_comp = "/sid"
+        # config file needed
 
         self.listen(Name.from_str(self.repo_prefix + self.command_comp))
         self.listen(Name.from_str(self.repo_prefix + self.sid_comp  + "/" + self.session_id + self.command_comp))

@@ -134,7 +134,7 @@ class HydraSessionThread(Thread):
         app = NDNApp()
 
         # databases
-        data_storage = SqliteStorage(self.config['data_storage_path'])
+        data_storage = SqliteStorage(self.config['data_storage_path']) # version
         global_view = GlobalView(self.config['global_view_path'])
         svs_storage = SqliteStorage(self.config['svs_storage_path'])
         pb = PubSub(app)

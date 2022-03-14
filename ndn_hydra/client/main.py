@@ -44,8 +44,6 @@ def parse_hydra_cmd_opts() -> Namespace:
                 print("        -r, --repoprefix REPO     |   a proper name of the repo prefix.")
                 print("        -f, --filename FILENAME   |   a proper name for the input file.")
                 print("        -p, --path PATH           |   path of the file desired to be the input i.e. input path.")
-                print("     optional args:")
-                print("        -c, --copies COPIES       |   number of copies for files, default 2.")
                 print("")
                 print("* function 'delete':")
                 print("     usage: ndn-hydra-client delete -r REPO -f FILENAME")
@@ -82,7 +80,6 @@ def parse_hydra_cmd_opts() -> Namespace:
     insertsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
     insertsp.add_argument("-f","--filename",action="store",dest="filename",required=True)
     insertsp.add_argument("-p","--path",action="store",dest="path",required=True)
-    insertsp.add_argument("-c","--copies",action="store",dest="copies",required=False,default=2,type=int,nargs=None)
 
     deletesp = subparsers.add_parser('delete',add_help=False)
     deletesp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
@@ -110,9 +107,6 @@ def parse_hydra_cmd_opts() -> Namespace:
         if not os.path.isfile(vars.path):
             print('Error: path specified is not an actual file. Unable to insert.')
             sys.exit()
-        if vars.copies < 2:
-            print('Error: insufficient number of copies, must be 2 or above.')
-            sys.exit()
     return vars
 
 class HydraClient():
@@ -121,8 +115,8 @@ class HydraClient():
         self.cdelete = HydraDeleteClient(app, client_prefix, repo_prefix)
         self.cfetch = HydraFetchClient(app, client_prefix, repo_prefix)
         self.cquery = HydraQueryClient(app, client_prefix, repo_prefix)
-    async def insert(self, file_name: FormalName, desired_copies: int, path: str) -> bool:
-        return await self.cinsert.insert_file(file_name, desired_copies, path);
+    async def insert(self, file_name: FormalName, path: str) -> bool:
+        return await self.cinsert.insert_file(file_name, path);
     async def delete(self, file_name: FormalName) -> bool:
         return await self.cdelete.delete_file(file_name);
     async def fetch(self, file_name: FormalName, local_filename: str = None, overwrite: bool = False) -> None:
@@ -134,16 +128,13 @@ async def run_hydra_client(app: NDNApp, args: Namespace) -> None:
   repo_prefix = Name.from_str(args.repo)
   client_prefix = Name.from_str("/client")
   filename = None
-  desired_copies = 2
-  if hasattr(args, 'copies'):
-    desired_copies = args.copies
   client = HydraClient(app, client_prefix, repo_prefix)
 
   if args.function != "query":
       filename = Name.from_str(args.filename)
 
   if args.function == "insert":
-    await client.insert(filename, desired_copies, args.path)
+    await client.insert(filename, args.path)
     print("Client finished Insert Command!")
     await asyncio.sleep(60)
 
