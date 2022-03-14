@@ -20,7 +20,7 @@ from ndn.encoding import Name, Component
 from ndn.types import InterestNack, InterestTimeout
 from ndn.svs import SVSync
 from ndn.storage import Storage, SqliteStorage
-from ndn_hydra.repo.global_view.global_view import GlobalView
+from ndn_hydra.repo.modules.global_view import GlobalView
 from ndn_hydra.repo.group_messages import *
 from ndn_hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
 

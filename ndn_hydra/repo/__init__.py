@@ -7,7 +7,7 @@
 #  @Pip-Library:   https://pypi.org/project/ndn-hydra
 # -------------------------------------------------------------
 
-from .global_view import *
+from .modules import *
 from .handles import *
 from .main import *
 from .protocol import *

@@ -11,7 +11,7 @@
 
 from typing import Callable
 from ndn.encoding import *
-from ndn_hydra.repo.global_view.global_view import GlobalView
+from ndn_hydra.repo.modules.global_view import GlobalView
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 
 class RemoveMessageTypes:

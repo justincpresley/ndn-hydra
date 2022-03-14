@@ -9,7 +9,7 @@
 #  @Pip-Library:   https://pypi.org/project/ndn-hydra
 # -------------------------------------------------------------
 
-from ndn_hydra.repo.global_view import GlobalView
+from ndn_hydra.repo.modules.global_view import GlobalView
 import logging
 
 class SpecificMessage:
