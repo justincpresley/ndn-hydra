@@ -88,7 +88,6 @@ class InsertCommandHandle(ProtocolHandle):
 
         nodes = self.global_view.get_nodes()
         desired_copies = self.replication_degree
-        sequence_number = 0
 
         if len(nodes) < (desired_copies * 2):
             self.logger.warning("not enough nodes") # TODO: notify the client?
@@ -142,7 +141,6 @@ class InsertCommandHandle(ProtocolHandle):
         add_message.file.digests = digests
         add_message.file.size = size
         add_message.desired_copies = desired_copies
-        add_message.sequence_number = sequence_number
         add_message.fetch_path = FetchPathTlv()
         add_message.fetch_path.prefix = fetch_path
         # add_message.is_stored_by_origin = 1 if pickself else 0
@@ -160,7 +158,6 @@ class InsertCommandHandle(ProtocolHandle):
         self.global_view.add_file(
             insertion_id,
             Name.to_str(file_name),
-            sequence_number,
             size,
             self.config['node_name'],
             Name.to_str(fetch_path),
@@ -177,14 +174,13 @@ class InsertCommandHandle(ProtocolHandle):
         bak = ""
         for backup in backup_list:
             bak = bak + backup[0] + ","
-        val = "[MSG][ADD]*    nam={nam};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};seq={seq};slf={slf};bak={bak}".format(
+        val = "[MSG][ADD]*    nam={nam};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};slf={slf};bak={bak}".format(
             nam=self.config['node_name'],
             iid=insertion_id,
             fil=Name.to_str(file_name),
             cop=desired_copies,
             pck=packets,
             siz=size,
-            seq=sequence_number,
             # slf=1 if pickself else 0,
             slf=0,
             bak=bak

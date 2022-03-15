@@ -99,9 +99,9 @@ class MainLoop:
             # apply globalview and send msg thru SVS
             self.global_view.expire_node(expired_node['node_name'])
             self.svs.publishData(message.encode())
-            val = "[MSG][EXPIRE]* nam={nam};exp_sid={esid}".format(
+            val = "[MSG][EXPIRE]* nam={nam};exp_nam={enam}".format(
                 nam=self.config['node_name'],
-                esid=expired_node['node_name']
+                enam=expired_node['node_name']
             )
             self.logger.info(val)
 

@@ -27,9 +27,8 @@ class AddMessageTypes:
     PACKETS = 93
     DIGEST = 94
     SIZE = 95
-    SEQUENCE_NUMBER = 96
-    FETCH_PATH = 97
-    IS_STORED_BY_ORIGIN = 98
+    FETCH_PATH = 96
+    IS_STORED_BY_ORIGIN = 97
 
     BACKUP = 100
     BACKUP_NODE_NAME = 101
@@ -50,7 +49,6 @@ class AddMessageTlv(TlvModel):
     file = ModelField(AddMessageTypes.FILE, File)
 
     desired_copies = UintField(AddMessageTypes.DESIRED_COPIES)
-    sequence_number = UintField(AddMessageTypes.SEQUENCE_NUMBER)
     fetch_path = ModelField(AddMessageTypes.FETCH_PATH, FetchPathTlv)
     is_stored_by_origin = UintField(AddMessageTypes.IS_STORED_BY_ORIGIN)
     backup_list = RepeatedField(ModelField(AddMessageTypes.BACKUP, BackupTlv))
@@ -71,7 +69,6 @@ class AddMessage(SpecificMessage):
         digests = file.digests
         size = file.size
         desired_copies = self.message.desired_copies
-        sequence_number = self.message.sequence_number
         fetch_path = self.message.fetch_path.prefix
         is_stored_by_origin = False if (self.message.is_stored_by_origin == 0) else True
         backups = self.message.backup_list
@@ -80,14 +77,13 @@ class AddMessage(SpecificMessage):
         for backup in backups:
             backup_list.append((backup.node_name.tobytes().decode(), backup.nonce.tobytes().decode()))
             bak = bak + backup.node_name.tobytes().decode() + ","
-        val = "[MSG][ADD]     nam={nam};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};seq={seq};slf={slf};bak={bak}".format(
+        val = "[MSG][ADD]     nam={nam};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};slf={slf};bak={bak}".format(
             nam=node_name,
             iid=insertion_id,
             fil=Name.to_str(file_name),
             cop=desired_copies,
             pck=packets,
             siz=size,
-            seq=sequence_number,
             slf=1 if is_stored_by_origin else 0,
             bak=bak
         )
@@ -95,7 +91,6 @@ class AddMessage(SpecificMessage):
         global_view.add_file(
             insertion_id,
             Name.to_str(file_name),
-            sequence_number,
             size,
             node_name,
             Name.to_str(fetch_path),

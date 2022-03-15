@@ -27,7 +27,6 @@ sql_create_files_tables = """
 CREATE TABLE IF NOT EXISTS files (
     id TEXT PRIMARY KEY,
     file_name TEXT NOT NULL,
-    sequence_number INTEGER NOT NULL,
     desired_copies INTEGER NOT NULL DEFAULT 3,
     packets INTEGER NOT NULL DEFAULT 1,
     digests BLOB NOT NULL DEFAULT 0,
@@ -278,7 +277,7 @@ class GlobalView:
     def get_file(self, insertion_id: str):
         sql = """
         SELECT DISTINCT
-            id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
+            id, file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
         FROM
             files
         WHERE
@@ -291,15 +290,14 @@ class GlobalView:
             return {
                 'id': result[0][0],
                 'file_name': result[0][1],
-                'sequence_number': result[0][2],
-                'desired_copies': result[0][3],
-                'packets': result[0][4],
-                'size': result[0][5],
-                'origin_node_name': result[0][6],
-                'fetch_path': result[0][7],
-                'state_vector': result[0][8],
-                'is_deleted': False if (result[0][9] == 0) else True,
-                'digests': self.__split_digests(result[0][10], 2),
+                'desired_copies': result[0][2],
+                'packets': result[0][3],
+                'size': result[0][4],
+                'origin_node_name': result[0][5],
+                'fetch_path': result[0][6],
+                'state_vector': result[0][7],
+                'is_deleted': False if (result[0][8] == 0) else True,
+                'digests': self.__split_digests(result[0][9], 2),
                 'stored_bys': self.get_stored_bys(result[0][0]),
                 'backuped_bys': self.get_backuped_bys(result[0][0])
             }
@@ -308,14 +306,14 @@ class GlobalView:
         if including_deleted:
             sql = """
             SELECT DISTINCT
-                id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
+                id, file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
             FROM
                 files
             """
         else:
             sql = """
             SELECT DISTINCT
-                id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
+                id, file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
             FROM
                 files
             WHERE
@@ -327,15 +325,14 @@ class GlobalView:
             files.append({
                 'id': result[0],
                 'file_name': result[1],
-                'sequence_number': result[2],
-                'desired_copies': result[3],
-                'packets': result[4],
-                'size': result[5],
-                'origin_node_name': result[6],
-                'fetch_path': result[7],
-                'state_vector': result[8],
-                'is_deleted': False if (result[9] == 0) else True,
-                'digests': self.__split_digests(result[10], 2),
+                'desired_copies': result[2],
+                'packets': result[3],
+                'size': result[4],
+                'origin_node_name': result[5],
+                'fetch_path': result[6],
+                'state_vector': result[7],
+                'is_deleted': False if (result[8] == 0) else True,
+                'digests': self.__split_digests(result[9], 2),
                 'stored_bys': self.get_stored_bys(result[0]),
                 'backuped_bys': self.get_backuped_bys(result[0])
             })
@@ -344,7 +341,7 @@ class GlobalView:
     def get_file_by_name(self, file_name: str):
         sql = """
         SELECT DISTINCT
-            id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
+            id, file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
         FROM
             files
         WHERE
@@ -358,15 +355,14 @@ class GlobalView:
             return {
                 'id': result[0][0],
                 'file_name': result[0][1],
-                'sequence_number': result[0][2],
-                'desired_copies': result[0][3],
-                'packets': result[0][4],
-                'size': result[0][5],
-                'origin_node_name': result[0][6],
-                'fetch_path': result[0][7],
-                'state_vector': result[0][8],
-                'is_deleted': False if (result[0][9] == 0) else True,
-                'digests': self.__split_digests(result[0][10], 2),
+                'desired_copies': result[0][2],
+                'packets': result[0][3],
+                'size': result[0][4],
+                'origin_node_name': result[0][5],
+                'fetch_path': result[0][6],
+                'state_vector': result[0][7],
+                'is_deleted': False if (result[0][8] == 0) else True,
+                'digests': self.__split_digests(result[0][9], 2),
                 'stored_bys': self.get_stored_bys(result[0][0]),
                 'backuped_bys': self.get_backuped_bys(result[0][0])
             }
@@ -387,7 +383,7 @@ class GlobalView:
                 backupable_files.append(file)
         return backupable_files
 
-    def add_file(self, insertion_id: str, file_name: str, sequence_number: int, size: int, origin_node_name: str,
+    def add_file(self, insertion_id: str, file_name: str, size: int, origin_node_name: str,
                fetch_path: str, state_vector: int, digests: bytes, packets=1, desired_copies=3):
         # # check (same insertion_id):
         # insertion = self.get_insertion(insertion_id)
@@ -398,11 +394,11 @@ class GlobalView:
 
         sql = """
         INSERT OR IGNORE INTO files
-            (id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests)
+            (id, file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests)
         VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+            (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
         """
-        self.__execute_sql_qmark(sql, (insertion_id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, digests))
+        self.__execute_sql_qmark(sql, (insertion_id, file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, digests))
 
     def delete_file(self, insertion_id: str):
         # stored_by
