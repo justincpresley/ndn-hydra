@@ -45,6 +45,7 @@ class InsertCommandHandle(ProtocolHandle):
         self.main_loop = main_loop
         self.global_view = global_view
         self.repo_prefix = config['repo_prefix']
+        self.replication_degree = config['replication_degree']
 
     async def listen(self, prefix: NonStrictName):
         """
@@ -86,7 +87,7 @@ class InsertCommandHandle(ProtocolHandle):
         # TODO: check duplicate sequence number
 
         nodes = self.global_view.get_nodes()
-        desired_copies = 2
+        desired_copies = self.replication_degree
         sequence_number = 0
 
         if len(nodes) < (desired_copies * 2):

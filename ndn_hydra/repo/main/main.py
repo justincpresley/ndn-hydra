@@ -168,7 +168,8 @@ def main() -> int:
         'svs_storage_path': None,
         'logging_path': None,
         #'svs_cache_others': True,
-		'period': 20
+        'period': 20,
+        'replication_degree': 2
     }
     cmd_args = process_cmd_opts()
     config = default_config.copy()
