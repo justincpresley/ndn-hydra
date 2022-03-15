@@ -106,48 +106,46 @@ class MainLoop:
             self.logger.info(val)
 
         # am I at the top of any insertion's backup list?
-        underreplicated_insertions = self.global_view.get_underreplicated_insertions()
-        for underreplicated_insertion in underreplicated_insertions:
-            deficit = underreplicated_insertion['desired_copies'] - len(underreplicated_insertion['stored_bys'])
-            for backuped_by in underreplicated_insertion['backuped_bys']:
+        underreplicated_files = self.global_view.get_underreplicated_files()
+        for underreplicated_file in underreplicated_files:
+            deficit = underreplicated_file['desired_copies'] - len(underreplicated_file['stored_bys'])
+            for backuped_by in underreplicated_file['backuped_bys']:
                 if (backuped_by['node_name'] == self.config['node_name']) and (backuped_by['rank'] < deficit):
-                    self.fetch_file(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
+                    self.fetch_file(underreplicated_file['id'], underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
 
 
     def claim(self):
         # TODO: possibility based on # active sessions and period
         # if random.random() < 0.618:
         #     return
-        backupable_insertions = self.global_view.get_backupable_insertions()
-
-        for backupable_insertion in backupable_insertions:
-
+        backupable_files = self.global_view.get_backupable_files()
+        for backupable_file in backupable_files:
             if random.random() < 0.618:
                 continue
             # print(json.dumps(backupable_insertion['stored_bys']))
             # print(json.dumps(backupable_insertion['backuped_bys']))
             already_in = False
-            for stored_by in backupable_insertion['stored_bys']:
+            for stored_by in backupable_file['stored_bys']:
                 if stored_by == self.config['node_name']:
                     already_in = True
                     break
-            for backuped_by in backupable_insertion['backuped_bys']:
+            for backuped_by in backupable_file['backuped_bys']:
                 if backuped_by['node_name'] == self.config['node_name']:
                     already_in = True
                     break
             if already_in == True:
                 continue
-            if len(backupable_insertion['backuped_bys']) == 0 and len(backupable_insertion['stored_bys']) == 0:
+            if len(backupable_file['backuped_bys']) == 0 and len(backupable_file['stored_bys']) == 0:
                 continue
             authorizer = None
-            if len(backupable_insertion['backuped_bys']) == 0:
+            if len(backupable_file['backuped_bys']) == 0:
                 authorizer = {
-                    'node_name': backupable_insertion['stored_bys'][-1],
+                    'node_name': backupable_file['stored_bys'][-1],
                     'rank': -1,
-                    'nonce': backupable_insertion['id']
+                    'nonce': backupable_file['id']
                 }
             else:
-                authorizer = backupable_insertion['backuped_bys'][-1]
+                authorizer = backupable_file['backuped_bys'][-1]
             # generate claim (request) msg and send
             # claim tlv
             expire_at = int(time.time()+(self.config['period']*2))
@@ -156,7 +154,7 @@ class MainLoop:
             claim_message.node_name = self.config['node_name'].encode()
             claim_message.expire_at = expire_at
             claim_message.favor = str(favor).encode()
-            claim_message.insertion_id = backupable_insertion['id'].encode()
+            claim_message.insertion_id = backupable_file['id'].encode()
             claim_message.type = ClaimTypes.REQUEST
             claim_message.claimer_node_name = self.config['node_name'].encode()
             claim_message.claimer_nonce = secrets.token_hex(4).encode()
@@ -169,7 +167,7 @@ class MainLoop:
             self.svs.publishData(message.encode())
             val = "[MSG][CLAIM.R]*nam={nam};iid={iid}".format(
                 nam=self.config['node_name'],
-                iid=backupable_insertion['id']
+                iid=backupable_file['id']
             )
             self.logger.info(val)
 
@@ -202,8 +200,8 @@ class MainLoop:
         # print("--")
 
     def store(self, insertion_id: str):
-        insertion = self.global_view.get_insertion(insertion_id)
-        if len(insertion['stored_bys']) < insertion['desired_copies']:
+        file = self.global_view.get_file(insertion_id)
+        if len(file['stored_bys']) < file['desired_copies']:
             # store msg
             expire_at = int(time.time()+(self.config['period']*2))
             favor = 1.85

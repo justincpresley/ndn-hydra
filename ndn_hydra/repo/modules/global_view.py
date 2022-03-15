@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS nodes (
     is_expired INTEGER NOT NULL DEFAULT 0
 );
 """
-sql_create_insertions_tables = """
-CREATE TABLE IF NOT EXISTS insertions (
+sql_create_files_tables = """
+CREATE TABLE IF NOT EXISTS files (
     id TEXT PRIMARY KEY,
     file_name TEXT NOT NULL,
     sequence_number INTEGER NOT NULL,
@@ -114,7 +114,7 @@ class GlobalView:
 
     def __create_tables(self):
         self.__execute_sql(sql_create_nodes_tables)
-        self.__execute_sql(sql_create_insertions_tables)
+        self.__execute_sql(sql_create_files_tables)
         self.__execute_sql(sql_create_stored_by_tables)
         self.__execute_sql(sql_create_backuped_by_tables)
         self.__execute_sql(sql_create_pending_stores_tables)
@@ -275,12 +275,12 @@ class GlobalView:
         digests_bytes = bytes(digests)
         return [digests_bytes[i:i+size] for i in range(0, len(digests_bytes), size)]
 
-    def get_insertion(self, insertion_id: str):
+    def get_file(self, insertion_id: str):
         sql = """
         SELECT DISTINCT
             id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
         FROM
-            insertions
+            files
         WHERE
             id = ?
         """
@@ -304,27 +304,27 @@ class GlobalView:
                 'backuped_bys': self.get_backuped_bys(result[0][0])
             }
 
-    def get_insertions(self, including_deleted: bool = False):
+    def get_files(self, including_deleted: bool = False):
         if including_deleted:
             sql = """
             SELECT DISTINCT
                 id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
             FROM
-                insertions
+                files
             """
         else:
             sql = """
             SELECT DISTINCT
                 id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
             FROM
-                insertions
+                files
             WHERE
                 is_deleted = 0
             """
         results = self.__execute_sql(sql)
-        insertions = []
+        files = []
         for result in results:
-            insertions.append({
+            files.append({
                 'id': result[0],
                 'file_name': result[1],
                 'sequence_number': result[2],
@@ -339,14 +339,14 @@ class GlobalView:
                 'stored_bys': self.get_stored_bys(result[0]),
                 'backuped_bys': self.get_backuped_bys(result[0])
             })
-        return insertions
+        return files
 
-    def get_insertion_by_file_name(self, file_name: str):
+    def get_file_by_name(self, file_name: str):
         sql = """
         SELECT DISTINCT
             id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
         FROM
-            insertions
+            files
         WHERE
             file_name = ? AND
             is_deleted = 0
@@ -371,24 +371,23 @@ class GlobalView:
                 'backuped_bys': self.get_backuped_bys(result[0][0])
             }
 
-    def get_underreplicated_insertions(self):
-        insertions = self.get_insertions()
-        underreplicated_insertions = []
-        for insertion in insertions:
-            if len(insertion['stored_bys']) < insertion['desired_copies']:
-                underreplicated_insertions.append(insertion)
-        return underreplicated_insertions
+    def get_underreplicated_files(self):
+        files = self.get_files()
+        underreplicated_files = []
+        for file in files:
+            if len(file['stored_bys']) < file['desired_copies']:
+                underreplicated_files.append(file)
+        return underreplicated_files
 
-    def get_backupable_insertions(self):
-        insertions = self.get_insertions()
-        backupable_insertions = []
-        for insertion in insertions:
-            # print("stored_bys: {}; backuped_bys: {}; dcopies: {}".format(len(insertion['stored_bys']), len(insertion['backuped_bys']), insertion['desired_copies']))
-            if ( len(insertion['stored_bys']) + len(insertion['backuped_bys']) ) < (insertion['desired_copies'] * 2):
-                backupable_insertions.append(insertion)
-        return backupable_insertions
+    def get_backupable_files(self):
+        files = self.get_files()
+        backupable_files = []
+        for file in files:
+            if( len(file['stored_bys']) + len(file['backuped_bys']) ) < (file['desired_copies'] * 2):
+                backupable_files.append(file)
+        return backupable_files
 
-    def add_insertion(self, insertion_id: str, file_name: str, sequence_number: int, size: int, origin_node_name: str,
+    def add_file(self, insertion_id: str, file_name: str, sequence_number: int, size: int, origin_node_name: str,
                fetch_path: str, state_vector: int, digests: bytes, packets=1, desired_copies=3):
         # # check (same insertion_id):
         # insertion = self.get_insertion(insertion_id)
@@ -398,14 +397,14 @@ class GlobalView:
         # # TODO(may not needed, check if there are insertions with the same file_name and same sequence_number)
 
         sql = """
-        INSERT OR IGNORE INTO insertions
+        INSERT OR IGNORE INTO files
             (id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests)
         VALUES
             (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
         """
         self.__execute_sql_qmark(sql, (insertion_id, file_name, sequence_number, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, digests))
 
-    def delete_insertion(self, insertion_id: str):
+    def delete_file(self, insertion_id: str):
         # stored_by
         sql_stored_by = """
         DELETE FROM stored_by WHERE insertion_id = ?
@@ -441,12 +440,12 @@ class GlobalView:
         self.__execute_sql_qmark(sql_pending_stores, (insertion_id, ))
 
         # insertions
-        sql_insertions = """
-        UPDATE insertions
+        sql_files = """
+        UPDATE files
         SET is_deleted = 1
         WHERE id = ?
         """
-        self.__execute_sql_qmark(sql_insertions, (insertion_id, ))
+        self.__execute_sql_qmark(sql_files, (insertion_id, ))
 
     def store_file(self, insertion_id: str, node_name: str):
         # rerank backuped_by

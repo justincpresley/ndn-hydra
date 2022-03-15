@@ -59,9 +59,9 @@ class ClaimMessage(SpecificMessage):
         claimer_nonce = self.message.claimer_nonce.tobytes().decode()
         authorizer_node_name = self.message.authorizer_node_name.tobytes().decode()
         authorizer_nonce = self.message.authorizer_nonce.tobytes().decode()
-        insertion = global_view.get_insertion(insertion_id)
+        file = global_view.get_file(insertion_id)
         if type == ClaimMessageTypes.COMMITMENT:
-            rank = len(insertion['backuped_bys'])
+            rank = len(file['backuped_bys'])
             val = "[MSG][CLAIM.C] nam={nam};iid={iid}".format(
                 nam=claimer_node_name,
                 iid=insertion_id
@@ -77,11 +77,11 @@ class ClaimMessage(SpecificMessage):
             if authorizer_node_name == config['node_name']:
                 from .message import MessageTlv, MessageTypes
                 commit = False
-                if (len(insertion['backuped_bys']) == 0) and (insertion['stored_bys'][-1] == config['node_name']) and (authorizer_nonce == insertion['id']):
+                if (len(file['backuped_bys']) == 0) and (file['stored_bys'][-1] == config['node_name']) and (authorizer_nonce == file['id']):
                     global_view.add_backup(insertion_id, claimer_node_name, 0, claimer_nonce)
                     commit = True
-                if (len(insertion['backuped_bys']) > 0) and (insertion['backuped_bys'][-1]['node_name'] == config['node_name']) and (authorizer_nonce == insertion['backuped_bys'][-1]['nonce']):
-                    global_view.add_backup(insertion_id, claimer_node_name, len(insertion['backuped_bys']), claimer_nonce)
+                if (len(file['backuped_bys']) > 0) and (file['backuped_bys'][-1]['node_name'] == config['node_name']) and (authorizer_nonce == file['backuped_bys'][-1]['nonce']):
+                    global_view.add_backup(insertion_id, claimer_node_name, len(file['backuped_bys']), claimer_nonce)
                     commit = True
                 if commit == True:
                     # claim tlv

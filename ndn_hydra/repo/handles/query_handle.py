@@ -68,47 +68,47 @@ class QueryHandle(object):
             return
         elif querytype == "files":
             self.logger.info(f'[cmd][QUERY] query received: files')
-            insertions = self.global_view.get_insertions()
+            files = self.global_view.get_files()
             filelist = FileList()
             filelist.list = []
-            for index in range(len(insertions)):
+            for index in range(len(files)):
                 file = File()
-                file.file_name = insertions[index]["file_name"]
-                file.packets = insertions[index]["packets"]
-                file.digests = insertions[index]["digests"]
-                file.size = insertions[index]["size"]
+                file.file_name = files[index]["file_name"]
+                file.packets = files[index]["packets"]
+                file.digests = files[index]["digests"]
+                file.size = files[index]["size"]
                 filelist.list.append(file)
             self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "file":
             self.logger.info(f'[cmd][QUERY] query received: file')
-            insertions = self.global_view.get_insertions()
+            files = self.global_view.get_files()
             filename = query[5:]
             filecontent = None
-            for index in range(len(insertions)):
-                if Name.to_str(insertions[index]["file_name"]) == filename:
+            for index in range(len(files)):
+                if Name.to_str(files[index]["file_name"]) == filename:
                     file = File()
-                    file.file_name = insertions[index]["file_name"]
-                    file.packets = insertions[index]["packets"]
-                    file.digests = insertions[index]["digests"]
-                    file.size = insertions[index]["size"]
+                    file.file_name = files[index]["file_name"]
+                    file.packets = files[index]["packets"]
+                    file.digests = files[index]["digests"]
+                    file.size = files[index]["size"]
                     filecontent = file.encode()
                     break
             self.app.put_data(int_name, content=filecontent, freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "prefix":
             self.logger.info(f'[cmd][QUERY] query received: prefix')
-            insertions = self.global_view.get_insertions()
+            files = self.global_view.get_files()
             prefix = query[7:]
             filelist = FileList()
             filelist.list = []
-            for index in range(len(insertions)):
-                if Name.is_prefix(Name.from_str(prefix), insertions[index]["file_name"]):
+            for index in range(len(files)):
+                if Name.is_prefix(Name.from_str(prefix), files[index]["file_name"]):
                     file = File()
-                    file.file_name = insertions[index]["file_name"]
-                    file.packets = insertions[index]["packets"]
-                    file.digests = insertions[index]["digests"]
-                    file.size = insertions[index]["size"]
+                    file.file_name = files[index]["file_name"]
+                    file.packets = files[index]["packets"]
+                    file.digests = files[index]["digests"]
+                    file.size = files[index]["size"]
                     filelist.list.append(file)
             self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
             return

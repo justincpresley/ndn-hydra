@@ -42,12 +42,12 @@ class RemoveMessage(SpecificMessage):
         )
         self.logger.info(val)
         # if insertion
-        insertion = global_view.get_insertion(insertion_id)
-        if (insertion == None) or (insertion['is_deleted'] == True):
+        file = global_view.get_file(insertion_id)
+        if (file == None) or (file['is_deleted'] == True):
             # add store to pending_stores
             self.logger.warning('nothing to remove')
         else:
-            global_view.delete_insertion(insertion_id)
+            global_view.delete_file(insertion_id)
             # TODO: remove from data_storage
         # update session
         global_view.update_node(node_name, expire_at, favor, self.seqno)

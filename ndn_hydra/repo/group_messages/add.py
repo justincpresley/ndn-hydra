@@ -92,7 +92,7 @@ class AddMessage(SpecificMessage):
             bak=bak
         )
         self.logger.info(val)
-        global_view.add_insertion(
+        global_view.add_file(
             insertion_id,
             Name.to_str(file_name),
             sequence_number,

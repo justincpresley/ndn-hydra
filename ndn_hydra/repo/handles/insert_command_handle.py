@@ -96,7 +96,7 @@ class InsertCommandHandle(ProtocolHandle):
 
         # generate unique insertion_id
         insertion_id = secrets.token_hex(8)
-        while self.global_view.get_insertion(insertion_id) != None:
+        while self.global_view.get_file(insertion_id) != None:
             insertion_id = secrets.token_hex(8)
 
         # select sessions
@@ -157,7 +157,7 @@ class InsertCommandHandle(ProtocolHandle):
             next_state_vector = self.main_loop.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['node_name']))) + 1
         except TypeError:
             next_state_vector = 0
-        self.global_view.add_insertion(
+        self.global_view.add_file(
             insertion_id,
             Name.to_str(file_name),
             sequence_number,

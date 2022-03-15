@@ -45,17 +45,17 @@ class ExpireMessage(SpecificMessage):
         self.logger.info(val)
         global_view.expire_node(expired_node_name)
         # am I at the top of any insertion's backup list?
-        underreplicated_insertions = global_view.get_underreplicated_insertions()
+        underreplicated_files = global_view.get_underreplicated_files()
 
-        for underreplicated_insertion in underreplicated_insertions:
-            deficit = underreplicated_insertion['desired_copies'] - len(underreplicated_insertion['stored_bys'])
-            for backuped_by in underreplicated_insertion['backuped_bys']:
+        for underreplicated_file in underreplicated_files:
+            deficit = underreplicated_file['desired_copies'] - len(underreplicated_file['stored_bys'])
+            for backuped_by in underreplicated_file['backuped_bys']:
                 if (backuped_by['node_name'] == config['node_name']) and (backuped_by['rank'] < deficit):
 
-                    digests = underreplicated_insertion['digests']
+                    digests = underreplicated_file['digests']
                     self.logger.debug(type(digests[0]))
 
-                    fetch_file(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
+                    fetch_file(underreplicated_file['id'], underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
 
                     # # generate store msg and send
                     # # store tlv

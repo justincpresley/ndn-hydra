@@ -78,12 +78,12 @@ class DeleteCommandHandle(ProtocolHandle):
 
         self.logger.info("[cmd][DELETE] file {}".format(Name.to_str(file_name)))
 
-        insertion = self.global_view.get_insertion_by_file_name(Name.to_str(file_name))
-        if insertion == None:
+        file = self.global_view.get_file_by_name(Name.to_str(file_name))
+        if file == None:
             self.logger.warning("file does not exist")
             return
 
-        insertion_id = insertion['id']
+        insertion_id = file['id']
         # add tlv
         expire_at = int(time.time()+(self.config['period']*2))
         favor = 1.85
@@ -96,7 +96,7 @@ class DeleteCommandHandle(ProtocolHandle):
         message = Message()
         message.type = MessageTypes.REMOVE
         message.value = remove_message.encode()
-        self.global_view.delete_insertion(insertion_id)
+        self.global_view.delete_file(insertion_id)
         self.main_loop.svs.publishData(message.encode())
         val = "[MSG][REMOVE]* iid={iid}".format(
             iid=insertion_id
