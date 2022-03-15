@@ -75,20 +75,17 @@ class InsertCommandHandle(ProtocolHandle):
         """
         # print("Process Insert Command for File: ")
         # print("receive INSERT command for file: {}".format(Name.to_str(cmd.file.file_name)))
-
         file_name = cmd.file.file_name
         packets = cmd.file.packets
         digests = cmd.file.digests
         size = cmd.file.size
         fetch_path = cmd.fetch_path
-
         self.logger.info("[cmd][INSERT] file {}".format(Name.to_str(file_name)))
 
         # TODO: check duplicate sequence number
 
         nodes = self.global_view.get_nodes()
         desired_copies = self.replication_degree
-
         if len(nodes) < (desired_copies * 2):
             self.logger.warning("not enough nodes") # TODO: notify the client?
             return
@@ -101,7 +98,6 @@ class InsertCommandHandle(ProtocolHandle):
         # select sessions
         random.shuffle(nodes)
         picked_nodes = random.sample(nodes, (desired_copies * 2))
-
         pickself = False
         for i in range(desired_copies):
             if picked_nodes[i]['node_name'] == self.config['node_name']:
@@ -114,7 +110,6 @@ class InsertCommandHandle(ProtocolHandle):
             # print("pick myself")
             # picked_sessions = list(filter(lambda x: x['id'] != self.config['session_id'], picked_sessions))
 
-
         backups = []
         backup_list = []
         for picked_node in picked_nodes:
@@ -125,7 +120,6 @@ class InsertCommandHandle(ProtocolHandle):
             backup.nonce = nonce.encode()
             backups.append(backup)
             backup_list.append((node_name, nonce))
-
 
         # add tlv
         expire_at = int(time.time()+(self.config['period']*2))
