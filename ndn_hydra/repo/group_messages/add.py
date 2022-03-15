@@ -24,11 +24,8 @@ class AddMessageTypes:
     INSERTION_ID = 90
     FILE = 91
     DESIRED_COPIES = 92
-    PACKETS = 93
-    DIGEST = 94
-    SIZE = 95
-    FETCH_PATH = 96
-    IS_STORED_BY_ORIGIN = 97
+    FETCH_PATH = 93
+    IS_STORED_BY_ORIGIN = 94
 
     BACKUP = 100
     BACKUP_NODE_NAME = 101
