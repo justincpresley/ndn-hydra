@@ -17,7 +17,6 @@ from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 from ndn_hydra.repo.protocol.base_models import File
 
 class AddMessageTypes:
-    SESSION_ID = 83
     NODE_NAME = 84
     EXPIRE_AT = 85
     FAVOR = 86
@@ -33,18 +32,17 @@ class AddMessageTypes:
     IS_STORED_BY_ORIGIN = 98
 
     BACKUP = 100
-    BACKUP_SESSION_ID = 101
+    BACKUP_NODE_NAME = 101
     BACKUP_NONCE = 102
 
 class FetchPathTlv(TlvModel):
     prefix = NameField()
 
 class BackupTlv(TlvModel):
-    session_id = BytesField(AddMessageTypes.BACKUP_SESSION_ID)
+    node_name = BytesField(AddMessageTypes.BACKUP_NODE_NAME)
     nonce = BytesField(AddMessageTypes.BACKUP_NONCE)
 
 class AddMessageTlv(TlvModel):
-    session_id = BytesField(AddMessageTypes.SESSION_ID)
     node_name = BytesField(AddMessageTypes.NODE_NAME)
     expire_at = UintField(AddMessageTypes.EXPIRE_AT)
     favor = BytesField(AddMessageTypes.FAVOR)
@@ -63,7 +61,6 @@ class AddMessage(SpecificMessage):
         self.message = AddMessageTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
-        session_id = self.message.session_id.tobytes().decode()
         node_name = self.message.node_name.tobytes().decode()
         expire_at = self.message.expire_at
         favor = float(self.message.favor.tobytes().decode())
@@ -81,10 +78,10 @@ class AddMessage(SpecificMessage):
         backup_list = []
         bak = ""
         for backup in backups:
-            backup_list.append((backup.session_id.tobytes().decode(), backup.nonce.tobytes().decode()))
-            bak = bak + backup.session_id.tobytes().decode() + ","
-        val = "[MSG][ADD]     sid={sid};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};seq={seq};slf={slf};bak={bak}".format(
-            sid=session_id,
+            backup_list.append((backup.node_name.tobytes().decode(), backup.nonce.tobytes().decode()))
+            bak = bak + backup.node_name.tobytes().decode() + ","
+        val = "[MSG][ADD]     nam={nam};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};seq={seq};slf={slf};bak={bak}".format(
+            nam=node_name,
             iid=insertion_id,
             fil=Name.to_str(file_name),
             cop=desired_copies,
@@ -100,7 +97,7 @@ class AddMessage(SpecificMessage):
             Name.to_str(file_name),
             sequence_number,
             size,
-            session_id,
+            node_name,
             Name.to_str(fetch_path),
             self.seqno,
             b''.join(digests),
@@ -124,7 +121,7 @@ class AddMessage(SpecificMessage):
         need_to_store = False
         for i in range(copies_needed):
             backup = backup_list[i]
-            if backup[0] == config['session_id']:
+            if backup[0] == config['node_name']:
                 need_to_store = True
                 break
         if need_to_store == True:
@@ -156,5 +153,5 @@ class AddMessage(SpecificMessage):
             # )
             # self.logger.info(val)
         # update session
-        global_view.update_session(session_id, node_name, expire_at, favor, self.seqno)
+        global_view.update_node(node_name, expire_at, favor, self.seqno)
         return

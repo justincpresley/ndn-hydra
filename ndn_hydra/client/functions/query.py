@@ -27,14 +27,14 @@ class HydraQueryClient(object):
       self.client_prefix = client_prefix
       self.repo_prefix = repo_prefix
 
-    async def send_query(self, query: Name, sid: str=None) -> None:
+    async def send_query(self, query: Name, node_name: str=None) -> None:
       """
       Form a certain query and request that info from a node.
       """
-      if not sid:
+      if not node_name:
           named_query = self.repo_prefix + [Component.from_str("query")] + query
       else:
-          named_query = self.repo_prefix + [Component.from_str("sid")] + [Component.from_str(sid)] + [Component.from_str("query")] + query
+          named_query = self.repo_prefix + [Component.from_str("node")] + [Component.from_str(node_name)] + [Component.from_str("query")] + query
 
       try:
           data_name, meta_info, content = await self.app.express_interest(named_query, can_be_prefix=True, must_be_fresh=True, lifetime=3000)
@@ -43,8 +43,8 @@ class HydraQueryClient(object):
              return
           else:
              querytype = Component.to_str(query[0])
-             if querytype == "sids":
-                 print(f'List of All Session IDs')
+             if querytype == "nodes":
+                 print(f'List of All Node Names')
                  print(f'{bytes(content).decode().split()}')
                  return
              elif querytype == "files":

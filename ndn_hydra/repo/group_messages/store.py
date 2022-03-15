@@ -15,7 +15,6 @@ from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 from ndn_hydra.repo.modules.global_view import GlobalView
 
 class StoreMessageTypes:
-    SESSION_ID = 83
     NODE_NAME = 84
     EXPIRE_AT = 85
     FAVOR = 86
@@ -23,7 +22,6 @@ class StoreMessageTypes:
     INSERTION_ID = 90
 
 class StoreMessageTlv(TlvModel):
-    session_id = BytesField(StoreMessageTypes.SESSION_ID)
     node_name = BytesField(StoreMessageTypes.NODE_NAME)
     expire_at = UintField(StoreMessageTypes.EXPIRE_AT)
     favor = BytesField(StoreMessageTypes.FAVOR)
@@ -35,13 +33,12 @@ class StoreMessage(SpecificMessage):
         self.message = StoreMessageTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
-        session_id = self.message.session_id.tobytes().decode()
         node_name = self.message.node_name.tobytes().decode()
         expire_at = self.message.expire_at
         favor = float(self.message.favor.tobytes().decode())
         insertion_id = self.message.insertion_id.tobytes().decode()
-        val = "[MSG][STORE]   sid={sid};iid={iid}".format(
-            sid=session_id,
+        val = "[MSG][STORE]   nam={nam};iid={iid}".format(
+            nam=node_name,
             iid=insertion_id
         )
         self.logger.info(val)
@@ -50,9 +47,9 @@ class StoreMessage(SpecificMessage):
         if (insertion == None) or (insertion['is_deleted'] == True):
             # add store to pending_stores
             self.logger.warning('add to pending store')
-            global_view.add_pending_store(insertion_id, session_id)
+            global_view.add_pending_store(insertion_id, node_name)
         else:
-            global_view.store_file(insertion_id, session_id)
+            global_view.store_file(insertion_id, node_name)
         # update session
-        global_view.update_session(session_id, node_name, expire_at, favor, self.seqno)
+        global_view.update_node(node_name, expire_at, favor, self.seqno)
         return

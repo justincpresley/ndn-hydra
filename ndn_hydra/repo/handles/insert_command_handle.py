@@ -85,12 +85,12 @@ class InsertCommandHandle(ProtocolHandle):
 
         # TODO: check duplicate sequence number
 
-        sessions = self.global_view.get_sessions()
+        nodes = self.global_view.get_nodes()
         desired_copies = 2
         sequence_number = 0
 
-        if len(sessions) < (desired_copies * 2):
-            self.logger.warning("not enough node sessions") # TODO: notify the client?
+        if len(nodes) < (desired_copies * 2):
+            self.logger.warning("not enough nodes") # TODO: notify the client?
             return
 
         # generate unique insertion_id
@@ -99,12 +99,12 @@ class InsertCommandHandle(ProtocolHandle):
             insertion_id = secrets.token_hex(8)
 
         # select sessions
-        random.shuffle(sessions)
-        picked_sessions = random.sample(sessions, (desired_copies * 2))
+        random.shuffle(nodes)
+        picked_nodes = random.sample(nodes, (desired_copies * 2))
 
         pickself = False
         for i in range(desired_copies):
-            if picked_sessions[i]['id'] == self.config['session_id']:
+            if picked_nodes[i]['node_name'] == self.config['node_name']:
                 pickself = True
                 break
 
@@ -117,21 +117,20 @@ class InsertCommandHandle(ProtocolHandle):
 
         backups = []
         backup_list = []
-        for picked_session in picked_sessions:
-            session_id = picked_session['id']
+        for picked_node in picked_nodes:
+            node_name = picked_node['node_name']
             nonce = secrets.token_hex(4)
             backup = BackupTlv()
-            backup.session_id = session_id.encode()
+            backup.node_name = node_name.encode()
             backup.nonce = nonce.encode()
             backups.append(backup)
-            backup_list.append((session_id, nonce))
+            backup_list.append((node_name, nonce))
 
 
         # add tlv
         expire_at = int(time.time()+(self.config['period']*2))
         favor = 1.85
         add_message = AddMessageTlv()
-        add_message.session_id = self.config['session_id'].encode()
         add_message.node_name = self.config['node_name'].encode()
         add_message.expire_at = expire_at
         add_message.favor = str(favor).encode()
@@ -154,7 +153,7 @@ class InsertCommandHandle(ProtocolHandle):
         message.value = add_message.encode()
         # apply globalview and send msg thru SVS
         try:
-            next_state_vector = self.main_loop.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['session_id']))) + 1
+            next_state_vector = self.main_loop.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['node_name']))) + 1
         except TypeError:
             next_state_vector = 0
         self.global_view.add_insertion(
@@ -162,7 +161,7 @@ class InsertCommandHandle(ProtocolHandle):
             Name.to_str(file_name),
             sequence_number,
             size,
-            self.config['session_id'],
+            self.config['node_name'],
             Name.to_str(fetch_path),
             next_state_vector,
             b''.join(digests),
@@ -177,8 +176,8 @@ class InsertCommandHandle(ProtocolHandle):
         bak = ""
         for backup in backup_list:
             bak = bak + backup[0] + ","
-        val = "[MSG][ADD]*    sid={sid};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};seq={seq};slf={slf};bak={bak}".format(
-            sid=self.config['session_id'],
+        val = "[MSG][ADD]*    nam={nam};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};seq={seq};slf={slf};bak={bak}".format(
+            nam=self.config['node_name'],
             iid=insertion_id,
             fil=Name.to_str(file_name),
             cop=desired_copies,

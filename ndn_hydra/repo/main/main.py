@@ -82,11 +82,10 @@ def process_cmd_opts():
         args = {}
         args["repo_prefix"] = process_prefix(vars.repo_prefix)
         args["node_name"] = process_others(vars.node_name)
-        args["session_id"] = process_others(vars.node_name + str(gen_nonce()))
-        workpath = "{home}/.ndn/repo{repo_prefix}/{session_id}".format(
+        workpath = "{home}/.ndn/repo{repo_prefix}/{node_name}".format(
             home=os.path.expanduser("~"),
             repo_prefix=args["repo_prefix"],
-            session_id=args["session_id"])
+            node_name=args["node_name"])
         args["logging_path"] = "{workpath}/session.log".format(workpath=workpath)
         args["data_storage_path"] = "{workpath}/data.db".format(workpath=workpath)
         args["global_view_path"] = "{workpath}/global_view.db".format(workpath=workpath)
@@ -164,7 +163,6 @@ def main() -> int:
     default_config = {
         'repo_prefix': None,
         'node_name': None,
-        'session_id': None,
         'data_storage_path': None,
         'global_view_path': None,
         'svs_storage_path': None,

@@ -29,16 +29,16 @@ class QueryHandle(object):
         """
         self.app = app
         self.global_view = global_view
-        self.session_id = config['session_id']
+        self.node_name = config['node_name']
         self.repo_prefix = config['repo_prefix']
 
         self.logger = logging.getLogger()
 
         self.command_comp = "/query"
-        self.sid_comp = "/sid"
+        self.node_comp = "/node"
 
         self.listen(Name.from_str(self.repo_prefix + self.command_comp))
-        self.listen(Name.from_str(self.repo_prefix + self.sid_comp  + "/" + self.session_id + self.command_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.node_comp  + "/" + self.node_name + self.command_comp))
 
     def listen(self, prefix):
         """
@@ -60,11 +60,11 @@ class QueryHandle(object):
             return
         query = self._get_query_from_interest(Name.to_str(int_name))
         querytype = Component.to_str(Name.from_str(query)[0])
-        if querytype == "sids":
-            self.logger.info(f'[cmd][QUERY] query received: sids')
-            sessions = self.global_view.get_sessions()
-            sidliststr = " ".join([key["id"] for key in sessions])
-            self.app.put_data(int_name, content=bytes(sidliststr.encode()), freshness_period=3000, content_type=ContentType.BLOB)
+        if querytype == "nodes":
+            self.logger.info(f'[cmd][QUERY] query received: nodes')
+            nodes = self.global_view.get_nodes()
+            nodenamestrlist = " ".join([key["node_name"] for key in nodes])
+            self.app.put_data(int_name, content=bytes(nodenamestrlist.encode()), freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "files":
             self.logger.info(f'[cmd][QUERY] query received: files')
@@ -119,7 +119,7 @@ class QueryHandle(object):
 
     def _get_query_from_interest(self, int_name):
         query = int_name[len(self.repo_prefix):]
-        if query[0:len(self.sid_comp)] == self.sid_comp:
-            return query[(len(self.sid_comp)+len("/" + self.session_id)+len(self.command_comp)):]
+        if query[0:len(self.node_comp)] == self.node_comp:
+            return query[(len(self.node_comp)+len("/" + self.node_name)+len(self.command_comp)):]
         else:
             return query[(len(self.command_comp)):]

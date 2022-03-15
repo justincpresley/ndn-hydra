@@ -88,7 +88,6 @@ class DeleteCommandHandle(ProtocolHandle):
         expire_at = int(time.time()+(self.config['period']*2))
         favor = 1.85
         remove_message = RemoveMessageTlv()
-        remove_message.session_id = self.config['session_id'].encode()
         remove_message.node_name = self.config['node_name'].encode()
         remove_message.expire_at = expire_at
         remove_message.favor = str(favor).encode()

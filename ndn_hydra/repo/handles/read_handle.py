@@ -31,17 +31,17 @@ class ReadHandle(object):
         self.app = app
         self.data_storage = data_storage
         self.global_view = global_view
-        self.session_id = config['session_id']
+        self.node_name = config['node_name']
         self.repo_prefix = config['repo_prefix']
 
         self.logger = logging.getLogger()
 
         self.command_comp = "/fetch"
-        self.sid_comp = "/sid"
+        self.node_comp = "/node"
         # config file needed
 
         self.listen(Name.from_str(self.repo_prefix + self.command_comp))
-        self.listen(Name.from_str(self.repo_prefix + self.sid_comp  + "/" + self.session_id + self.command_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.node_comp  + "/" + self.node_name + self.command_comp))
 
     def listen(self, prefix):
         """
@@ -75,7 +75,7 @@ class ReadHandle(object):
         best_id = self._best_id_for_file(file_name)
         segment_comp = "/" + Component.to_str(int_name[-1])
 
-        if best_id == self.session_id:
+        if best_id == self.node_name:
             if segment_comp == "/seg=0":
                 self.logger.info(f'[cmd][FETCH] serving data to client')
 
@@ -104,7 +104,7 @@ class ReadHandle(object):
                 self.logger.info(f'[cmd][FETCH] linked to another node in the repo')
 
             # create a link to a node who has the content
-            new_name = self.repo_prefix + self.sid_comp + "/" + best_id + self.command_comp + file_name
+            new_name = self.repo_prefix + self.node_comp + "/" + best_id + self.command_comp + file_name
             link_content = bytes(new_name.encode())
             final_id = Component.from_number(int(self.global_view.get_insertion_by_file_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)
@@ -114,8 +114,8 @@ class ReadHandle(object):
 
     def _get_file_name_from_interest(self, int_name):
         file_name = int_name[len(self.repo_prefix):]
-        if file_name[0:len(self.sid_comp)] == self.sid_comp:
-            return file_name[(len(self.sid_comp)+len("/" + self.session_id)+len(self.command_comp)):]
+        if file_name[0:len(self.node_comp)] == self.node_comp:
+            return file_name[(len(self.node_comp)+len("/" + self.node_name)+len(self.command_comp)):]
         else:
             return file_name[(len(self.command_comp)):]
 
@@ -125,8 +125,8 @@ class ReadHandle(object):
             on_list = file_info["stored_bys"]
             if file_info["is_deleted"] == True or not on_list:
                 return None
-            if self.session_id in on_list:
-                return self.session_id
+            if self.node_name in on_list:
+                return self.node_name
             else:
               return choice(on_list)
         return None

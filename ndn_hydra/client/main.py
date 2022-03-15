@@ -93,7 +93,7 @@ def parse_hydra_cmd_opts() -> Namespace:
     querysp = subparsers.add_parser('query',add_help=False)
     querysp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
     querysp.add_argument("-q","--query",action="store",dest="query",required=True)
-    querysp.add_argument("-s","--sessionid",action="store",dest="sessionid",default=None, required=False)
+    querysp.add_argument("-n","--nodename",action="store",dest="nodename",default=None, required=False)
 
     # Interpret Informational Arguments
     interpret_version()
@@ -121,8 +121,8 @@ class HydraClient():
         return await self.cdelete.delete_file(file_name);
     async def fetch(self, file_name: FormalName, local_filename: str = None, overwrite: bool = False) -> None:
         return await self.cfetch.fetch_file(file_name, local_filename, overwrite)
-    async def query(self, query: Name, sid: str=None) -> None:
-        return await self.cquery.send_query(query, sid)
+    async def query(self, query: Name, node_name: str=None) -> None:
+        return await self.cquery.send_query(query, node_name)
 
 async def run_hydra_client(app: NDNApp, args: Namespace) -> None:
   repo_prefix = Name.from_str(args.repo)
@@ -147,7 +147,7 @@ async def run_hydra_client(app: NDNApp, args: Namespace) -> None:
     print("Client finished Fetch Command!")
 
   elif args.function == "query":
-    await client.query(Name.from_str(str(args.query)), args.sessionid)
+    await client.query(Name.from_str(str(args.query)), args.nodename)
     print("Client finished Query Command!")
 
   else:
