@@ -14,7 +14,7 @@ import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name, ContentType, Component
 from ndn.storage import Storage
-from ndn_hydra.repo.global_view.global_view import GlobalView
+from ndn_hydra.repo.modules.global_view import GlobalView
 from ndn_hydra.repo.protocol.base_models import FileList, File
 
 class QueryHandle(object):
@@ -29,16 +29,16 @@ class QueryHandle(object):
         """
         self.app = app
         self.global_view = global_view
-        self.session_id = config['session_id']
+        self.node_name = config['node_name']
         self.repo_prefix = config['repo_prefix']
 
         self.logger = logging.getLogger()
 
         self.command_comp = "/query"
-        self.sid_comp = "/sid"
+        self.node_comp = "/node"
 
         self.listen(Name.from_str(self.repo_prefix + self.command_comp))
-        self.listen(Name.from_str(self.repo_prefix + self.sid_comp  + "/" + self.session_id + self.command_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.node_comp  + "/" + self.node_name + self.command_comp))
 
     def listen(self, prefix):
         """
@@ -60,55 +60,55 @@ class QueryHandle(object):
             return
         query = self._get_query_from_interest(Name.to_str(int_name))
         querytype = Component.to_str(Name.from_str(query)[0])
-        if querytype == "sids":
-            self.logger.info(f'[cmd][QUERY] query received: sids')
-            sessions = self.global_view.get_sessions()
-            sidliststr = " ".join([key["id"] for key in sessions])
-            self.app.put_data(int_name, content=bytes(sidliststr.encode()), freshness_period=3000, content_type=ContentType.BLOB)
+        if querytype == "nodes":
+            self.logger.info(f'[cmd][QUERY] query received: nodes')
+            nodes = self.global_view.get_nodes()
+            nodenamestrlist = " ".join([key["node_name"] for key in nodes])
+            self.app.put_data(int_name, content=bytes(nodenamestrlist.encode()), freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "files":
             self.logger.info(f'[cmd][QUERY] query received: files')
-            insertions = self.global_view.get_insertions()
+            files = self.global_view.get_files()
             filelist = FileList()
             filelist.list = []
-            for index in range(len(insertions)):
+            for index in range(len(files)):
                 file = File()
-                file.file_name = insertions[index]["file_name"]
-                file.packets = insertions[index]["packets"]
-                file.digests = insertions[index]["digests"]
-                file.size = insertions[index]["size"]
+                file.file_name = files[index]["file_name"]
+                file.packets = files[index]["packets"]
+                file.digests = files[index]["digests"]
+                file.size = files[index]["size"]
                 filelist.list.append(file)
             self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "file":
             self.logger.info(f'[cmd][QUERY] query received: file')
-            insertions = self.global_view.get_insertions()
+            files = self.global_view.get_files()
             filename = query[5:]
             filecontent = None
-            for index in range(len(insertions)):
-                if Name.to_str(insertions[index]["file_name"]) == filename:
+            for index in range(len(files)):
+                if Name.to_str(files[index]["file_name"]) == filename:
                     file = File()
-                    file.file_name = insertions[index]["file_name"]
-                    file.packets = insertions[index]["packets"]
-                    file.digests = insertions[index]["digests"]
-                    file.size = insertions[index]["size"]
+                    file.file_name = files[index]["file_name"]
+                    file.packets = files[index]["packets"]
+                    file.digests = files[index]["digests"]
+                    file.size = files[index]["size"]
                     filecontent = file.encode()
                     break
             self.app.put_data(int_name, content=filecontent, freshness_period=3000, content_type=ContentType.BLOB)
             return
         elif querytype == "prefix":
             self.logger.info(f'[cmd][QUERY] query received: prefix')
-            insertions = self.global_view.get_insertions()
+            files = self.global_view.get_files()
             prefix = query[7:]
             filelist = FileList()
             filelist.list = []
-            for index in range(len(insertions)):
-                if Name.is_prefix(Name.from_str(prefix), insertions[index]["file_name"]):
+            for index in range(len(files)):
+                if Name.is_prefix(Name.from_str(prefix), files[index]["file_name"]):
                     file = File()
-                    file.file_name = insertions[index]["file_name"]
-                    file.packets = insertions[index]["packets"]
-                    file.digests = insertions[index]["digests"]
-                    file.size = insertions[index]["size"]
+                    file.file_name = files[index]["file_name"]
+                    file.packets = files[index]["packets"]
+                    file.digests = files[index]["digests"]
+                    file.size = files[index]["size"]
                     filelist.list.append(file)
             self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
             return
@@ -119,7 +119,7 @@ class QueryHandle(object):
 
     def _get_query_from_interest(self, int_name):
         query = int_name[len(self.repo_prefix):]
-        if query[0:len(self.sid_comp)] == self.sid_comp:
-            return query[(len(self.sid_comp)+len("/" + self.session_id)+len(self.command_comp)):]
+        if query[0:len(self.node_comp)] == self.node_comp:
+            return query[(len(self.node_comp)+len("/" + self.node_name)+len(self.command_comp)):]
         else:
             return query[(len(self.command_comp)):]

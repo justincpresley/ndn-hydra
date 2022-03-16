@@ -13,22 +13,19 @@ from typing import Callable
 from ndn.encoding import *
 import time
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
-from ndn_hydra.repo.global_view.global_view import GlobalView
+from ndn_hydra.repo.modules.global_view import GlobalView
 
 class ExpireMessageTypes:
-    SESSION_ID = 83
     NODE_NAME = 84
     EXPIRE_AT = 85
     FAVOR = 86
-
-    EXPIRED_SESSION_ID = 90
+    EXPIRED_NODE_NAME = 90
 
 class ExpireMessageTlv(TlvModel):
-    session_id = BytesField(ExpireMessageTypes.SESSION_ID)
     node_name = BytesField(ExpireMessageTypes.NODE_NAME)
     expire_at = UintField(ExpireMessageTypes.EXPIRE_AT)
     favor = BytesField(ExpireMessageTypes.FAVOR)
-    expired_session_id = BytesField(ExpireMessageTypes.EXPIRED_SESSION_ID)
+    expired_node_name = BytesField(ExpireMessageTypes.EXPIRED_NODE_NAME)
 
 class ExpireMessage(SpecificMessage):
     def __init__(self, nid:str, seqno:int, raw_bytes:bytes):
@@ -36,29 +33,28 @@ class ExpireMessage(SpecificMessage):
         self.message = ExpireMessageTlv.parse(raw_bytes)
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
-        session_id = self.message.session_id.tobytes().decode()
         node_name = self.message.node_name.tobytes().decode()
         expire_at = self.message.expire_at
         favor = float(self.message.favor.tobytes().decode())
-        expired_session_id = self.message.expired_session_id.tobytes().decode()
-        val = "[MSG][EXPIRE]  sid={sid};exp_sid={esid}".format(
-            sid=session_id,
-            esid=expired_session_id
+        expired_node_name = self.message.expired_node_name.tobytes().decode()
+        val = "[MSG][EXPIRE]  nam={nam};exp_sid={esid}".format(
+            nam=node_name,
+            esid=expired_node_name
         )
         self.logger.info(val)
-        global_view.expire_session(expired_session_id)
+        global_view.expire_node(expired_node_name)
         # am I at the top of any insertion's backup list?
-        underreplicated_insertions = global_view.get_underreplicated_insertions()
+        underreplicated_files = global_view.get_underreplicated_files()
 
-        for underreplicated_insertion in underreplicated_insertions:
-            deficit = underreplicated_insertion['desired_copies'] - len(underreplicated_insertion['stored_bys'])
-            for backuped_by in underreplicated_insertion['backuped_bys']:
-                if (backuped_by['session_id'] == config['session_id']) and (backuped_by['rank'] < deficit):
+        for underreplicated_file in underreplicated_files:
+            deficit = underreplicated_file['desired_copies'] - len(underreplicated_file['stored_bys'])
+            for backuped_by in underreplicated_file['backuped_bys']:
+                if (backuped_by['node_name'] == config['node_name']) and (backuped_by['rank'] < deficit):
 
-                    digests = underreplicated_insertion['digests']
+                    digests = underreplicated_file['digests']
                     self.logger.debug(type(digests[0]))
 
-                    fetch_file(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
+                    fetch_file(underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
 
                     # # generate store msg and send
                     # # store tlv
@@ -84,5 +80,5 @@ class ExpireMessage(SpecificMessage):
                     # )
                     # self.logger.info(val)
         # update session
-        global_view.update_session(session_id, node_name, expire_at, favor, self.seqno)
+        global_view.update_node(node_name, expire_at, favor, self.seqno)
         return

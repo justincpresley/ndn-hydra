@@ -82,8 +82,10 @@ def process_cmd_opts():
         args = {}
         args["repo_prefix"] = process_prefix(vars.repo_prefix)
         args["node_name"] = process_others(vars.node_name)
-        args["session_id"] = process_others(vars.node_name + str(gen_nonce()))
-        workpath = "{home}/.ndn/repo{repo_prefix}/{session_id}".format(home=os.path.expanduser("~"), repo_prefix=args["repo_prefix"], session_id=args["session_id"])
+        workpath = "{home}/.ndn/repo{repo_prefix}/{node_name}".format(
+            home=os.path.expanduser("~"),
+            repo_prefix=args["repo_prefix"],
+            node_name=args["node_name"])
         args["logging_path"] = "{workpath}/session.log".format(workpath=workpath)
         args["data_storage_path"] = "{workpath}/data.db".format(workpath=workpath)
         args["global_view_path"] = "{workpath}/global_view.db".format(workpath=workpath)
@@ -131,12 +133,13 @@ class HydraSessionThread(Thread):
         app = NDNApp()
 
         # databases
-        data_storage = SqliteStorage(self.config['data_storage_path'])
+        data_storage = SqliteStorage(self.config['data_storage_path']) # version
         global_view = GlobalView(self.config['global_view_path'])
+        svs_storage = SqliteStorage(self.config['svs_storage_path'])
         pb = PubSub(app)
 
         # main_loop (svs)
-        main_loop = MainLoop(app, self.config, global_view, data_storage)
+        main_loop = MainLoop(app, self.config, global_view, data_storage, svs_storage)
 
         # protocol (reads, commands & queries)
         read_handle = ReadHandle(app, data_storage, global_view, self.config)
@@ -160,13 +163,13 @@ def main() -> int:
     default_config = {
         'repo_prefix': None,
         'node_name': None,
-        'session_id': None,
         'data_storage_path': None,
         'global_view_path': None,
         'svs_storage_path': None,
         'logging_path': None,
         #'svs_cache_others': True,
-		'period': 20
+        'period': 20,
+        'replication_degree': 2
     }
     cmd_args = process_cmd_opts()
     config = default_config.copy()

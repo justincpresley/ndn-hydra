@@ -44,8 +44,6 @@ def parse_hydra_cmd_opts() -> Namespace:
                 print("        -r, --repoprefix REPO     |   a proper name of the repo prefix.")
                 print("        -f, --filename FILENAME   |   a proper name for the input file.")
                 print("        -p, --path PATH           |   path of the file desired to be the input i.e. input path.")
-                print("     optional args:")
-                print("        -c, --copies COPIES       |   number of copies for files, default 2.")
                 print("")
                 print("* function 'delete':")
                 print("     usage: ndn-hydra-client delete -r REPO -f FILENAME")
@@ -82,7 +80,6 @@ def parse_hydra_cmd_opts() -> Namespace:
     insertsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
     insertsp.add_argument("-f","--filename",action="store",dest="filename",required=True)
     insertsp.add_argument("-p","--path",action="store",dest="path",required=True)
-    insertsp.add_argument("-c","--copies",action="store",dest="copies",required=False,default=2,type=int,nargs=None)
 
     deletesp = subparsers.add_parser('delete',add_help=False)
     deletesp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
@@ -96,7 +93,7 @@ def parse_hydra_cmd_opts() -> Namespace:
     querysp = subparsers.add_parser('query',add_help=False)
     querysp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
     querysp.add_argument("-q","--query",action="store",dest="query",required=True)
-    querysp.add_argument("-s","--sessionid",action="store",dest="sessionid",default=None, required=False)
+    querysp.add_argument("-n","--nodename",action="store",dest="nodename",default=None, required=False)
 
     # Interpret Informational Arguments
     interpret_version()
@@ -110,9 +107,6 @@ def parse_hydra_cmd_opts() -> Namespace:
         if not os.path.isfile(vars.path):
             print('Error: path specified is not an actual file. Unable to insert.')
             sys.exit()
-        if vars.copies < 2:
-            print('Error: insufficient number of copies, must be 2 or above.')
-            sys.exit()
     return vars
 
 class HydraClient():
@@ -121,29 +115,26 @@ class HydraClient():
         self.cdelete = HydraDeleteClient(app, client_prefix, repo_prefix)
         self.cfetch = HydraFetchClient(app, client_prefix, repo_prefix)
         self.cquery = HydraQueryClient(app, client_prefix, repo_prefix)
-    async def insert(self, file_name: FormalName, desired_copies: int, path: str) -> bool:
-        return await self.cinsert.insert_file(file_name, desired_copies, path);
+    async def insert(self, file_name: FormalName, path: str) -> bool:
+        return await self.cinsert.insert_file(file_name, path);
     async def delete(self, file_name: FormalName) -> bool:
         return await self.cdelete.delete_file(file_name);
     async def fetch(self, file_name: FormalName, local_filename: str = None, overwrite: bool = False) -> None:
         return await self.cfetch.fetch_file(file_name, local_filename, overwrite)
-    async def query(self, query: Name, sid: str=None) -> None:
-        return await self.cquery.send_query(query, sid)
+    async def query(self, query: Name, node_name: str=None) -> None:
+        return await self.cquery.send_query(query, node_name)
 
 async def run_hydra_client(app: NDNApp, args: Namespace) -> None:
   repo_prefix = Name.from_str(args.repo)
   client_prefix = Name.from_str("/client")
   filename = None
-  desired_copies = 2
-  if hasattr(args, 'copies'):
-    desired_copies = args.copies
   client = HydraClient(app, client_prefix, repo_prefix)
 
   if args.function != "query":
       filename = Name.from_str(args.filename)
 
   if args.function == "insert":
-    await client.insert(filename, desired_copies, args.path)
+    await client.insert(filename, args.path)
     print("Client finished Insert Command!")
     await asyncio.sleep(60)
 
@@ -156,7 +147,7 @@ async def run_hydra_client(app: NDNApp, args: Namespace) -> None:
     print("Client finished Fetch Command!")
 
   elif args.function == "query":
-    await client.query(Name.from_str(str(args.query)), args.sessionid)
+    await client.query(Name.from_str(str(args.query)), args.nodename)
     print("Client finished Query Command!")
 
   else:

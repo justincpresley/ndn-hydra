@@ -22,6 +22,7 @@ class StatusCode(Enum):
     BAD_REQUEST = 400       # client sent incorrectly filled command
     UNAUTHORIZED = 401      # client signature is not authorized
     NOT_FOUND = 404         # unable to contact the client
+    NO_COMMAND = 405        # status request does not match a command
     # Server Error
     RESOURCE_LIMIT = 500    # storage likely is filled, contact admin
     TRAFFIC_OVERLOAD = 501  # contact at another time and/or contact admin

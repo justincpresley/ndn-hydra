@@ -20,24 +20,24 @@ from ndn.encoding import Name, Component
 from ndn.types import InterestNack, InterestTimeout
 from ndn.svs import SVSync
 from ndn.storage import Storage, SqliteStorage
-from ndn_hydra.repo.global_view.global_view import GlobalView
+from ndn_hydra.repo.modules.global_view import GlobalView
 from ndn_hydra.repo.group_messages import *
 from ndn_hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
 
 class MainLoop:
-    def __init__(self, app: NDNApp, config: Dict, global_view: GlobalView, data_storage: Storage):
+    def __init__(self, app: NDNApp, config: Dict, global_view: GlobalView, data_storage: Storage, svs_storage: Storage):
         self.app = app
         self.config = config
         self.global_view = global_view
         self.data_storage = data_storage
-        self.svs_storage = SqliteStorage(self.config['svs_storage_path'])
+        self.svs_storage = svs_storage
         self.svs = None
         self.expire_at = 0
         self.logger = logging.getLogger()
 
     # the main coroutine
     async def start(self):
-        self.svs = SVSync(self.app, Name.normalize(self.config['repo_prefix'] + "/group"), Name.normalize(self.config['session_id']), self.svs_missing_callback, storage=self.svs_storage)
+        self.svs = SVSync(self.app, Name.normalize(self.config['repo_prefix'] + "/group"), Name.normalize(self.config['node_name']), self.svs_missing_callback, storage=self.svs_storage)
         while True:
             await aio.sleep(self.config['period'])
             self.periodic()
@@ -61,11 +61,9 @@ class MainLoop:
         self.expire_at = expire_at
         favor = 1.85
         heartbeat_message = HeartbeatMessageTlv()
-        heartbeat_message.session_id = self.config['session_id'].encode()
         heartbeat_message.node_name = self.config['node_name'].encode()
         heartbeat_message.expire_at = expire_at
         heartbeat_message.favor = str(favor).encode()
-
         # hb msg
         message = Message()
         message.type = MessageTypes.HEARTBEAT
@@ -74,105 +72,101 @@ class MainLoop:
         # heartbeat_message = HeartbeatMessage(self.svs_node_id, self.state_vector, heartbeat_message.encode())
         # print("state_vector: {0}".format(self.svs.getCore().getStateVector().to_str()))
         try:
-            next_state_vector = self.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['session_id']))) + 1
+            next_state_vector = self.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['node_name']))) + 1
         except TypeError:
             next_state_vector = 0
-        self.global_view.update_session(self.config['session_id'], self.config['node_name'], expire_at, favor, next_state_vector)
+        self.global_view.update_node(self.config['node_name'], expire_at, favor, next_state_vector)
         self.svs.publishData(message.encode())
 
-    def detect_expired_sessions(self):
+    def detect_expired_nodes(self):
         deadline = int(time.time()) - (self.config['period'])
-        expired_sessions = self.global_view.get_sessions_expired_by(deadline)
-        for expired_session in expired_sessions:
+        expired_nodes = self.global_view.get_nodes_expired_by(deadline)
+        for expired_node in expired_nodes:
             # generate expire msg and send
             # expire tlv
             expire_at = int(time.time()+(self.config['period']*2))
             favor = 1.85
             expire_message = ExpireMessageTlv()
-            expire_message.session_id = self.config['session_id'].encode()
             expire_message.node_name = self.config['node_name'].encode()
             expire_message.expire_at = expire_at
             expire_message.favor = str(favor).encode()
-            expire_message.expired_session_id = expired_session['id'].encode()
+            expire_message.expired_node_name = expired_node['node_name'].encode()
             # expire msg
             message = Message()
             message.type = MessageTypes.EXPIRE
             message.value = expire_message.encode()
             # apply globalview and send msg thru SVS
-            self.global_view.expire_session(expired_session['id'])
+            self.global_view.expire_node(expired_node['node_name'])
             self.svs.publishData(message.encode())
-            val = "[MSG][EXPIRE]* sid={sid};exp_sid={esid}".format(
-                sid=self.config['session_id'],
-                esid=expired_session['id']
+            val = "[MSG][EXPIRE]* nam={nam};exp_nam={enam}".format(
+                nam=self.config['node_name'],
+                enam=expired_node['node_name']
             )
             self.logger.info(val)
 
         # am I at the top of any insertion's backup list?
-        underreplicated_insertions = self.global_view.get_underreplicated_insertions()
-        for underreplicated_insertion in underreplicated_insertions:
-            deficit = underreplicated_insertion['desired_copies'] - len(underreplicated_insertion['stored_bys'])
-            for backuped_by in underreplicated_insertion['backuped_bys']:
-                if (backuped_by['session_id'] == self.config['session_id']) and (backuped_by['rank'] < deficit):
-                    self.fetch_file(underreplicated_insertion['id'], underreplicated_insertion['file_name'], underreplicated_insertion['packets'], underreplicated_insertion['digests'], underreplicated_insertion['fetch_path'])
+        underreplicated_files = self.global_view.get_underreplicated_files()
+        for underreplicated_file in underreplicated_files:
+            deficit = underreplicated_file['desired_copies'] - len(underreplicated_file['stored_bys'])
+            for backuped_by in underreplicated_file['backuped_bys']:
+                if (backuped_by['node_name'] == self.config['node_name']) and (backuped_by['rank'] < deficit):
+                    self.fetch_file(underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
 
 
     def claim(self):
         # TODO: possibility based on # active sessions and period
         # if random.random() < 0.618:
         #     return
-        backupable_insertions = self.global_view.get_backupable_insertions()
-
-        for backupable_insertion in backupable_insertions:
-
+        backupable_files = self.global_view.get_backupable_files()
+        for backupable_file in backupable_files:
             if random.random() < 0.618:
                 continue
             # print(json.dumps(backupable_insertion['stored_bys']))
             # print(json.dumps(backupable_insertion['backuped_bys']))
             already_in = False
-            for stored_by in backupable_insertion['stored_bys']:
-                if stored_by == self.config['session_id']:
+            for stored_by in backupable_file['stored_bys']:
+                if stored_by == self.config['node_name']:
                     already_in = True
                     break
-            for backuped_by in backupable_insertion['backuped_bys']:
-                if backuped_by['session_id'] == self.config['session_id']:
+            for backuped_by in backupable_file['backuped_bys']:
+                if backuped_by['node_name'] == self.config['node_name']:
                     already_in = True
                     break
             if already_in == True:
                 continue
-            if len(backupable_insertion['backuped_bys']) == 0 and len(backupable_insertion['stored_bys']) == 0:
+            if len(backupable_file['backuped_bys']) == 0 and len(backupable_file['stored_bys']) == 0:
                 continue
             authorizer = None
-            if len(backupable_insertion['backuped_bys']) == 0:
+            if len(backupable_file['backuped_bys']) == 0:
                 authorizer = {
-                    'session_id': backupable_insertion['stored_bys'][-1],
+                    'node_name': backupable_file['stored_bys'][-1],
                     'rank': -1,
-                    'nonce': backupable_insertion['id']
+                    'nonce': backupable_file['file_name']
                 }
             else:
-                authorizer = backupable_insertion['backuped_bys'][-1]
+                authorizer = backupable_file['backuped_bys'][-1]
             # generate claim (request) msg and send
             # claim tlv
             expire_at = int(time.time()+(self.config['period']*2))
             favor = 1.85
             claim_message = ClaimMessageTlv()
-            claim_message.session_id = self.config['session_id'].encode()
             claim_message.node_name = self.config['node_name'].encode()
             claim_message.expire_at = expire_at
             claim_message.favor = str(favor).encode()
-            claim_message.insertion_id = backupable_insertion['id'].encode()
+            claim_message.file_name = Name.from_str(backupable_file['file_name'])
             claim_message.type = ClaimTypes.REQUEST
-            claim_message.claimer_session_id = self.config['session_id'].encode()
+            claim_message.claimer_node_name = self.config['node_name'].encode()
             claim_message.claimer_nonce = secrets.token_hex(4).encode()
-            claim_message.authorizer_session_id = authorizer['session_id'].encode()
+            claim_message.authorizer_node_name = authorizer['node_name'].encode()
             claim_message.authorizer_nonce = authorizer['nonce'].encode()
             # claim msg
             message = Message()
             message.type = MessageTypes.CLAIM
             message.value = claim_message.encode()
             self.svs.publishData(message.encode())
-            val = "[MSG][CLAIM.R]*sid={sid};iid={iid}".format(
-                sid=self.config['session_id'],
-                iid=backupable_insertion['id']
+            val = "[MSG][CLAIM.R]*nam={nam};fil={fil}".format(
+                nam=self.config['node_name'],
+                fil=backupable_file['file_name']
             )
             self.logger.info(val)
 
@@ -181,7 +175,7 @@ class MainLoop:
         # print('periodic')
         # periodic tasks:
         self.heartbeat()
-        self.detect_expired_sessions()
+        self.detect_expired_nodes()
         self.claim()
         # self.store()
 
@@ -204,18 +198,17 @@ class MainLoop:
             # self.logger.info(val)
         # print("--")
 
-    def store(self, insertion_id: str):
-        insertion = self.global_view.get_insertion(insertion_id)
-        if len(insertion['stored_bys']) < insertion['desired_copies']:
+    def store(self, file_name: str):
+        file = self.global_view.get_file(file_name)
+        if len(file['stored_bys']) < file['desired_copies']:
             # store msg
             expire_at = int(time.time()+(self.config['period']*2))
             favor = 1.85
             store_message = StoreMessageTlv()
-            store_message.session_id = self.config['session_id'].encode()
             store_message.node_name = self.config['node_name'].encode()
             store_message.expire_at = expire_at
             store_message.favor = str(favor).encode()
-            store_message.insertion_id = insertion_id.encode()
+            store_message.file_name = Name.from_str(file_name)
             # store msg
             message = Message()
             message.type = MessageTypes.STORE
@@ -223,11 +216,11 @@ class MainLoop:
             # apply globalview and send msg thru SVS
             # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
 
-            self.global_view.store_file(insertion_id, self.config['session_id'])
+            self.global_view.store_file(file_name, self.config['node_name'])
             self.svs.publishData(message.encode())
-            val = "[MSG][STORE]*  sid={sid};iid={iid}".format(
-                sid=self.config['session_id'],
-                iid=insertion_id
+            val = "[MSG][STORE]*  nam={nam};fil={fil}".format(
+                nam=self.config['node_name'],
+                fil=file_name
             )
             self.logger.info(val)
 
@@ -251,17 +244,16 @@ class MainLoop:
     def svs_sending_callback(self, expire_at: int):
         self.expire_at = expire_at
 
-    def fetch_file(self, insertion_id: str, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
-        val = "[ACT][FETCH]*  iid={iid};file_name={file_name};pcks={packets};fetch_path={fetch_path}".format(
-            iid=insertion_id,
-            file_name=file_name,
+    def fetch_file(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+        val = "[ACT][FETCH]*  fil={fil};pcks={packets};fetch_path={fetch_path}".format(
+            fil=file_name,
             packets=packets,
             fetch_path=fetch_path
         )
         self.logger.info(val)
-        aio.ensure_future(self.async_fetch(insertion_id, file_name, packets, digests, fetch_path))
+        aio.ensure_future(self.async_fetch(file_name, packets, digests, fetch_path))
 
-    async def async_fetch(self, insertion_id: str, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+    async def async_fetch(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
         self.logger.debug(packets)
         if packets > 1:
             start = time.time()
@@ -274,11 +266,11 @@ class MainLoop:
                     duration=duration
                 )
                 self.logger.info(val)
-                self.store(insertion_id)
+                self.store(file_name)
         elif packets == 1:
             inserted_packets = await self.fetch_single_file(file_name, fetch_path)
             if inserted_packets == packets:
-                self.store(insertion_id)
+                self.store(file_name)
 
     async def fetch_segmented_file(self, file_name: str, packets: int, fetch_path: str):
         semaphore = aio.Semaphore(10)

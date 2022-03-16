@@ -20,7 +20,7 @@ from ndn.storage import Storage
 from ndn_hydra.repo.handles.protocol_handle_base import ProtocolHandle
 from ndn_hydra.repo.protocol.base_models import InsertCommand, File
 from ndn_hydra.repo.utils.pubsub import PubSub
-from ndn_hydra.repo.global_view.global_view import GlobalView
+from ndn_hydra.repo.modules.global_view import GlobalView
 from ndn_hydra.repo.group_messages.add import FetchPathTlv, BackupTlv, AddMessageTlv
 from ndn_hydra.repo.group_messages.message import Message, MessageTypes
 from ndn_hydra.repo.main.main_loop import MainLoop
@@ -45,6 +45,7 @@ class InsertCommandHandle(ProtocolHandle):
         self.main_loop = main_loop
         self.global_view = global_view
         self.repo_prefix = config['repo_prefix']
+        self.replication_degree = config['replication_degree']
 
     async def listen(self, prefix: NonStrictName):
         """
@@ -74,37 +75,32 @@ class InsertCommandHandle(ProtocolHandle):
         """
         # print("Process Insert Command for File: ")
         # print("receive INSERT command for file: {}".format(Name.to_str(cmd.file.file_name)))
-
-        file_name = cmd.file.file_name
+        file_name = Name.to_str(cmd.file.file_name)
         packets = cmd.file.packets
         digests = cmd.file.digests
         size = cmd.file.size
         fetch_path = cmd.fetch_path
-
-        self.logger.info("[cmd][INSERT] file {}".format(Name.to_str(file_name)))
+        self.logger.info("[cmd][INSERT] file {}".format(file_name))
 
         # TODO: check duplicate sequence number
 
-        sessions = self.global_view.get_sessions()
-        desired_copies = 2
-        sequence_number = 0
-
-        if len(sessions) < (desired_copies * 2):
-            self.logger.warning("not enough node sessions") # TODO: notify the client?
+        nodes = self.global_view.get_nodes()
+        desired_copies = self.replication_degree
+        if len(nodes) < (desired_copies * 2):
+            self.logger.warning("not enough nodes") # TODO: notify the client?
             return
 
         # generate unique insertion_id
-        insertion_id = secrets.token_hex(8)
-        while self.global_view.get_insertion(insertion_id) != None:
-            insertion_id = secrets.token_hex(8)
+        #insertion_id = secrets.token_hex(8)
+        #while self.global_view.get_file(insertion_id) != None:
+        #    insertion_id = secrets.token_hex(8)
 
         # select sessions
-        random.shuffle(sessions)
-        picked_sessions = random.sample(sessions, (desired_copies * 2))
-
+        random.shuffle(nodes)
+        picked_nodes = random.sample(nodes, (desired_copies * 2))
         pickself = False
         for i in range(desired_copies):
-            if picked_sessions[i]['id'] == self.config['session_id']:
+            if picked_nodes[i]['node_name'] == self.config['node_name']:
                 pickself = True
                 break
 
@@ -114,35 +110,30 @@ class InsertCommandHandle(ProtocolHandle):
             # print("pick myself")
             # picked_sessions = list(filter(lambda x: x['id'] != self.config['session_id'], picked_sessions))
 
-
         backups = []
         backup_list = []
-        for picked_session in picked_sessions:
-            session_id = picked_session['id']
+        for picked_node in picked_nodes:
+            node_name = picked_node['node_name']
             nonce = secrets.token_hex(4)
             backup = BackupTlv()
-            backup.session_id = session_id.encode()
+            backup.node_name = node_name.encode()
             backup.nonce = nonce.encode()
             backups.append(backup)
-            backup_list.append((session_id, nonce))
-
+            backup_list.append((node_name, nonce))
 
         # add tlv
         expire_at = int(time.time()+(self.config['period']*2))
         favor = 1.85
         add_message = AddMessageTlv()
-        add_message.session_id = self.config['session_id'].encode()
         add_message.node_name = self.config['node_name'].encode()
         add_message.expire_at = expire_at
         add_message.favor = str(favor).encode()
-        add_message.insertion_id = insertion_id.encode()
         add_message.file = File()
-        add_message.file.file_name = file_name
+        add_message.file.file_name = cmd.file.file_name
         add_message.file.packets = packets
         add_message.file.digests = digests
         add_message.file.size = size
         add_message.desired_copies = desired_copies
-        add_message.sequence_number = sequence_number
         add_message.fetch_path = FetchPathTlv()
         add_message.fetch_path.prefix = fetch_path
         # add_message.is_stored_by_origin = 1 if pickself else 0
@@ -154,15 +145,13 @@ class InsertCommandHandle(ProtocolHandle):
         message.value = add_message.encode()
         # apply globalview and send msg thru SVS
         try:
-            next_state_vector = self.main_loop.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['session_id']))) + 1
+            next_state_vector = self.main_loop.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['node_name']))) + 1
         except TypeError:
             next_state_vector = 0
-        self.global_view.add_insertion(
-            insertion_id,
-            Name.to_str(file_name),
-            sequence_number,
+        self.global_view.add_file(
+            file_name,
             size,
-            self.config['session_id'],
+            self.config['node_name'],
             Name.to_str(fetch_path),
             next_state_vector,
             b''.join(digests),
@@ -171,20 +160,18 @@ class InsertCommandHandle(ProtocolHandle):
         )
         if pickself:
             # self.global_view.store_file(insertion_id, self.config['session_id'])
-            self.main_loop.fetch_file(insertion_id, Name.to_str(file_name), packets, digests, Name.to_str(fetch_path))
-        self.global_view.set_backups(insertion_id, backup_list)
+            self.main_loop.fetch_file(file_name, packets, digests, Name.to_str(fetch_path))
+        self.global_view.set_backups(file_name, backup_list)
         self.main_loop.svs.publishData(message.encode())
         bak = ""
         for backup in backup_list:
             bak = bak + backup[0] + ","
-        val = "[MSG][ADD]*    sid={sid};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};seq={seq};slf={slf};bak={bak}".format(
-            sid=self.config['session_id'],
-            iid=insertion_id,
-            fil=Name.to_str(file_name),
+        val = "[MSG][ADD]*    nam={nam};fil={fil};cop={cop};pck={pck};siz={siz};slf={slf};bak={bak}".format(
+            nam=self.config['node_name'],
+            fil=file_name,
             cop=desired_copies,
             pck=packets,
             siz=size,
-            seq=sequence_number,
             # slf=1 if pickself else 0,
             slf=0,
             bak=bak

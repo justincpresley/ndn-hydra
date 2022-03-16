@@ -33,7 +33,7 @@ class HydraInsertClient(object):
       self.packets = []
       self.digests = []
 
-    async def insert_file(self, file_name: FormalName, desired_copies: int, path: str) -> bool:
+    async def insert_file(self, file_name: FormalName, path: str) -> bool:
       """
       Insert a file associated with a file name to the remote repo
       """
@@ -59,6 +59,7 @@ class HydraInsertClient(object):
 
         self.digests = [bytes(blake2b(data[i*SEGMENT_SIZE:(i+1)*SEGMENT_SIZE]).digest()[:2]) for i in range(seg_cnt)]
         print(self.digests[0].hex())
+        # create a manifest (filled with digests) to limit signing
 
       print(f'Created {seg_cnt} chunks under name {Name.to_str(fetch_file_prefix)}')
 
@@ -80,6 +81,8 @@ class HydraInsertClient(object):
       cmd.file = file
       cmd.fetch_path = fetch_file_prefix
       cmd_bytes = cmd.encode()
+      # what if the digests dont fit? support larger files
+      # look into implicit digests, FLICK
 
       # publish msg to repo's insert topic
       await self.pb.wait_for_ready()
