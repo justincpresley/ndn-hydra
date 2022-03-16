@@ -75,12 +75,12 @@ class InsertCommandHandle(ProtocolHandle):
         """
         # print("Process Insert Command for File: ")
         # print("receive INSERT command for file: {}".format(Name.to_str(cmd.file.file_name)))
-        file_name = cmd.file.file_name
+        file_name = Name.to_str(cmd.file.file_name)
         packets = cmd.file.packets
         digests = cmd.file.digests
         size = cmd.file.size
         fetch_path = cmd.fetch_path
-        self.logger.info("[cmd][INSERT] file {}".format(Name.to_str(file_name)))
+        self.logger.info("[cmd][INSERT] file {}".format(file_name))
 
         # TODO: check duplicate sequence number
 
@@ -91,9 +91,9 @@ class InsertCommandHandle(ProtocolHandle):
             return
 
         # generate unique insertion_id
-        insertion_id = secrets.token_hex(8)
-        while self.global_view.get_file(insertion_id) != None:
-            insertion_id = secrets.token_hex(8)
+        #insertion_id = secrets.token_hex(8)
+        #while self.global_view.get_file(insertion_id) != None:
+        #    insertion_id = secrets.token_hex(8)
 
         # select sessions
         random.shuffle(nodes)
@@ -128,9 +128,8 @@ class InsertCommandHandle(ProtocolHandle):
         add_message.node_name = self.config['node_name'].encode()
         add_message.expire_at = expire_at
         add_message.favor = str(favor).encode()
-        add_message.insertion_id = insertion_id.encode()
         add_message.file = File()
-        add_message.file.file_name = file_name
+        add_message.file.file_name = cmd.file.file_name
         add_message.file.packets = packets
         add_message.file.digests = digests
         add_message.file.size = size
@@ -150,8 +149,7 @@ class InsertCommandHandle(ProtocolHandle):
         except TypeError:
             next_state_vector = 0
         self.global_view.add_file(
-            insertion_id,
-            Name.to_str(file_name),
+            file_name,
             size,
             self.config['node_name'],
             Name.to_str(fetch_path),
@@ -162,16 +160,15 @@ class InsertCommandHandle(ProtocolHandle):
         )
         if pickself:
             # self.global_view.store_file(insertion_id, self.config['session_id'])
-            self.main_loop.fetch_file(insertion_id, Name.to_str(file_name), packets, digests, Name.to_str(fetch_path))
-        self.global_view.set_backups(insertion_id, backup_list)
+            self.main_loop.fetch_file(file_name, packets, digests, Name.to_str(fetch_path))
+        self.global_view.set_backups(file_name, backup_list)
         self.main_loop.svs.publishData(message.encode())
         bak = ""
         for backup in backup_list:
             bak = bak + backup[0] + ","
-        val = "[MSG][ADD]*    nam={nam};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};slf={slf};bak={bak}".format(
+        val = "[MSG][ADD]*    nam={nam};fil={fil};cop={cop};pck={pck};siz={siz};slf={slf};bak={bak}".format(
             nam=self.config['node_name'],
-            iid=insertion_id,
-            fil=Name.to_str(file_name),
+            fil=file_name,
             cop=desired_copies,
             pck=packets,
             siz=size,

@@ -87,7 +87,7 @@ class ReadHandle(object):
             self.logger.info(f'Read handle: serve data {Name.to_str(int_name)}')
             _, _, content, _ = parse_data(data_bytes)
             # print("serve"+file_name + segment_comp+"   "+Name.to_str(name))
-            final_id = Component.from_number(int(self.global_view.get_file_by_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
+            final_id = Component.from_number(int(self.global_view.get_file(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=content, content_type=ContentType.BLOB, final_block_id=final_id)
             return
 
@@ -106,7 +106,7 @@ class ReadHandle(object):
             # create a link to a node who has the content
             new_name = self.repo_prefix + self.node_comp + "/" + best_id + self.command_comp + file_name
             link_content = bytes(new_name.encode())
-            final_id = Component.from_number(int(self.global_view.get_file_by_name(file_name)["packets"])-1, Component.TYPE_SEGMENT)
+            final_id = Component.from_number(int(self.global_view.get_file(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)
             self.logger.info(f'Read handle: redirected {Name.to_str(int_name)}')
             self.logger.info(f'Read handle: new name {new_name}')
@@ -120,7 +120,7 @@ class ReadHandle(object):
             return file_name[(len(self.command_comp)):]
 
     def _best_id_for_file(self, file_name: str):
-        file_info = self.global_view.get_file_by_name(file_name)
+        file_info = self.global_view.get_file(file_name)
         if file_info != None:
             on_list = file_info["stored_bys"]
             if file_info["is_deleted"] == True or not on_list:

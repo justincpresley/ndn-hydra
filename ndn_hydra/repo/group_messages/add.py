@@ -21,7 +21,6 @@ class AddMessageTypes:
     EXPIRE_AT = 85
     FAVOR = 86
 
-    INSERTION_ID = 90
     FILE = 91
     DESIRED_COPIES = 92
     FETCH_PATH = 93
@@ -42,7 +41,6 @@ class AddMessageTlv(TlvModel):
     node_name = BytesField(AddMessageTypes.NODE_NAME)
     expire_at = UintField(AddMessageTypes.EXPIRE_AT)
     favor = BytesField(AddMessageTypes.FAVOR)
-    insertion_id = BytesField(AddMessageTypes.INSERTION_ID)
     file = ModelField(AddMessageTypes.FILE, File)
 
     desired_copies = UintField(AddMessageTypes.DESIRED_COPIES)
@@ -59,9 +57,8 @@ class AddMessage(SpecificMessage):
         node_name = self.message.node_name.tobytes().decode()
         expire_at = self.message.expire_at
         favor = float(self.message.favor.tobytes().decode())
-        insertion_id = self.message.insertion_id.tobytes().decode()
         file = self.message.file
-        file_name = file.file_name
+        file_name = Name.to_str(file.file_name)
         packets = file.packets
         digests = file.digests
         size = file.size
@@ -74,10 +71,9 @@ class AddMessage(SpecificMessage):
         for backup in backups:
             backup_list.append((backup.node_name.tobytes().decode(), backup.nonce.tobytes().decode()))
             bak = bak + backup.node_name.tobytes().decode() + ","
-        val = "[MSG][ADD]     nam={nam};iid={iid};file={fil};cop={cop};pck={pck};siz={siz};slf={slf};bak={bak}".format(
+        val = "[MSG][ADD]     nam={nam};fil={fil};cop={cop};pck={pck};siz={siz};slf={slf};bak={bak}".format(
             nam=node_name,
-            iid=insertion_id,
-            fil=Name.to_str(file_name),
+            fil=file_name,
             cop=desired_copies,
             pck=packets,
             siz=size,
@@ -86,8 +82,7 @@ class AddMessage(SpecificMessage):
         )
         self.logger.info(val)
         global_view.add_file(
-            insertion_id,
-            Name.to_str(file_name),
+            file_name,
             size,
             node_name,
             Name.to_str(fetch_path),
@@ -97,14 +92,14 @@ class AddMessage(SpecificMessage):
             desired_copies=desired_copies
         )
 
-        global_view.set_backups(insertion_id, backup_list)
+        global_view.set_backups(file_name, backup_list)
 
         # get pending stores
         copies_needed = desired_copies
-        pending_stores = global_view.get_pending_stores(insertion_id)
+        pending_stores = global_view.get_pending_stores(file_name)
         for pending_store in pending_stores:
             # data_storage.add_metainfos(insertion_id, Name.to_str(file_name), packets, digests, Name.to_str(fetch_path))
-            global_view.store_file(insertion_id, pending_store)
+            global_view.store_file(file_name, pending_store)
             copies_needed -= 1
 
         # if I need to store this file
@@ -117,7 +112,7 @@ class AddMessage(SpecificMessage):
                 need_to_store = True
                 break
         if need_to_store == True:
-            fetch_file(insertion_id, Name.to_str(file_name), packets, digests, Name.to_str(fetch_path))
+            fetch_file(file_name, packets, digests, Name.to_str(fetch_path))
 
             # from .message import MessageTlv, MessageTypes
             # # generate store msg and send

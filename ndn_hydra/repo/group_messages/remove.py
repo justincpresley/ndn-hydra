@@ -19,13 +19,11 @@ class RemoveMessageTypes:
     EXPIRE_AT = 85
     FAVOR = 86
 
-    INSERTION_ID = 90
-
 class RemoveMessageTlv(TlvModel):
     node_name = BytesField(RemoveMessageTypes.NODE_NAME)
     expire_at = UintField(RemoveMessageTypes.EXPIRE_AT)
     favor = BytesField(RemoveMessageTypes.FAVOR)
-    insertion_id = BytesField(RemoveMessageTypes.INSERTION_ID)
+    file_name = NameField()
 
 class RemoveMessage(SpecificMessage):
     def __init__(self, nid:str, seqno:int, raw_bytes:bytes):
@@ -36,19 +34,18 @@ class RemoveMessage(SpecificMessage):
         node_name = self.message.node_name.tobytes().decode()
         expire_at = self.message.expire_at
         favor = float(self.message.favor.tobytes().decode())
-        insertion_id = self.message.insertion_id.tobytes().decode()
-        val = "[MSG][REMOVE]  iid={iid}".format(
-            iid=insertion_id
+        file_name = Name.to_str(self.message.file_name)
+        val = "[MSG][REMOVE]  fil={fil}".format(
+            fil=file_name
         )
         self.logger.info(val)
         # if insertion
-        file = global_view.get_file(insertion_id)
+        file = global_view.get_file(file_name)
         if (file == None) or (file['is_deleted'] == True):
             # add store to pending_stores
             self.logger.warning('nothing to remove')
         else:
-            global_view.delete_file(insertion_id)
+            global_view.delete_file(file_name)
             # TODO: remove from data_storage
         # update session
         global_view.update_node(node_name, expire_at, favor, self.seqno)
-        return

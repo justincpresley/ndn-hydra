@@ -64,7 +64,6 @@ class MainLoop:
         heartbeat_message.node_name = self.config['node_name'].encode()
         heartbeat_message.expire_at = expire_at
         heartbeat_message.favor = str(favor).encode()
-
         # hb msg
         message = Message()
         message.type = MessageTypes.HEARTBEAT
@@ -111,7 +110,7 @@ class MainLoop:
             deficit = underreplicated_file['desired_copies'] - len(underreplicated_file['stored_bys'])
             for backuped_by in underreplicated_file['backuped_bys']:
                 if (backuped_by['node_name'] == self.config['node_name']) and (backuped_by['rank'] < deficit):
-                    self.fetch_file(underreplicated_file['id'], underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
+                    self.fetch_file(underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
 
 
     def claim(self):
@@ -142,7 +141,7 @@ class MainLoop:
                 authorizer = {
                     'node_name': backupable_file['stored_bys'][-1],
                     'rank': -1,
-                    'nonce': backupable_file['id']
+                    'nonce': backupable_file['file_name']
                 }
             else:
                 authorizer = backupable_file['backuped_bys'][-1]
@@ -154,7 +153,7 @@ class MainLoop:
             claim_message.node_name = self.config['node_name'].encode()
             claim_message.expire_at = expire_at
             claim_message.favor = str(favor).encode()
-            claim_message.insertion_id = backupable_file['id'].encode()
+            claim_message.file_name = Name.from_str(backupable_file['file_name'])
             claim_message.type = ClaimTypes.REQUEST
             claim_message.claimer_node_name = self.config['node_name'].encode()
             claim_message.claimer_nonce = secrets.token_hex(4).encode()
@@ -165,9 +164,9 @@ class MainLoop:
             message.type = MessageTypes.CLAIM
             message.value = claim_message.encode()
             self.svs.publishData(message.encode())
-            val = "[MSG][CLAIM.R]*nam={nam};iid={iid}".format(
+            val = "[MSG][CLAIM.R]*nam={nam};fil={fil}".format(
                 nam=self.config['node_name'],
-                iid=backupable_file['id']
+                fil=backupable_file['file_name']
             )
             self.logger.info(val)
 
@@ -199,8 +198,8 @@ class MainLoop:
             # self.logger.info(val)
         # print("--")
 
-    def store(self, insertion_id: str):
-        file = self.global_view.get_file(insertion_id)
+    def store(self, file_name: str):
+        file = self.global_view.get_file(file_name)
         if len(file['stored_bys']) < file['desired_copies']:
             # store msg
             expire_at = int(time.time()+(self.config['period']*2))
@@ -209,7 +208,7 @@ class MainLoop:
             store_message.node_name = self.config['node_name'].encode()
             store_message.expire_at = expire_at
             store_message.favor = str(favor).encode()
-            store_message.insertion_id = insertion_id.encode()
+            store_message.file_name = Name.from_str(file_name)
             # store msg
             message = Message()
             message.type = MessageTypes.STORE
@@ -217,11 +216,11 @@ class MainLoop:
             # apply globalview and send msg thru SVS
             # next_state_vector = svs.getCore().getStateVector().get(config['session_id']) + 1
 
-            self.global_view.store_file(insertion_id, self.config['node_name'])
+            self.global_view.store_file(file_name, self.config['node_name'])
             self.svs.publishData(message.encode())
-            val = "[MSG][STORE]*  nam={nam};iid={iid}".format(
+            val = "[MSG][STORE]*  nam={nam};fil={fil}".format(
                 nam=self.config['node_name'],
-                iid=insertion_id
+                fil=file_name
             )
             self.logger.info(val)
 
@@ -245,17 +244,16 @@ class MainLoop:
     def svs_sending_callback(self, expire_at: int):
         self.expire_at = expire_at
 
-    def fetch_file(self, insertion_id: str, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
-        val = "[ACT][FETCH]*  iid={iid};file_name={file_name};pcks={packets};fetch_path={fetch_path}".format(
-            iid=insertion_id,
-            file_name=file_name,
+    def fetch_file(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+        val = "[ACT][FETCH]*  fil={fil};pcks={packets};fetch_path={fetch_path}".format(
+            fil=file_name,
             packets=packets,
             fetch_path=fetch_path
         )
         self.logger.info(val)
-        aio.ensure_future(self.async_fetch(insertion_id, file_name, packets, digests, fetch_path))
+        aio.ensure_future(self.async_fetch(file_name, packets, digests, fetch_path))
 
-    async def async_fetch(self, insertion_id: str, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+    async def async_fetch(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
         self.logger.debug(packets)
         if packets > 1:
             start = time.time()
@@ -268,11 +266,11 @@ class MainLoop:
                     duration=duration
                 )
                 self.logger.info(val)
-                self.store(insertion_id)
+                self.store(file_name)
         elif packets == 1:
             inserted_packets = await self.fetch_single_file(file_name, fetch_path)
             if inserted_packets == packets:
-                self.store(insertion_id)
+                self.store(file_name)
 
     async def fetch_segmented_file(self, file_name: str, packets: int, fetch_path: str):
         semaphore = aio.Semaphore(10)

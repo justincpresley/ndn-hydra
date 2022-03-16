@@ -19,7 +19,6 @@ class ExpireMessageTypes:
     NODE_NAME = 84
     EXPIRE_AT = 85
     FAVOR = 86
-
     EXPIRED_NODE_NAME = 90
 
 class ExpireMessageTlv(TlvModel):
@@ -55,7 +54,7 @@ class ExpireMessage(SpecificMessage):
                     digests = underreplicated_file['digests']
                     self.logger.debug(type(digests[0]))
 
-                    fetch_file(underreplicated_file['id'], underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
+                    fetch_file(underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
 
                     # # generate store msg and send
                     # # store tlv

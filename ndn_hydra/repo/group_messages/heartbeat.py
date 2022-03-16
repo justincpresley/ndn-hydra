@@ -41,6 +41,3 @@ class HeartbeatMessage(SpecificMessage):
         )
         self.logger.debug(val)
         global_view.update_node(node_name, expire_at, favor, self.seqno)
-        # sessions = global_view.get_sessions()
-        # print(json.dumps(sessions))
-        return
