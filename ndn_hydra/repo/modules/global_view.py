@@ -140,12 +140,9 @@ class GlobalView:
 
     def get_node(self, node_name: str):
         sql = """
-        SELECT DISTINCT
-            node_name, expire_at, favor, state_vector, is_expired
-        FROM
-            nodes
-        WHERE
-            node_name = ?
+        SELECT DISTINCT node_name, expire_at, favor, state_vector, is_expired
+        FROM nodes
+        WHERE node_name = ?
         """
         result = self.__execute_sql_qmark(sql, (node_name, ))
         if len(result) != 1:
@@ -162,19 +159,14 @@ class GlobalView:
     def get_nodes(self, including_expired: bool = False):
         if including_expired:
             sql = """
-            SELECT DISTINCT
-                node_name, expire_at, favor, state_vector, is_expired
-            FROM
-                nodes
+            SELECT DISTINCT node_name, expire_at, favor, state_vector, is_expired
+            FROM nodes
             """
         else:
             sql = """
-            SELECT DISTINCT
-                node_name, expire_at, favor, state_vector, is_expired
-            FROM
-                nodes
-            WHERE
-                is_expired = 0
+            SELECT DISTINCT node_name, expire_at, favor, state_vector, is_expired
+            FROM nodes
+            WHERE is_expired = 0
             """
         results = self.__execute_sql(sql)
         nodes = []
@@ -190,13 +182,9 @@ class GlobalView:
 
     def get_nodes_expired_by(self, timestamp: int):
         sql = """
-        SELECT DISTINCT
-            node_name, expire_at, favor, state_vector, is_expired
-        FROM
-            nodes
-        WHERE
-            is_expired = 0 AND
-            expire_at <= ?
+        SELECT DISTINCT node_name, expire_at, favor, state_vector, is_expired
+        FROM nodes
+        WHERE is_expired = 0 AND expire_at <= ?
         """
         results = self.__execute_sql_qmark(sql, (timestamp, ))
         nodes = []
@@ -227,8 +215,7 @@ class GlobalView:
         SET expire_at = ?,
             favor = ?,
             state_vector = ?
-        WHERE
-            node_name = ?
+        WHERE node_name = ?
         """
         self.__execute_sql_qmark(sql, (expire_at, favor, state_vector, node_name))
 
@@ -278,10 +265,8 @@ class GlobalView:
         sql = """
         SELECT DISTINCT
             id, file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
-        FROM
-            files
-        WHERE
-            id = ?
+        FROM files
+        WHERE id = ?
         """
         result = self.__execute_sql_qmark(sql, (insertion_id, ))
         if len(result) != 1:
@@ -307,17 +292,14 @@ class GlobalView:
             sql = """
             SELECT DISTINCT
                 id, file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
-            FROM
-                files
+            FROM files
             """
         else:
             sql = """
             SELECT DISTINCT
                 id, file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
-            FROM
-                files
-            WHERE
-                is_deleted = 0
+            FROM files
+            WHERE is_deleted = 0
             """
         results = self.__execute_sql(sql)
         files = []
@@ -342,11 +324,8 @@ class GlobalView:
         sql = """
         SELECT DISTINCT
             id, file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
-        FROM
-            files
-        WHERE
-            file_name = ? AND
-            is_deleted = 0
+        FROM files
+        WHERE file_name = ? AND is_deleted = 0
         """
         result = self.__execute_sql_qmark(sql, (file_name, ))
         if len(result) != 1:
