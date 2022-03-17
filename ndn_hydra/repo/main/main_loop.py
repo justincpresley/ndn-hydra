@@ -80,11 +80,10 @@ class MainLoop:
         self.svs.publishData(message.encode())
 
     def backup_list_check(self):
-        # am I at the top of any insertion's backup list?
         underreplicated_files = self.global_view.get_underreplicated_files()
         for underreplicated_file in underreplicated_files:
-            deficit = underreplicated_file['desired_copies'] - len(underreplicated_file['stored_bys'])
-            for backuped_by in underreplicated_file['backuped_bys']:
+            deficit = underreplicated_file['desired_copies'] - len(underreplicated_file['stores'])
+            for backuped_by in underreplicated_file['backups']:
                 if (backuped_by['node_name'] == self.config['node_name']) and (backuped_by['rank'] < deficit):
                     self.fetch_file(underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
 
@@ -97,30 +96,30 @@ class MainLoop:
         for backupable_file in backupable_files:
             if random.random() < 0.618:
                 continue
-            # print(json.dumps(backupable_insertion['stored_bys']))
-            # print(json.dumps(backupable_insertion['backuped_bys']))
+            # print(json.dumps(backupable_insertion['stores']))
+            # print(json.dumps(backupable_insertion['backups']))
             already_in = False
-            for stored_by in backupable_file['stored_bys']:
+            for stored_by in backupable_file['stores']:
                 if stored_by == self.config['node_name']:
                     already_in = True
                     break
-            for backuped_by in backupable_file['backuped_bys']:
+            for backuped_by in backupable_file['backups']:
                 if backuped_by['node_name'] == self.config['node_name']:
                     already_in = True
                     break
             if already_in == True:
                 continue
-            if len(backupable_file['backuped_bys']) == 0 and len(backupable_file['stored_bys']) == 0:
+            if len(backupable_file['backups']) == 0 and len(backupable_file['stores']) == 0:
                 continue
             authorizer = None
-            if len(backupable_file['backuped_bys']) == 0:
+            if len(backupable_file['backups']) == 0:
                 authorizer = {
-                    'node_name': backupable_file['stored_bys'][-1],
+                    'node_name': backupable_file['stores'][-1],
                     'rank': -1,
                     'nonce': backupable_file['file_name']
                 }
             else:
-                authorizer = backupable_file['backuped_bys'][-1]
+                authorizer = backupable_file['backups'][-1]
             # generate claim (request) msg and send
             # claim tlv
             favor = 1.85
@@ -138,14 +137,14 @@ class MainLoop:
             message.type = MessageTypes.CLAIM
             message.value = claim_message.encode()
             self.svs.publishData(message.encode())
-            self.logger.info(f"[MSG][CLAIM.R]*nam={self.config['node_name']};fil={backupable_file['file_name']}")
+            self.logger.info(f"[MSG][CLAIM.R]* nam={self.config['node_name']};fil={backupable_file['file_name']}")
 
 
 
 
     def store(self, file_name: str):
         file = self.global_view.get_file(file_name)
-        if len(file['stored_bys']) < file['desired_copies']:
+        if len(file['stores']) < file['desired_copies']:
             favor = 1.85
             store_message = StoreMessageTlv()
             store_message.node_name = self.config['node_name'].encode()
@@ -157,10 +156,10 @@ class MainLoop:
 
             self.global_view.store_file(file_name, self.config['node_name'])
             self.svs.publishData(message.encode())
-            self.logger.info(f"[MSG][STORE]*  nam={self.config['node_name']};fil={file_name}")
+            self.logger.info(f"[MSG][STORE]*   nam={self.config['node_name']};fil={file_name}")
 
     def fetch_file(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
-        self.logger.info(f"[ACT][FETCH]*  fil={file_name};pcks={packets};fetch_path={fetch_path}")
+        self.logger.info(f"[ACT][FETCH]*   fil={file_name};pcks={packets};fetch_path={fetch_path}")
         aio.ensure_future(self.async_fetch(file_name, packets, digests, fetch_path))
     async def async_fetch(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
         self.logger.debug(packets)
@@ -170,7 +169,7 @@ class MainLoop:
             if inserted_packets == packets:
                 end = time.time()
                 duration = end -start
-                self.logger.info(f"[ACT][FETCHED]*pcks={packets};duration={duration}")
+                self.logger.info(f"[ACT][FETCHED]* pcks={packets};duration={duration}")
                 self.store(file_name)
         elif packets == 1:
             inserted_packets = await self.fetch_single_file(file_name, fetch_path)
@@ -195,8 +194,7 @@ class MainLoop:
         int_name = int_name = Name.normalize(fetch_path) + [Component.from_segment(0)]
         key = Name.normalize(file_name) + [Component.from_segment(0)]
         try:
-            data_name, _, _, data_bytes = await self.app.express_interest(
-                int_name, need_raw_packet=True, can_be_prefix=False, lifetime=1000)
+            data_name, _, _, data_bytes = await self.app.express_interest(int_name, need_raw_packet=True, can_be_prefix=False, lifetime=1000)
         except InterestNack as e:
             return 0
         except InterestTimeout:

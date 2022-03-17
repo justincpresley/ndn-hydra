@@ -77,7 +77,7 @@ class ReadHandle(object):
 
         if best_id == self.node_name:
             if segment_comp == "/seg=0":
-                self.logger.info(f'[cmd][FETCH] serving data to client')
+                self.logger.info(f'[cmd][FETCH] serving file')
 
             # serving my own data
             data_bytes = self.data_storage.get_packet(file_name + segment_comp, int_param.can_be_prefix)
@@ -89,28 +89,22 @@ class ReadHandle(object):
             # print("serve"+file_name + segment_comp+"   "+Name.to_str(name))
             final_id = Component.from_number(int(self.global_view.get_file(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=content, content_type=ContentType.BLOB, final_block_id=final_id)
-            return
-
         elif best_id == None:
             if segment_comp == "/seg=0":
-                self.logger.info(f'[cmd][FETCH] nacked client due to no file in repo')
+                self.logger.info(f'[cmd][FETCH] nacked due to no file')
 
             # nack due to lack of avaliability
             self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
             self.logger.debug(f'Read handle: data not found {Name.to_str(int_name)}')
-            return
         else:
             if segment_comp == "/seg=0":
-                self.logger.info(f'[cmd][FETCH] linked to another node in the repo')
+                self.logger.info(f'[cmd][FETCH] linked to another node')
 
             # create a link to a node who has the content
             new_name = self.repo_prefix + self.node_comp + best_id + self.command_comp + file_name
             link_content = bytes(new_name.encode())
             final_id = Component.from_number(int(self.global_view.get_file(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)
-            self.logger.debug(f'Read handle: redirected {Name.to_str(int_name)}')
-            self.logger.debug(f'Read handle: new name {new_name}')
-            return
 
     def _get_file_name_from_interest(self, int_name):
         file_name = int_name[len(self.repo_prefix):]
@@ -121,12 +115,13 @@ class ReadHandle(object):
 
     def _best_id_for_file(self, file_name: str):
         file_info = self.global_view.get_file(file_name)
-        if file_info != None:
-            on_list = file_info["stored_bys"]
-            if file_info["is_deleted"] == True or not on_list:
-                return None
-            if self.node_name in on_list:
-                return self.node_name
-            else:
-              return choice(on_list)
-        return None
+        if file_name == None:
+            return None
+
+        on_list = file_info["stores"]
+        if file_info["is_deleted"] == True or not on_list:
+            return None
+        if self.node_name in on_list:
+            return self.node_name
+        else:
+            return choice(on_list)

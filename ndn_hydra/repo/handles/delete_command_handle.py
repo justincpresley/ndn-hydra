@@ -76,7 +76,7 @@ class DeleteCommandHandle(ProtocolHandle):
         self.logger.info("[cmd][DELETE] file {}".format(file_name))
         file = self.global_view.get_file(file_name)
         if file == None:
-            self.logger.warning("file does not exist")
+            self.logger.debug("file does not exist")
             return
         favor = 1.85
         remove_message = RemoveMessageTlv()
@@ -88,4 +88,4 @@ class DeleteCommandHandle(ProtocolHandle):
         message.value = remove_message.encode()
         self.global_view.delete_file(file_name)
         self.main_loop.svs.publishData(message.encode())
-        self.logger.info(f"[MSG][REMOVE]* fil={file_name}")
+        self.logger.info(f"[MSG][REMOVE]*  fil={file_name}")

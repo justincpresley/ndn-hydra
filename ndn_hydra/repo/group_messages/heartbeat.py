@@ -29,5 +29,5 @@ class HeartbeatMessage(SpecificMessage):
 
     async def apply(self, global_view, fetch_file, svs, config):
         node_name = self.message.node_name.tobytes().decode()
-        self.logger.debug(f"[MSG][HB] nam={node_name}")
+        self.logger.debug(f"[MSG][HB]       nam={node_name}")
         global_view.update_node(node_name, float(self.message.favor.tobytes().decode()), self.seqno)

@@ -82,7 +82,7 @@ class PubSub(object):
             if self.base_prefix != None and Name.is_prefix(self.base_prefix, self.publisher_prefix + ['msg']):
                 self.app.set_interest_filter(self.publisher_prefix + ['msg'], self._on_msg_interest)
             else:
-                    await self.app.register(self.publisher_prefix + ['msg'], self._on_msg_interest)
+                await self.app.register(self.publisher_prefix + ['msg'], self._on_msg_interest)
         except ValueError as esc:
             # duplicate registration
             pass
@@ -118,7 +118,7 @@ class PubSub(object):
             the format of this message.
         :return: Return true if received response from a subscriber.
         """
-        logging.info(f'publishing a message to topic: {Name.to_str(topic)}')
+        logging.debug(f'publishing a message to topic: {Name.to_str(topic)}')
         # generate a nonce for each message. Nonce is a random sequence of bytes
         nonce = os.urandom(4)
         # wrap msg in a data packet named /<publisher_prefix>/msg/<topic>/nonce
@@ -202,7 +202,7 @@ class PubSub(object):
 
         # de-duplicate notify interests of the same nonce
         if notify_nonce in self.nonce_processed:
-            logging.info(f'Received duplicate notify interest for nonce {notify_nonce}')
+            logging.debug(f'Received duplicate notify interest for nonce {notify_nonce}')
             return
         self.nonce_processed.add(notify_nonce)
         aio.ensure_future(self._erase_subsciber_state_after(notify_nonce, 60))
@@ -225,7 +225,7 @@ class PubSub(object):
             return
 
         # pass msg to application
-        logging.info(f'received subscribed msg: {Name.to_str(msg_int_name)}')
+        logging.debug(f'received subscribed msg: {Name.to_str(msg_int_name)}')
         self.topic_to_cb[topic](bytes(msg))
 
         # acknowledge notify interest with an empty data packet

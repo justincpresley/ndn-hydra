@@ -158,4 +158,4 @@ class InsertCommandHandle(ProtocolHandle):
         bak = ""
         for backup in backup_list:
             bak = bak + backup[0] + ","
-        self.logger.info(f"[MSG][ADD]*    nam={self.config['node_name']};fil={file_name};cop={desired_copies};pck={packets};siz={size};slf={0};bak={bak}")
+        self.logger.info(f"[MSG][ADD]*     nam={self.config['node_name']};fil={file_name};cop={desired_copies};pck={packets};siz={size};bak={bak}")

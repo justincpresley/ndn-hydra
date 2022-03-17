@@ -68,7 +68,7 @@ class AddMessage(SpecificMessage):
         for backup in backups:
             backup_list.append((backup.node_name.tobytes().decode(), backup.nonce.tobytes().decode()))
             bak = bak + backup.node_name.tobytes().decode() + ","
-        self.logger.info(f"[MSG][ADD]     nam={node_name};fil={file_name};cop={desired_copies};pck={packets};siz={size};slf={1 if is_stored_by_origin else 0};bak={bak}")
+        self.logger.info(f"[MSG][ADD]      nam={node_name};fil={file_name};cop={desired_copies};pck={packets};siz={size};bak={bak}")
         global_view.add_file(
             file_name,
             size,

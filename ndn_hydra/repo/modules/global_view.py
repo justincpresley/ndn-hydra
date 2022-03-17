@@ -35,15 +35,15 @@ CREATE TABLE IF NOT EXISTS files (
     is_deleted INTEGER NOT NULL DEFAULT 0
 );
 """
-sql_create_stored_by_tables = """
-CREATE TABLE IF NOT EXISTS stored_by (
+sql_create_stores_tables = """
+CREATE TABLE IF NOT EXISTS stores (
     id INTEGER PRIMARY KEY,
     file_name TEXT NOT NULL,
     node_name NOT NULL
 );
 """
-sql_create_backuped_by_tables = """
-CREATE TABLE IF NOT EXISTS backuped_by (
+sql_create_backups_tables = """
+CREATE TABLE IF NOT EXISTS backups (
     id INTEGER PRIMARY KEY,
     file_name TEXT NOT NULL,
     node_name NOT NULL,
@@ -75,7 +75,7 @@ class GlobalView:
             return sqlite3.connect(self.db)
         except Error as e:
             print(e)
-            return None
+        return None
     def __execute_sql(self, sql:str):
         result = []
         conn = self.__get_connection()
@@ -105,27 +105,27 @@ class GlobalView:
     def __create_tables(self):
         self.__execute_sql(sql_create_nodes_tables)
         self.__execute_sql(sql_create_files_tables)
-        self.__execute_sql(sql_create_stored_by_tables)
-        self.__execute_sql(sql_create_backuped_by_tables)
+        self.__execute_sql(sql_create_stores_tables)
+        self.__execute_sql(sql_create_backups_tables)
         self.__execute_sql(sql_create_pending_stores_tables)
 
-    def __rerank_backuped_by(self, file_name:str, node_name:str):
-        sql_get_backup = """
+    def __rerank_backups(self, file_name:str, node_name:str):
+        sql = """
         SELECT DISTINCT file_name, node_name, rank
-        FROM backuped_by
+        FROM backups
         WHERE (file_name = ?) AND (node_name = ?)
         """
-        result = self.__execute_sql_qmark(sql_get_backup, (file_name, node_name))
+        result = self.__execute_sql_qmark(sql, (file_name, node_name))
         rank = -1
         if len(result) == 1:
             rank = result[0][2]
         if rank != -1:
-            sql_rerank = """
-            UPDATE backuped_by
+            sql = """
+            UPDATE backups
             SET rank = rank - 1
             WHERE (file_name = ?) AND (rank > ?)
             """
-            self.__execute_sql_qmark(sql_rerank, (file_name, rank))
+            self.__execute_sql_qmark(sql, (file_name, rank))
 
     def get_node(self, node_name:str):
         sql = """
@@ -133,16 +133,15 @@ class GlobalView:
         FROM nodes
         WHERE node_name = ?
         """
-        result = self.__execute_sql_qmark(sql, (node_name, ))
+        result = self.__execute_sql_qmark(sql, (node_name,))
         if len(result) != 1:
             return None
-        else:
-            return {
-                'node_name': result[0][0],
-                'favor': result[0][1],
-                'state_vector': result[0][2],
-                'expired': False if (result[0][3] == 0) else True
-            }
+        return {
+            'node_name': result[0][0],
+            'favor': result[0][1],
+            'state_vector': result[0][2],
+            'expired': False if (result[0][3] == 0) else True
+        }
 
     def get_nodes(self, include_expired:bool=False):
         if include_expired:
@@ -182,41 +181,41 @@ class GlobalView:
         SET expired = 0
         WHERE node_name = ?
         """
-        self.__execute_sql_qmark(sql, (node_name, ))
+        self.__execute_sql_qmark(sql, (node_name,))
 
     def expire_node(self, node_name:str):
-        # stored_by
-        sql_stored_by = """
-        DELETE FROM stored_by WHERE node_name = ?
+        # stores
+        sql = """
+        DELETE FROM stores WHERE node_name = ?
         """
-        self.__execute_sql_qmark(sql_stored_by, (node_name, ))
-        # backuped_by
-        sql_get_backups = """
+        self.__execute_sql_qmark(sql, (node_name,))
+        # backups
+        sql = """
         SELECT file_name, node_name
-        FROM backuped_by
+        FROM backups
         WHERE node_name = ?
         """
-        backups = self.__execute_sql_qmark(sql_get_backups, (node_name, ))
+        backups = self.__execute_sql_qmark(sql, (node_name,))
         for backup in backups:
             # rerank
-            self.__rerank_backuped_by(backup[0], node_name)
+            self.__rerank_backups(backup[0], node_name)
         # remove
-        sql_delete_backuped_by = """
-        DELETE FROM backuped_by WHERE node_name = ?
+        sql = """
+        DELETE FROM backups WHERE node_name = ?
         """
-        self.__execute_sql_qmark(sql_delete_backuped_by, (node_name, ))
+        self.__execute_sql_qmark(sql, (node_name,))
         # pending_stores
-        sql_pending_stores = """
+        sql = """
         DELETE FROM pending_stores WHERE node_name = ?
         """
-        self.__execute_sql_qmark(sql_pending_stores, (node_name, ))
-        # expire session
+        self.__execute_sql_qmark(sql, (node_name,))
+        # expire node
         sql = """
         UPDATE nodes
         SET expired = 1
         WHERE node_name = ?
         """
-        self.__execute_sql_qmark(sql, (node_name, ))
+        self.__execute_sql_qmark(sql, (node_name,))
 
     def __split_digests(self, digests:bytes, size:int):
         digests_bytes = bytes(digests)
@@ -229,23 +228,22 @@ class GlobalView:
         FROM files
         WHERE file_name = ?
         """
-        result = self.__execute_sql_qmark(sql, (file_name, ))
+        result = self.__execute_sql_qmark(sql, (file_name,))
         if len(result) != 1:
             return None
-        else:
-            return {
-                'file_name': result[0][0],
-                'desired_copies': result[0][1],
-                'packets': result[0][2],
-                'size': result[0][3],
-                'origin_node_name': result[0][4],
-                'fetch_path': result[0][5],
-                'state_vector': result[0][6],
-                'is_deleted': False if (result[0][7] == 0) else True,
-                'digests': self.__split_digests(result[0][8], 2),
-                'stored_bys': self.get_stored_bys(result[0][0]),
-                'backuped_bys': self.get_backuped_bys(result[0][0])
-            }
+        return {
+            'file_name': result[0][0],
+            'desired_copies': result[0][1],
+            'packets': result[0][2],
+            'size': result[0][3],
+            'origin_node_name': result[0][4],
+            'fetch_path': result[0][5],
+            'state_vector': result[0][6],
+            'is_deleted': False if (result[0][7] == 0) else True,
+            'digests': self.__split_digests(result[0][8], 2),
+            'stores': self.get_stores(result[0][0]),
+            'backups': self.get_backups(result[0][0])
+        }
 
     def get_files(self, including_deleted:bool=False):
         if including_deleted:
@@ -274,8 +272,8 @@ class GlobalView:
                 'state_vector': result[6],
                 'is_deleted': False if (result[7] == 0) else True,
                 'digests': self.__split_digests(result[8], 2),
-                'stored_bys': self.get_stored_bys(result[0]),
-                'backuped_bys': self.get_backuped_bys(result[0])
+                'stores': self.get_stores(result[0]),
+                'backups': self.get_backups(result[0])
             })
         return files
 
@@ -283,7 +281,7 @@ class GlobalView:
         files = self.get_files()
         underreplicated_files = []
         for file in files:
-            if len(file['stored_bys']) < file['desired_copies']:
+            if len(file['stores']) < file['desired_copies']:
                 underreplicated_files.append(file)
         return underreplicated_files
 
@@ -291,12 +289,11 @@ class GlobalView:
         files = self.get_files()
         backupable_files = []
         for file in files:
-            if( len(file['stored_bys']) + len(file['backuped_bys']) ) < (file['desired_copies'] * 2):
+            if( len(file['stores']) + len(file['backups']) ) < (file['desired_copies'] * 2):
                 backupable_files.append(file)
         return backupable_files
 
-    def add_file(self, file_name:str, size:int, origin_node_name:str, fetch_path:str, state_vector:int,
-                digests:bytes, packets:int=1, desired_copies:int=3):
+    def add_file(self, file_name:str, size:int, origin_node_name:str, fetch_path:str, state_vector:int, digests:bytes, packets:int=1, desired_copies:int=3):
         sql = """
         INSERT OR IGNORE INTO files
             (file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests)
@@ -306,128 +303,124 @@ class GlobalView:
         self.__execute_sql_qmark(sql, (file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, digests))
 
     def delete_file(self, file_name:str):
-        # stored_by
-        sql_stored_by = """
-        DELETE FROM stored_by WHERE file_name = ?
+        # stores
+        sql = """
+        DELETE FROM stores WHERE file_name = ?
         """
-        self.__execute_sql_qmark(sql_stored_by, (file_name, ))
-
-        # backuped_by
-        sql_backuped_by = """
-        DELETE FROM backuped_by WHERE file_name = ?
+        self.__execute_sql_qmark(sql, (file_name,))
+        # backups
+        sql = """
+        DELETE FROM backups WHERE file_name = ?
         """
-        self.__execute_sql_qmark(sql_backuped_by, (file_name, ))
-
-        # backuped_by
-        sql_get_backups = """
+        self.__execute_sql_qmark(sql, (file_name,))
+        # backups
+        sql = """
         SELECT DISTINCT file_name, node_name
-        FROM backuped_by
+        FROM backups
         WHERE file_name = ?
         """
-        backups = self.__execute_sql_qmark(sql_get_backups, (file_name, ))
+        backups = self.__execute_sql_qmark(sql, (file_name,))
         for backup in backups:
             # rerank
-            self.__rerank_backuped_by(file_name, backup[1])
+            self.__rerank_backups(file_name, backup[1])
         # remove
-        sql_delete_backuped_by = """
-        DELETE FROM backuped_by WHERE file_name = ?
+        sql = """
+        DELETE FROM backups WHERE file_name = ?
         """
-        self.__execute_sql_qmark(sql_delete_backuped_by, (file_name, ))
-
+        self.__execute_sql_qmark(sql, (file_name,))
         # pending_stores
-        sql_pending_stores = """
+        sql = """
         DELETE FROM pending_stores WHERE file_name = ?
         """
-        self.__execute_sql_qmark(sql_pending_stores, (file_name, ))
-
+        self.__execute_sql_qmark(sql, (file_name,))
         # insertions
-        sql_files = """
+        sql = """
         UPDATE files
         SET is_deleted = 1
         WHERE file_name = ?
         """
-        self.__execute_sql_qmark(sql_files, (file_name, ))
+        self.__execute_sql_qmark(sql, (file_name,))
 
     def store_file(self, file_name:str, node_name:str):
         # rerank backuped_by
-        self.__rerank_backuped_by(file_name, node_name)
+        self.__rerank_backups(file_name, node_name)
         # remove from backuped_by
-        sql_delete_backuped_by = """
-        DELETE FROM backuped_by WHERE (file_name = ?) AND (node_name = ?)
+        sql = """
+        DELETE FROM backups WHERE (file_name = ?) AND (node_name = ?)
         """
-        self.__execute_sql_qmark(sql_delete_backuped_by, (file_name, node_name))
+        self.__execute_sql_qmark(sql, (file_name, node_name))
         # add to stored_by
-        sql_add_to_stored_by = """
-        INSERT OR IGNORE INTO stored_by
+        sql = """
+        INSERT OR IGNORE INTO stores
             (file_name, node_name)
         VALUES
             (?, ?)
         """
-        self.__execute_sql_qmark(sql_add_to_stored_by, (file_name, node_name))
+        self.__execute_sql_qmark(sql, (file_name, node_name))
 
     def set_backups(self, file_name:str, backup_list:List[Tuple[str, str]]):
         # remove previous backups
-        sql_delete_backuped_by = """
-        DELETE FROM backuped_by WHERE (file_name = ?)
+        sql = """
+        DELETE FROM backups WHERE (file_name = ?)
         """
-        self.__execute_sql_qmark(sql_delete_backuped_by, (file_name, ))
+        self.__execute_sql_qmark(sql, (file_name,))
         # add backups
         length = len(backup_list)
         for rank in range(length):
             backup = backup_list[rank]
-            sql_add_backup = """
-            INSERT OR IGNORE INTO backuped_by
+            sql = """
+            INSERT OR IGNORE INTO backups
                 (file_name, node_name, rank, nonce)
             VALUES
                 (?, ?, ?, ?)
             """
-            self.__execute_sql_qmark(sql_add_backup, (file_name, backup[0], rank, backup[1]))
+            self.__execute_sql_qmark(sql, (file_name, backup[0], rank, backup[1]))
 
     def add_backup(self, file_name:str, node_name:str, rank:int, nonce:str):
         # delete all backups with larger rank value
-        sql_delete_backuped_by = """
-        DELETE FROM backuped_by
+        sql = """
+        DELETE FROM backups
         WHERE (file_name = ?) AND rank >= ?
         """
-        self.__execute_sql_qmark(sql_delete_backuped_by, (file_name, rank))
+        self.__execute_sql_qmark(sql, (file_name, rank))
         # add this backup
-        sql_add_backup = """
-        INSERT OR IGNORE INTO backuped_by
+        sql = """
+        INSERT OR IGNORE INTO backups
             (file_name, node_name, rank, nonce)
         VALUES
             (?, ?, ?, ?)
         """
-        self.__execute_sql_qmark(sql_add_backup, (file_name, node_name, rank, nonce))
+        self.__execute_sql_qmark(sql, (file_name, node_name, rank, nonce))
 
-    def get_stored_bys(self, file_name:str):
+    def get_stores(self, file_name:str):
         sql = """
         SELECT DISTINCT file_name, node_name
-        FROM stored_by
+        FROM stores
         WHERE file_name = ?
         ORDER BY node_name ASC
         """
-        results = self.__execute_sql_qmark(sql, (file_name, ))
-        stored_bys = []
+        results = self.__execute_sql_qmark(sql, (file_name,))
+        stores = []
         for result in results:
-            stored_bys.append(result[1])
-        return stored_bys
+            stores.append(result[1])
+        return stores
 
-    def get_backuped_bys(self, file_name:str):
+    def get_backups(self, file_name:str):
         sql = """
         SELECT DISTINCT file_name, node_name, rank, nonce
-        FROM backuped_by
+        FROM backups
         WHERE file_name = ?
         ORDER BY rank
         """
-        results = self.__execute_sql_qmark(sql, (file_name, ))
-        backuped_bys = []
+        results = self.__execute_sql_qmark(sql, (file_name,))
+        backups = []
         for result in results:
-            backuped_bys.append({
+            backups.append({
                 'node_name': result[1],
                 'rank': result[2],
                 'nonce': result[3]
             })
-        return backuped_bys
+        return backups
 
     def get_pending_stores(self, file_name:str):
         sql = """
@@ -435,7 +428,7 @@ class GlobalView:
         FROM pending_stores
         WHERE file_name = ?
         """
-        results = self.__execute_sql_qmark(sql, (file_name, ))
+        results = self.__execute_sql_qmark(sql, (file_name,))
         pending_stores = []
         for result in results:
             pending_stores.append(result[1])

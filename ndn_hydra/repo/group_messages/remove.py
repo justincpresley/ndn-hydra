@@ -31,7 +31,7 @@ class RemoveMessage(SpecificMessage):
         node_name = self.message.node_name.tobytes().decode()
         file_name = Name.to_str(self.message.file_name)
 
-        self.logger.info(f"[MSG][REMOVE]  fil={file_name}")
+        self.logger.info(f"[MSG][REMOVE]   fil={file_name}")
         file = global_view.get_file(file_name)
         if (file == None) or (file['is_deleted'] == True):
             self.logger.warning('nothing to remove')
