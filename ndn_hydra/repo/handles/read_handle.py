@@ -115,7 +115,7 @@ class ReadHandle(object):
     def _get_file_name_from_interest(self, int_name):
         file_name = int_name[len(self.repo_prefix):]
         if file_name[0:len(self.node_comp)] == self.node_comp:
-            return file_name[(len(self.node_comp)+len("/" + self.node_name)+len(self.command_comp)):]
+            return file_name[(len(self.node_comp)+len(self.node_name)+len(self.command_comp)):]
         else:
             return file_name[(len(self.command_comp)):]
 

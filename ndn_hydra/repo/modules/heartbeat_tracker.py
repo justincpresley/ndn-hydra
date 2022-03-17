@@ -10,6 +10,7 @@
 # -------------------------------------------------------------
 
 import time
+import logging
 from ndn_hydra.repo.modules import *
 
 class HeartbeatTracker:
@@ -18,7 +19,7 @@ class HeartbeatTracker:
         def __init__(self) -> None:
             self.past_beat, self.cycles, self.alive = 0, 0, False
     def __init__(self, nn:str, gv:GlobalView, lp:int, hr:int, tr:int, btf:int, btr:int):
-        self.hearts,self.globalview,self.node_name,self.loop_period,self.heartbeat_rate,self.tracker_rate,self.beats_to_fail,self.beats_to_renew = {},gv,nn,lp,hr,tr,btf,btr
+        self.hearts,self.globalview,self.node_name,self.loop_period,self.heartbeat_rate,self.tracker_rate,self.beats_to_fail,self.beats_to_renew,self.logger = {},gv,nn,lp,hr,tr,btf,btr,logging.getLogger()
     def reset(self, node_name:str):
         try:
             heart = self.hearts[node_name]
