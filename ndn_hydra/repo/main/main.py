@@ -49,39 +49,30 @@ def process_cmd_opts():
                 print("")
                 print("Thank you for using hydra.")
             sys.exit(0)
-    def process_prefix(input_string: str):
+    def process_name(input_string: str):
         if input_string[-1] == "/":
             input_string = input_string[:-1]
         if input_string[0] != "/":
             input_string = "/" + input_string
         return input_string
-    def process_others(input_string: str):
-        if input_string[-1] == "/":
-            input_string = input_string[:-1]
-        if input_string[0] == "/":
-            input_string = input_string[1:]
-        return input_string
     def parse_cmd_opts():
         # Command Line Parser
         parser = ArgumentParser(prog="ndn-hydra-repo",add_help=False,allow_abbrev=False)
-
         # Adding all Command Line Arguments
         parser.add_argument("-h","--help",action="store_true",dest="help",default=False,required=False)
         parser.add_argument("-v","--version",action="store_true",dest="version",default=False,required=False)
         parser.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True)
         parser.add_argument("-n","--nodename",action="store",dest="node_name",required=True)
-
         # Interpret Informational Arguments
         interpret_version()
         interpret_help()
-
         # Getting all Arguments
         vars = parser.parse_args()
 
         # Process args
         args = {}
-        args["repo_prefix"] = process_prefix(vars.repo_prefix)
-        args["node_name"] = process_others(vars.node_name)
+        args["repo_prefix"] = process_name(vars.repo_prefix)
+        args["node_name"] = process_name(vars.node_name)
         workpath = "{home}/.ndn/repo{repo_prefix}/{node_name}".format(
             home=os.path.expanduser("~"),
             repo_prefix=args["repo_prefix"],
@@ -155,7 +146,7 @@ class HydraSessionThread(Thread):
         # start listening
         try:
             app.run_forever(after_start=start_main_loop())
-        except FileNotFoundError:
+        except (FileNotFoundError, ConnectionRefusedError):
             print('Error: could not connect to NFD.')
             sys.exit()
 
@@ -167,8 +158,11 @@ def main() -> int:
         'global_view_path': None,
         'svs_storage_path': None,
         'logging_path': None,
-        #'svs_cache_others': True,
-        'period': 20,
+        'loop_period': 5000,
+        'tracker_rate': 25000,
+        'heartbeat_rate': 20000,
+        'beats_to_renew': 3,
+        'beats_to_fail': 3,
         'replication_degree': 2
     }
     cmd_args = process_cmd_opts()

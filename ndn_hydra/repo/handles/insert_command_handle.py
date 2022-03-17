@@ -90,11 +90,6 @@ class InsertCommandHandle(ProtocolHandle):
             self.logger.warning("not enough nodes") # TODO: notify the client?
             return
 
-        # generate unique insertion_id
-        #insertion_id = secrets.token_hex(8)
-        #while self.global_view.get_file(insertion_id) != None:
-        #    insertion_id = secrets.token_hex(8)
-
         # select sessions
         random.shuffle(nodes)
         picked_nodes = random.sample(nodes, (desired_copies * 2))
@@ -122,11 +117,9 @@ class InsertCommandHandle(ProtocolHandle):
             backup_list.append((node_name, nonce))
 
         # add tlv
-        expire_at = int(time.time()+(self.config['period']*2))
         favor = 1.85
         add_message = AddMessageTlv()
         add_message.node_name = self.config['node_name'].encode()
-        add_message.expire_at = expire_at
         add_message.favor = str(favor).encode()
         add_message.file = File()
         add_message.file.file_name = cmd.file.file_name
@@ -136,7 +129,6 @@ class InsertCommandHandle(ProtocolHandle):
         add_message.desired_copies = desired_copies
         add_message.fetch_path = FetchPathTlv()
         add_message.fetch_path.prefix = fetch_path
-        # add_message.is_stored_by_origin = 1 if pickself else 0
         add_message.is_stored_by_origin = 0
         add_message.backup_list = backups
         # add msg
@@ -166,14 +158,4 @@ class InsertCommandHandle(ProtocolHandle):
         bak = ""
         for backup in backup_list:
             bak = bak + backup[0] + ","
-        val = "[MSG][ADD]*    nam={nam};fil={fil};cop={cop};pck={pck};siz={siz};slf={slf};bak={bak}".format(
-            nam=self.config['node_name'],
-            fil=file_name,
-            cop=desired_copies,
-            pck=packets,
-            siz=size,
-            # slf=1 if pickself else 0,
-            slf=0,
-            bak=bak
-        )
-        self.logger.info(val)
+        self.logger.info(f"[MSG][ADD]*     nam={self.config['node_name']};fil={file_name};cop={desired_copies};pck={packets};siz={size};bak={bak}")

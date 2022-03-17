@@ -19,10 +19,8 @@ from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 class ClaimTypes:
     REQUEST = 1
     COMMITMENT = 2
-
 class ClaimMessageTypes:
     NODE_NAME = 84
-    EXPIRE_AT = 85
     FAVOR = 86
 
     TYPE = 91 # 1=request; 2=commitment
@@ -34,7 +32,6 @@ class ClaimMessageTypes:
 
 class ClaimMessageTlv(TlvModel):
     node_name = BytesField(ClaimMessageTypes.NODE_NAME)
-    expire_at = UintField(ClaimMessageTypes.EXPIRE_AT)
     favor = BytesField(ClaimMessageTypes.FAVOR)
     file_name = NameField()
     type = UintField(ClaimMessageTypes.TYPE)
@@ -48,31 +45,21 @@ class ClaimMessage(SpecificMessage):
         super(ClaimMessage, self).__init__(nid, seqno)
         self.message = ClaimMessageTlv.parse(raw_bytes)
 
-    async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
+    async def apply(self, global_view, fetch_file, svs, config):
         node_name = self.message.node_name.tobytes().decode()
-        expire_at = self.message.expire_at
         favor = float(self.message.favor.tobytes().decode())
         file_name = Name.to_str(self.message.file_name)
-        type = self.message.type
         claimer_node_name = self.message.claimer_node_name.tobytes().decode()
         claimer_nonce = self.message.claimer_nonce.tobytes().decode()
         authorizer_node_name = self.message.authorizer_node_name.tobytes().decode()
         authorizer_nonce = self.message.authorizer_nonce.tobytes().decode()
         file = global_view.get_file(file_name)
-        if type == ClaimMessageTypes.COMMITMENT:
+        if self.message.type == ClaimTypes.COMMITMENT:
             rank = len(file['backuped_bys'])
-            val = "[MSG][CLAIM.C] nam={nam};fil={fil}".format(
-                nam=claimer_node_name,
-                fil=file_name
-            )
-            self.logger.info(val)
+            self.logger.info(f"[MSG][CLAIM.C]  nam={claimer_node_name};fil={file_name}")
             global_view.add_backup(file_name, claimer_node_name, rank, claimer_nonce)
         else:
-            val = "[MSG][CLAIM.R] nam={nam};fil={fil}".format(
-                nam=claimer_node_name,
-                fil=file_name
-            )
-            self.logger.info(val)
+            self.logger.info(f"[MSG][CLAIM.R]  nam={claimer_node_name};fil={file_name}")
             if authorizer_node_name == config['node_name']:
                 from .message import MessageTlv, MessageTypes
                 commit = False
@@ -84,11 +71,9 @@ class ClaimMessage(SpecificMessage):
                     commit = True
                 if commit == True:
                     # claim tlv
-                    expire_at = int(time.time()+(config['period']*2))
                     favor = 1.85
                     claim_message = copy.copy(self.message)
                     claim_message.node_name = config['node_name'].encode()
-                    claim_message.expire_at = expire_at
                     claim_message.favor = str(favor).encode()
                     claim_message.type = ClaimTypes.COMMITMENT
                     # claim msg
@@ -96,11 +81,5 @@ class ClaimMessage(SpecificMessage):
                     claim_message.type = MessageTypes.CLAIM
                     claim_message.value = claim_message.encode()
                     svs.publishData(claim_message.encode())
-                    val = "[MSG][CLAIM.C]*nam={nam};fil={fil}".format(
-                        nam=claimer_node_name,
-                        fil=file_name
-                    )
-                    self.logger.info(val)
-        # update session
-        global_view.update_node(node_name, expire_at, favor, self.seqno)
-        return
+                    self.logger.info(f"[MSG][CLAIM.C]* nam={claimer_node_name};fil={file_name}")
+        global_view.update_node(node_name, favor, self.seqno)

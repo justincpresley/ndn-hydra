@@ -101,7 +101,7 @@ def parse_hydra_cmd_opts() -> Namespace:
 
     # Getting all Arguments
     vars = parser.parse_args()
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     # Configure Arguments
     if vars.function == "insert":
         if not os.path.isfile(vars.path):
@@ -160,7 +160,7 @@ def main() -> None:
     app = NDNApp()
     try:
         app.run_forever(after_start=run_hydra_client(app, args))
-    except FileNotFoundError:
+    except (FileNotFoundError, ConnectionRefusedError):
         print('Error: could not connect to NFD.')
         sys.exit()
 

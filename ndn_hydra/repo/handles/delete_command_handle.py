@@ -59,7 +59,6 @@ class DeleteCommandHandle(ProtocolHandle):
         # await self._schedule_announce_process_status(period=3)
 
     def _on_delete_msg(self, msg):
-
         try:
             cmd = DeleteCommand.parse(msg)
             # if cmd.name == None:
@@ -77,23 +76,16 @@ class DeleteCommandHandle(ProtocolHandle):
         self.logger.info("[cmd][DELETE] file {}".format(file_name))
         file = self.global_view.get_file(file_name)
         if file == None:
-            self.logger.warning("file does not exist")
+            self.logger.debug("file does not exist")
             return
-        # add tlv
-        expire_at = int(time.time()+(self.config['period']*2))
         favor = 1.85
         remove_message = RemoveMessageTlv()
         remove_message.node_name = self.config['node_name'].encode()
-        remove_message.expire_at = expire_at
         remove_message.favor = str(favor).encode()
         remove_message.file_name = cmd.file_name
-        # add msg
         message = Message()
         message.type = MessageTypes.REMOVE
         message.value = remove_message.encode()
         self.global_view.delete_file(file_name)
         self.main_loop.svs.publishData(message.encode())
-        val = "[MSG][REMOVE]* fil={fil}".format(
-            fil=file_name
-        )
-        self.logger.info(val)
+        self.logger.info(f"[MSG][REMOVE]*  fil={file_name}")

@@ -38,7 +38,7 @@ class QueryHandle(object):
         self.node_comp = "/node"
 
         self.listen(Name.from_str(self.repo_prefix + self.command_comp))
-        self.listen(Name.from_str(self.repo_prefix + self.node_comp  + "/" + self.node_name + self.command_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.node_comp  + self.node_name + self.command_comp))
 
     def listen(self, prefix):
         """
@@ -63,6 +63,12 @@ class QueryHandle(object):
         if querytype == "nodes":
             self.logger.info(f'[cmd][QUERY] query received: nodes')
             nodes = self.global_view.get_nodes()
+            nodenamestrlist = " ".join([key["node_name"] for key in nodes])
+            self.app.put_data(int_name, content=bytes(nodenamestrlist.encode()), freshness_period=3000, content_type=ContentType.BLOB)
+            return
+        elif querytype == "exnodes":
+            self.logger.info(f'[cmd][QUERY] query received: exnodes')
+            nodes = self.global_view.get_nodes(True)
             nodenamestrlist = " ".join([key["node_name"] for key in nodes])
             self.app.put_data(int_name, content=bytes(nodenamestrlist.encode()), freshness_period=3000, content_type=ContentType.BLOB)
             return
@@ -120,6 +126,6 @@ class QueryHandle(object):
     def _get_query_from_interest(self, int_name):
         query = int_name[len(self.repo_prefix):]
         if query[0:len(self.node_comp)] == self.node_comp:
-            return query[(len(self.node_comp)+len("/" + self.node_name)+len(self.command_comp)):]
+            return query[(len(self.node_comp)+len(self.node_name)+len(self.command_comp)):]
         else:
             return query[(len(self.command_comp)):]

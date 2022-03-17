@@ -18,7 +18,6 @@ from ndn_hydra.repo.protocol.base_models import File
 
 class AddMessageTypes:
     NODE_NAME = 84
-    EXPIRE_AT = 85
     FAVOR = 86
 
     FILE = 91
@@ -39,7 +38,6 @@ class BackupTlv(TlvModel):
 
 class AddMessageTlv(TlvModel):
     node_name = BytesField(AddMessageTypes.NODE_NAME)
-    expire_at = UintField(AddMessageTypes.EXPIRE_AT)
     favor = BytesField(AddMessageTypes.FAVOR)
     file = ModelField(AddMessageTypes.FILE, File)
 
@@ -55,7 +53,6 @@ class AddMessage(SpecificMessage):
 
     async def apply(self, global_view: GlobalView, fetch_file: Callable, svs, config):
         node_name = self.message.node_name.tobytes().decode()
-        expire_at = self.message.expire_at
         favor = float(self.message.favor.tobytes().decode())
         file = self.message.file
         file_name = Name.to_str(file.file_name)
@@ -71,16 +68,7 @@ class AddMessage(SpecificMessage):
         for backup in backups:
             backup_list.append((backup.node_name.tobytes().decode(), backup.nonce.tobytes().decode()))
             bak = bak + backup.node_name.tobytes().decode() + ","
-        val = "[MSG][ADD]     nam={nam};fil={fil};cop={cop};pck={pck};siz={siz};slf={slf};bak={bak}".format(
-            nam=node_name,
-            fil=file_name,
-            cop=desired_copies,
-            pck=packets,
-            siz=size,
-            slf=1 if is_stored_by_origin else 0,
-            bak=bak
-        )
-        self.logger.info(val)
+        self.logger.info(f"[MSG][ADD]      nam={node_name};fil={file_name};cop={desired_copies};pck={packets};siz={size};bak={bak}")
         global_view.add_file(
             file_name,
             size,
@@ -140,5 +128,4 @@ class AddMessage(SpecificMessage):
             # )
             # self.logger.info(val)
         # update session
-        global_view.update_node(node_name, expire_at, favor, self.seqno)
-        return
+        global_view.update_node(node_name, favor, self.seqno)
