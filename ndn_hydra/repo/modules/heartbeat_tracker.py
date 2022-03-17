@@ -17,8 +17,8 @@ class HeartbeatTracker:
         __slots__ = ('past_beat','cycles','alive')
         def __init__(self) -> None:
             self.past_beat, self.cycles, self.alive = 0, 0, False
-    def __init__(self, node_name:str, globalview:GlobalView, loop_period:int, heartbeat_rate:int, tracker_rate:int):
-        self.hearts,self.loop_period,self.heartbeat_rate,self.tracker_rate,self.globalview,self.node_name = {},loop_period,heartbeat_rate,tracker_rate,globalview,node_name
+    def __init__(self, nn:str, gv:GlobalView, lp:int, hr:int, tr:int, btf:int, btr:int):
+        self.hearts,self.globalview,self.node_name,self.loop_period,self.heartbeat_rate,self.tracker_rate,self.beats_to_fail,self.beats_to_renew = {},gv,nn,lp,hr,tr,btf,btr
     def reset(self, node_name:str):
         try:
             heart = self.hearts[node_name]
@@ -30,32 +30,30 @@ class HeartbeatTracker:
             heart.cycles = 0
         else:
             heart.cycles += 1
-            if heart.cycles >= 3:
+            if heart.cycles > self.beats_to_renew:
                 heart.cycles = 0
                 heart.alive = True
                 print(f"renewing {node_name}")
                 self.globalview.renew_node(node_name)
     def detect(self):
         for node_name, heart in self.hearts.items():
-            missed = True if (time.perf_counter()*1000) - heart.past_beat > self.tracker_rate else False
-            if not heart.alive and missed:
+            time_past = (time.perf_counter()*1000) - heart.past_beat
+            if not heart.alive and time_past > self.tracker_rate:
                 heart.cycles = 0
-            elif missed:
-                # TODO: this is broken, timer does not get reset so this will get hit everytime after the first one
-                heart.cycles += 1
-                if heart.cycles >= 3:
+            elif time_past > self.tracker_rate:
+                heart.cycles = time_past // self.tracker_rate
+                if heart.cycles > self.beats_to_fail:
                     heart.cycles = 0
                     heart.alive = False
                     self.globalview.expire_node(node_name)
                     print(f"expiring {node_name}")
     def beat(self):
         try:
-            heart = self.hearts[self.node_name]
-            temp = (time.perf_counter()*1000) - heart.past_beat
-            if temp >= self.heartbeat_rate:
+            time_past = (time.perf_counter()*1000) - self.hearts[self.node_name].past_beat
+            if time_past >= self.heartbeat_rate:
                 return True
             else:
-                if (temp+self.loop_period) > self.heartbeat_rate:
+                if (time_past+self.loop_period) > self.heartbeat_rate:
                     return True
                 else:
                     pass

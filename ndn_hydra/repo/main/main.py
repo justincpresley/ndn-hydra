@@ -146,7 +146,7 @@ class HydraSessionThread(Thread):
         # start listening
         try:
             app.run_forever(after_start=start_main_loop())
-        except FileNotFoundError:
+        except (FileNotFoundError, ConnectionRefusedError):
             print('Error: could not connect to NFD.')
             sys.exit()
 
@@ -161,6 +161,8 @@ def main() -> int:
         'loop_period': 5000,
         'tracker_rate': 25000,
         'heartbeat_rate': 20000,
+        'beats_to_renew': 3,
+        'beats_to_fail': 3,
         'replication_degree': 2
     }
     cmd_args = process_cmd_opts()

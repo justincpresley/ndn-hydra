@@ -160,7 +160,7 @@ def main() -> None:
     app = NDNApp()
     try:
         app.run_forever(after_start=run_hydra_client(app, args))
-    except FileNotFoundError:
+    except (FileNotFoundError, ConnectionRefusedError):
         print('Error: could not connect to NFD.')
         sys.exit()
 
