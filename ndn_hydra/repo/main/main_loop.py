@@ -138,11 +138,7 @@ class MainLoop:
             message.type = MessageTypes.CLAIM
             message.value = claim_message.encode()
             self.svs.publishData(message.encode())
-            val = "[MSG][CLAIM.R]*nam={nam};fil={fil}".format(
-                nam=self.config['node_name'],
-                fil=backupable_file['file_name']
-            )
-            self.logger.info(val)
+            self.logger.info(f"[MSG][CLAIM.R]*nam={self.config['node_name']};fil={backupable_file['file_name']}")
 
 
 
@@ -161,11 +157,7 @@ class MainLoop:
 
             self.global_view.store_file(file_name, self.config['node_name'])
             self.svs.publishData(message.encode())
-            val = "[MSG][STORE]*  nam={nam};fil={fil}".format(
-                nam=self.config['node_name'],
-                fil=file_name
-            )
-            self.logger.info(val)
+            self.logger.info(f"[MSG][STORE]*  nam={self.config['node_name']};fil={file_name}")
 
     def fetch_file(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
         self.logger.info(f"[ACT][FETCH]*  fil={file_name};pcks={packets};fetch_path={fetch_path}")
