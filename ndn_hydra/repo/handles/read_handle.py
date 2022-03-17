@@ -84,7 +84,7 @@ class ReadHandle(object):
             if data_bytes == None:
                 return
 
-            self.logger.info(f'Read handle: serve data {Name.to_str(int_name)}')
+            self.logger.debug(f'Read handle: serve data {Name.to_str(int_name)}')
             _, _, content, _ = parse_data(data_bytes)
             # print("serve"+file_name + segment_comp+"   "+Name.to_str(name))
             final_id = Component.from_number(int(self.global_view.get_file(file_name)["packets"])-1, Component.TYPE_SEGMENT)
@@ -97,7 +97,7 @@ class ReadHandle(object):
 
             # nack due to lack of avaliability
             self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
-            self.logger.info(f'Read handle: data not found {Name.to_str(int_name)}')
+            self.logger.debug(f'Read handle: data not found {Name.to_str(int_name)}')
             return
         else:
             if segment_comp == "/seg=0":
@@ -108,8 +108,8 @@ class ReadHandle(object):
             link_content = bytes(new_name.encode())
             final_id = Component.from_number(int(self.global_view.get_file(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)
-            self.logger.info(f'Read handle: redirected {Name.to_str(int_name)}')
-            self.logger.info(f'Read handle: new name {new_name}')
+            self.logger.debug(f'Read handle: redirected {Name.to_str(int_name)}')
+            self.logger.debug(f'Read handle: new name {new_name}')
             return
 
     def _get_file_name_from_interest(self, int_name):

@@ -110,14 +110,12 @@ class GlobalView:
         self.__execute_sql(sql_create_pending_stores_tables)
 
     def __rerank_backuped_by(self, file_name:str, node_name:str):
-        # check rank
         sql_get_backup = """
         SELECT DISTINCT file_name, node_name, rank
         FROM backuped_by
         WHERE (file_name = ?) AND (node_name = ?)
         """
         result = self.__execute_sql_qmark(sql_get_backup, (file_name, node_name))
-        # return result
         rank = -1
         if len(result) == 1:
             rank = result[0][2]
