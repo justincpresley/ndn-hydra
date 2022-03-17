@@ -9,3 +9,4 @@
 
 from .command_table import CommandTable, InsertCommandBlock, DeleteCommandBlock
 from .global_view import GlobalView
+from .heartbeat_tracker import HeartbeatTracker

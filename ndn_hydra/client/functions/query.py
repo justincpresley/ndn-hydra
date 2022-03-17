@@ -47,6 +47,10 @@ class HydraQueryClient(object):
                  print(f'List of All Node Names')
                  print(f'{bytes(content).decode().split()}')
                  return
+             elif querytype == "exnodes":
+                 print(f'List of All Expired Node Names')
+                 print(f'{bytes(content).decode().split()}')
+                 return
              elif querytype == "files":
                  filelist = FileList.parse(content)
                  counter = 1

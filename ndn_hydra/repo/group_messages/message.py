@@ -20,7 +20,6 @@ from ndn_hydra.repo.group_messages.remove import RemoveMessage
 from ndn_hydra.repo.group_messages.store import StoreMessage
 from ndn_hydra.repo.group_messages.claim import ClaimMessage
 from ndn_hydra.repo.group_messages.heartbeat import HeartbeatMessage
-from ndn_hydra.repo.group_messages.expire import ExpireMessage
 
 class MessageTypes:
     ADD = 1
@@ -28,7 +27,6 @@ class MessageTypes:
     STORE = 3
     CLAIM = 4
     HEARTBEAT = 5
-    EXPIRE = 6
 
 class Message(TlvModel):
     type = UintField(HydraTlvTypes.MESSAGE_TYPE)
@@ -47,7 +45,5 @@ class Message(TlvModel):
             return ClaimMessage(nid, seqno, message_bytes)
         elif message_type == MessageTypes.HEARTBEAT:
             return HeartbeatMessage(nid, seqno, message_bytes)
-        elif message_type == MessageTypes.EXPIRE:
-            return ExpireMessage(nid, seqno, message_bytes)
         else:
             return None

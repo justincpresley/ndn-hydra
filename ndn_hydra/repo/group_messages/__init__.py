@@ -11,7 +11,6 @@ from .message import *
 from .specific_message import *
 from .add import *
 from .claim import *
-from .expire import *
 from .heartbeat import *
 from .remove import *
 from .store import *

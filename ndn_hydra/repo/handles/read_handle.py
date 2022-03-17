@@ -41,7 +41,7 @@ class ReadHandle(object):
         # config file needed
 
         self.listen(Name.from_str(self.repo_prefix + self.command_comp))
-        self.listen(Name.from_str(self.repo_prefix + self.node_comp  + "/" + self.node_name + self.command_comp))
+        self.listen(Name.from_str(self.repo_prefix + self.node_comp  + self.node_name + self.command_comp))
 
     def listen(self, prefix):
         """
@@ -104,7 +104,7 @@ class ReadHandle(object):
                 self.logger.info(f'[cmd][FETCH] linked to another node in the repo')
 
             # create a link to a node who has the content
-            new_name = self.repo_prefix + self.node_comp + "/" + best_id + self.command_comp + file_name
+            new_name = self.repo_prefix + self.node_comp + best_id + self.command_comp + file_name
             link_content = bytes(new_name.encode())
             final_id = Component.from_number(int(self.global_view.get_file(file_name)["packets"])-1, Component.TYPE_SEGMENT)
             self.app.put_data(int_name, content=link_content, content_type=ContentType.LINK, final_block_id=final_id)
