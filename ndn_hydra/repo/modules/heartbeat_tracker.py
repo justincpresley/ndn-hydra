@@ -41,6 +41,7 @@ class HeartbeatTracker:
             if not heart.alive and missed:
                 heart.cycles = 0
             elif missed:
+                # TODO: this is broken, timer does not get reset so this will get hit everytime after the first one
                 heart.cycles += 1
                 if heart.cycles >= 3:
                     heart.cycles = 0
