@@ -55,6 +55,8 @@ class MainLoop:
         aio.ensure_future(self.on_missing_svs_messages(missing_list))
     async def on_missing_svs_messages(self, missing_list):
         for i in missing_list:
+            if i.nid == self.config["node_name"]:
+                self.tracker.restart(self.config["node_name"])
             while i.lowSeqno <= i.highSeqno:
                 message_bytes = await self.svs.fetchData(Name.from_str(i.nid), i.lowSeqno)
                 if message_bytes == None:
