@@ -73,7 +73,7 @@ class DeleteCommandHandle(ProtocolHandle):
         Process delete command.
         """
         file_name = Name.to_str(cmd.file_name)
-        self.logger.info("[cmd][DELETE] file {}".format(file_name))
+        self.logger.info(f"[CMD][DELETE]   file {file_name}")
         file = self.global_view.get_file(file_name)
         if file == None:
             self.logger.debug("file does not exist")

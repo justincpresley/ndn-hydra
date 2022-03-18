@@ -39,10 +39,9 @@ class HydraDeleteClient(object):
 
       # publish msg to repo's delete topic
       await self.pb.wait_for_ready()
-      print(Name.to_str(self.repo_prefix + ['delete']))
       is_success = await self.pb.publish(self.repo_prefix + ['delete'], cmd_bytes)
       if is_success:
-          logging.info('Published an delete msg and was acknowledged by a subscriber')
+          logging.debug('Published an delete msg and was acknowledged by a subscriber')
       else:
-          logging.info('Published an delete msg but was not acknowledged by a subscriber')
+          logging.debug('Published an delete msg but was not acknowledged by a subscriber')
       return is_success

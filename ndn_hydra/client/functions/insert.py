@@ -40,15 +40,12 @@ class HydraInsertClient(object):
       # send command interest
 
       test_name = file_name + [Component.from_version(3)] + [Component.from_segment(1)]
-      print(Name.to_str(test_name))
-
       size = 0
       fetch_file_prefix = self.client_prefix + [Component.from_str("upload")] + file_name
 
       with open(path, "rb") as f:
         data = f.read()
         size = len(data)
-        print("size: {0}".format(size))
         seg_cnt = (len(data) + SEGMENT_SIZE - 1) // SEGMENT_SIZE
         packets = seg_cnt
         self.packets = [self.app.prepare_data(fetch_file_prefix + [Component.from_segment(i)],
@@ -58,7 +55,6 @@ class HydraInsertClient(object):
                         for i in range(seg_cnt)]
 
         self.digests = [bytes(blake2b(data[i*SEGMENT_SIZE:(i+1)*SEGMENT_SIZE]).digest()[:2]) for i in range(seg_cnt)]
-        print(self.digests[0].hex())
         # create a manifest (filled with digests) to limit signing
 
       print(f'Created {seg_cnt} chunks under name {Name.to_str(fetch_file_prefix)}')
@@ -86,10 +82,9 @@ class HydraInsertClient(object):
 
       # publish msg to repo's insert topic
       await self.pb.wait_for_ready()
-      print(Name.to_str(self.repo_prefix + ['insert']))
       is_success = await self.pb.publish(self.repo_prefix + ['insert'], cmd_bytes)
       if is_success:
-          logging.info('Published an insert msg and was acknowledged by a subscriber')
+          logging.debug('Published an insert msg and was acknowledged by a subscriber')
       else:
-          logging.info('Published an insert msg but was not acknowledged by a subscriber')
+          logging.debug('Published an insert msg but was not acknowledged by a subscriber')
       return is_success
