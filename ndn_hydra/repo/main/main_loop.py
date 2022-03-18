@@ -57,6 +57,7 @@ class MainLoop:
         for i in missing_list:
             if i.nid == self.config["node_name"]:
                 self.tracker.restart(self.config["node_name"])
+                continue
             while i.lowSeqno <= i.highSeqno:
                 message_bytes = await self.svs.fetchData(Name.from_str(i.nid), i.lowSeqno)
                 if message_bytes == None:
