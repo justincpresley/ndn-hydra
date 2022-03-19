@@ -60,10 +60,8 @@ class HydraInsertClient(object):
       print(f'Created {seg_cnt} chunks under name {Name.to_str(fetch_file_prefix)}')
 
       def on_interest(int_name, _int_param, _app_param):
-        if Component.get_type(int_name[-1]) == Component.TYPE_SEGMENT:
-            seg_no = Component.to_number(int_name[-1])
-        else:
-            seg_no = 0
+        seg_no = Component.to_number(int_name[-1]) if Component.get_type(int_name[-1]) == Component.TYPE_SEGMENT else 0
+        print(f'serving data for {Name.to_str(int_name)}')
         if seg_no < seg_cnt:
             self.app.put_raw_packet(self.packets[seg_no])
 
