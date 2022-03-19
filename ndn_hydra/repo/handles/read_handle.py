@@ -77,7 +77,7 @@ class ReadHandle(object):
 
         if best_id == self.node_name:
             if segment_comp == "/seg=0":
-                self.logger.info(f'[cmd][FETCH] serving file')
+                self.logger.info(f'[CMD][FETCH]    serving file')
 
             # serving my own data
             data_bytes = self.data_storage.get_packet(file_name + segment_comp, int_param.can_be_prefix)
@@ -91,14 +91,14 @@ class ReadHandle(object):
             self.app.put_data(int_name, content=content, content_type=ContentType.BLOB, final_block_id=final_id)
         elif best_id == None:
             if segment_comp == "/seg=0":
-                self.logger.info(f'[cmd][FETCH] nacked due to no file')
+                self.logger.info(f'[CMD][FETCH]    nacked due to no file')
 
             # nack due to lack of avaliability
             self.app.put_data(int_name, content=None, content_type=ContentType.NACK)
             self.logger.debug(f'Read handle: data not found {Name.to_str(int_name)}')
         else:
             if segment_comp == "/seg=0":
-                self.logger.info(f'[cmd][FETCH] linked to another node')
+                self.logger.info(f'[CMD][FETCH]    linked to another node')
 
             # create a link to a node who has the content
             new_name = self.repo_prefix + self.node_comp + best_id + self.command_comp + file_name
@@ -115,13 +115,14 @@ class ReadHandle(object):
 
     def _best_id_for_file(self, file_name: str):
         file_info = self.global_view.get_file(file_name)
+        active_nodes = set( [x['node_name'] for x in self.global_view.get_nodes()] )
         if file_name == None:
             return None
-
         on_list = file_info["stores"]
         if file_info["is_deleted"] == True or not on_list:
             return None
         if self.node_name in on_list:
             return self.node_name
         else:
+            on_list = [x for x in on_list if x in active_nodes]
             return choice(on_list)

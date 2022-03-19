@@ -80,7 +80,7 @@ class InsertCommandHandle(ProtocolHandle):
         digests = cmd.file.digests
         size = cmd.file.size
         fetch_path = cmd.fetch_path
-        self.logger.info("[cmd][INSERT] file {}".format(file_name))
+        self.logger.info(f"[CMD][INSERT]   file {file_name}")
 
         # TODO: check duplicate sequence number
 

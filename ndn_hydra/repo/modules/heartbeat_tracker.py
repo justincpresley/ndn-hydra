@@ -35,7 +35,7 @@ class HeartbeatTracker:
                 heart.cycles = 0
                 heart.alive = True
                 self.globalview.renew_node(node_name)
-                self.logger.debug(f"renewing {node_name}")
+                self.logger.info(f"[ACT][RENEW]*   nam={node_name}")
     def detect(self):
         for node_name, heart in self.hearts.items():
             time_past = (time.perf_counter()*1000) - heart.past_beat
@@ -47,7 +47,7 @@ class HeartbeatTracker:
                     heart.cycles = 0
                     heart.alive = False
                     self.globalview.expire_node(node_name)
-                    self.logger.debug(f"expiring {node_name}")
+                    self.logger.info(f"[ACT][EXPIRE]*  nam={node_name}")
     def beat(self):
         try:
             time_past = (time.perf_counter()*1000) - self.hearts[self.node_name].past_beat
@@ -61,3 +61,6 @@ class HeartbeatTracker:
         except KeyError:
             return True
         return False
+    def restart(self):
+        self.globalview.expire_node(node_name)
+        self.hearts.pop(node_name, None)
