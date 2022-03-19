@@ -61,6 +61,6 @@ class HeartbeatTracker:
         except KeyError:
             return True
         return False
-    def restart(self):
+    def restart(self, node_name:str):
         self.globalview.expire_node(node_name)
         self.hearts.pop(node_name, None)
