@@ -1,7 +1,7 @@
-ndn-svs>=0.3.15
-ndn-storage>=0.2.3
 python-ndn>=0.3
-sphinx-autodoc-typehints>=1.12.0
+ndn-storage>=0.2.3
+ndn-svs>=0.3.17
+sphinx-autodoc-typehints>=1.17.0
 sphinx-rtd-theme>=1.0.0
 PyYAML>=6.0
-pytest>=6.2.5
+pytest>=7.1.1
