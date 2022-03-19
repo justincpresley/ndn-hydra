@@ -59,7 +59,6 @@ class HydraInsertClient(object):
 
       print(f'Created {seg_cnt} chunks under name {Name.to_str(fetch_file_prefix)}')
 
-      @self.app.route(fetch_file_prefix)
       def on_interest(int_name, _int_param, _app_param):
         if Component.get_type(int_name[-1]) == Component.TYPE_SEGMENT:
             seg_no = Component.to_number(int_name[-1])
@@ -67,6 +66,8 @@ class HydraInsertClient(object):
             seg_no = 0
         if seg_no < seg_cnt:
             self.app.put_raw_packet(self.packets[seg_no])
+
+      self.app.route(fetch_file_prefix)(on_interest)
 
       file = File()
       file.file_name = file_name
