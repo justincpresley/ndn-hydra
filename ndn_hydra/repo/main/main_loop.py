@@ -199,7 +199,7 @@ class MainLoop:
         int_name = int_name = Name.normalize(fetch_path) + [Component.from_segment(0)]
         key = Name.normalize(file_name) + [Component.from_segment(0)]
         try:
-            data_name, _, _, data_bytes = await self.app.express_interest(int_name, need_raw_packet=True, can_be_prefix=False, lifetime=1000)
+            data_name, _, _, data_bytes = await self.app.express_interest(int_name, need_raw_packet=True, can_be_prefix=True, lifetime=2000)
         except InterestNack as e:
             return 0
         except InterestTimeout:
