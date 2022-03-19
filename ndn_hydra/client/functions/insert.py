@@ -16,7 +16,7 @@ from ndn.encoding import Name, Component, FormalName
 from ndn_hydra.repo.protocol.base_models import InsertCommand, File
 from ndn_hydra.repo.utils.pubsub import PubSub
 
-SEGMENT_SIZE = 8192
+SEGMENT_SIZE = 8000
 
 class HydraInsertClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:
