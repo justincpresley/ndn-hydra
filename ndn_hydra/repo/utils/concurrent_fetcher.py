@@ -53,7 +53,7 @@ async def concurrent_fetcher(app: NDNApp, name: NonStrictName, file_name: NonStr
             try:
                 #logging.info('Express Interest: {}'.format(Name.to_str(int_name)))
                 data_name, meta_info, content, data_bytes = await app.express_interest(
-                    int_name, need_raw_packet=True, can_be_prefix=False, lifetime=1000, **kwargs)
+                    int_name, need_raw_packet=True, can_be_prefix=True, lifetime=2000, **kwargs)
 
                 # Save data and update final_id
                 #logging.info('Received data: {}'.format(Name.to_str(data_name)))
