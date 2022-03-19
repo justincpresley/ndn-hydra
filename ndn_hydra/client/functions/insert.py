@@ -61,7 +61,6 @@ class HydraInsertClient(object):
 
       def on_interest(int_name, _int_param, _app_param):
         seg_no = Component.to_number(int_name[-1]) if Component.get_type(int_name[-1]) == Component.TYPE_SEGMENT else 0
-        print(f'serving data for {Name.to_str(int_name)}, {seg_no}')
         if seg_no < seg_cnt:
             self.app.put_raw_packet(self.packets[seg_no])
 
