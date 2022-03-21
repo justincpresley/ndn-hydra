@@ -94,7 +94,7 @@ async def listen(repo_prefix: Name, pb: PubSub, insert_handle: InsertCommandHand
     await insert_handle.listen(repo_prefix)
     await delete_handle.listen(repo_prefix)
 
-class HydraSessionThread(Thread):
+class HydraNodeThread(Thread):
     def __init__(self, config: Dict):
         Thread.__init__(self)
         self.config = config
@@ -132,7 +132,7 @@ class HydraSessionThread(Thread):
         # main_loop (svs)
         main_loop = MainLoop(app, self.config, global_view, data_storage, svs_storage)
 
-        # protocol (reads, commands & queries)
+        # handles (reads, commands & queries)
         read_handle = ReadHandle(app, data_storage, global_view, self.config)
         insert_handle = InsertCommandHandle(app, data_storage, pb, self.config, main_loop, global_view)
         delete_handle = DeleteCommandHandle(app, data_storage, pb, self.config, main_loop, global_view)
@@ -168,7 +168,7 @@ def main() -> int:
     cmd_args = process_cmd_opts()
     config = default_config.copy()
     config.update(cmd_args)
-    HydraSessionThread(config).start()
+    HydraNodeThread(config).start()
     return 0
 
 
