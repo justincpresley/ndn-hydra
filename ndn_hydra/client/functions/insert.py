@@ -16,7 +16,7 @@ from ndn.encoding import Name, Component, FormalName
 from ndn_hydra.repo.protocol.base_models import InsertCommand, File
 from ndn_hydra.repo.utils.pubsub import PubSub
 
-SEGMENT_SIZE = 8000
+SEGMENT_SIZE = 1000
 
 class HydraInsertClient(object):
     def __init__(self, app: NDNApp, client_prefix: FormalName, repo_prefix: FormalName) -> None:
@@ -37,17 +37,13 @@ class HydraInsertClient(object):
       """
       Insert a file associated with a file name to the remote repo
       """
-      # send command interest
-
-      test_name = file_name + [Component.from_version(3)] + [Component.from_segment(1)]
-      size = 0
+      size, seg_cnt = 0, 0
       fetch_file_prefix = self.client_prefix + [Component.from_str("upload")] + file_name
 
       with open(path, "rb") as f:
         data = f.read()
         size = len(data)
         seg_cnt = (len(data) + SEGMENT_SIZE - 1) // SEGMENT_SIZE
-        packets = seg_cnt
         self.packets = [self.app.prepare_data(fetch_file_prefix + [Component.from_segment(i)],
                                               data[i*SEGMENT_SIZE:(i+1)*SEGMENT_SIZE],
                                               freshness_period=10000,
@@ -68,7 +64,7 @@ class HydraInsertClient(object):
 
       file = File()
       file.file_name = file_name
-      file.packets = packets
+      file.packets = seg_cnt
       file.digests = self.digests
       file.size = size
       cmd = InsertCommand()
