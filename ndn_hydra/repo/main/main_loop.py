@@ -35,6 +35,7 @@ class MainLoop:
         self.logger = logging.getLogger()
         self.node_name = self.config['node_name']
         self.tracker = HeartbeatTracker(self.node_name, global_view, config['loop_period'], config['heartbeat_rate'], config['tracker_rate'], config['beats_to_fail'], config['beats_to_renew'])
+        self.fetching = []
 
     async def start(self):
         self.svs = SVSync(self.app, Name.normalize(self.config['repo_prefix'] + "/group"), Name.normalize(self.node_name), self.svs_missing_callback, storage=self.svs_storage)
@@ -92,7 +93,6 @@ class MainLoop:
                 if (backuped_by['node_name'] == self.config['node_name']) and (backuped_by['rank'] < deficit):
                     self.fetch_file(underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
 
-
     def claim(self):
         # TODO: possibility based on # active sessions and period
         if random.random() < 0.618:
@@ -144,9 +144,6 @@ class MainLoop:
             self.svs.publishData(message.encode())
             self.logger.info(f"[MSG][CLAIM.R]* nam={self.config['node_name']};fil={backupable_file['file_name']}")
 
-
-
-
     def store(self, file_name: str):
         file = self.global_view.get_file(file_name)
         if len(file['stores']) < file['desired_copies']:
@@ -164,45 +161,20 @@ class MainLoop:
             self.logger.info(f"[MSG][STORE]*   nam={self.config['node_name']};fil={file_name}")
 
     def fetch_file(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+        aio.ensure_future(self.fetch_file_helper(file_name, packets, digests, fetch_path))
+    async def fetch_file_helper(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+        if file_name in self.fetching:
+            return
+        self.fetching.append(file_name)
         self.logger.info(f"[ACT][FETCH]*   fil={file_name};pcks={packets};fetch_path={fetch_path}")
-        aio.ensure_future(self.async_fetch(file_name, packets, digests, fetch_path))
-    async def async_fetch(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
-        self.logger.debug(packets)
-        if packets > 1:
-            start = time.time()
-            inserted_packets = await self.fetch_segmented_file(file_name, packets, fetch_path)
-            if inserted_packets == packets:
-                end = time.time()
-                duration = end -start
-                self.logger.info(f"[ACT][FETCHED]* pcks={packets};duration={duration}")
-                self.store(file_name)
-        elif packets == 1:
-            inserted_packets = await self.fetch_single_file(file_name, fetch_path)
-            if inserted_packets == packets:
-                self.store(file_name)
-    async def fetch_segmented_file(self, file_name: str, packets: int, fetch_path: str):
-        semaphore = aio.Semaphore(10)
-        fetched_segments = 0
-        async for (_, _, content, data_bytes, key) in concurrent_fetcher(self.app, fetch_path, file_name, 0, packets-1, semaphore):
-            #TODO: check digest
-            # print("segment:")
-            # print(Name.to_str(key))
-            # print(type(content))
-            # print(content)
-            # print(type(data_bytes))
-            # print(data_bytes)
-            self.data_storage.put_packet(key, data_bytes)
-            # self.data_storage.put_data_packet(key, content.tobytes())
-            fetched_segments += 1
-        return fetched_segments
-    async def fetch_single_file(self, file_name: str, fetch_path: str):
-        int_name = int_name = Name.normalize(fetch_path) + [Component.from_segment(0)]
-        key = Name.normalize(file_name) + [Component.from_segment(0)]
-        try:
-            data_name, _, _, data_bytes = await self.app.express_interest(int_name, need_raw_packet=True, can_be_prefix=True, lifetime=2000)
-        except InterestNack as e:
-            return 0
-        except InterestTimeout:
-            return 0
-        self.data_storage.put_packet(key, data_bytes)
-        return 1
+        start = time.time()
+        inserted_packets = 0
+        async for (_, _, content, data_bytes, key) in concurrent_fetcher(self.app, fetch_path, file_name, 0, packets-1, aio.Semaphore(15)):
+            self.data_storage.put_packet(key, data_bytes) #TODO: check digest
+            inserted_packets += 1
+        if inserted_packets == packets:
+            end = time.time()
+            duration = end -start
+            self.logger.info(f"[ACT][FETCHED]* pcks={packets};duration={duration}")
+            self.store(file_name)
+        self.fetching.remove(file_name)

@@ -50,7 +50,7 @@ class HydraInsertClient(object):
                                               final_block_id=Component.from_segment(seg_cnt - 1))
                         for i in range(seg_cnt)]
 
-        self.digests = [bytes(blake2b(data[i*SEGMENT_SIZE:(i+1)*SEGMENT_SIZE]).digest()[:2]) for i in range(seg_cnt)]
+        # self.digests = [bytes(blake2b(data[i*SEGMENT_SIZE:(i+1)*SEGMENT_SIZE]).digest()[:2]) for i in range(seg_cnt)]
         # create a manifest (filled with digests) to limit signing
 
       print(f'Created {seg_cnt} chunks under name {Name.to_str(fetch_file_prefix)}')
