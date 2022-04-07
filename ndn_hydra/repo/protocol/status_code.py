@@ -1,5 +1,5 @@
 # -------------------------------------------------------------
-# NDN Hydra Status Codes
+# NDN Hydra Status Codes (HTTP-like Codes)
 # -------------------------------------------------------------
 #  @Project: NDN Hydra
 #  @Date:    2021-01-25
