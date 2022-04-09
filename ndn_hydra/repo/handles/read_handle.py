@@ -70,6 +70,7 @@ class ReadHandle(object):
         """
         if int_param.must_be_fresh:
             return
+
         # get rid of the security part if any on the int_name
         file_name = self._get_file_name_from_interest(Name.to_str(int_name[:-1]))
         best_id = self._best_id_for_file(file_name)

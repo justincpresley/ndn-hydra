@@ -145,20 +145,18 @@ class MainLoop:
             self.logger.info(f"[MSG][CLAIM.R]* nam={self.config['node_name']};fil={backupable_file['file_name']}")
 
     def store(self, file_name: str):
-        file = self.global_view.get_file(file_name)
-        if len(file['stores']) < file['desired_copies']:
-            favor = 1.85
-            store_message = StoreMessageTlv()
-            store_message.node_name = self.config['node_name'].encode()
-            store_message.favor = str(favor).encode()
-            store_message.file_name = Name.from_str(file_name)
-            message = Message()
-            message.type = MessageTypes.STORE
-            message.value = store_message.encode()
+        favor = 1.85
+        store_message = StoreMessageTlv()
+        store_message.node_name = self.config['node_name'].encode()
+        store_message.favor = str(favor).encode()
+        store_message.file_name = Name.from_str(file_name)
+        message = Message()
+        message.type = MessageTypes.STORE
+        message.value = store_message.encode()
 
-            self.global_view.store_file(file_name, self.config['node_name'])
-            self.svs.publishData(message.encode())
-            self.logger.info(f"[MSG][STORE]*   nam={self.config['node_name']};fil={file_name}")
+        self.global_view.store_file(file_name, self.config['node_name'])
+        self.svs.publishData(message.encode())
+        self.logger.info(f"[MSG][STORE]*   nam={self.config['node_name']};fil={file_name}")
 
     def fetch_file(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
         aio.ensure_future(self.fetch_file_helper(file_name, packets, digests, fetch_path))
