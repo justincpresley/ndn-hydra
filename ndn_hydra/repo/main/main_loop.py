@@ -91,7 +91,7 @@ class MainLoop:
             deficit = underreplicated_file['desired_copies'] - len(underreplicated_file['stores'])
             for backuped_by in underreplicated_file['backups']:
                 if (backuped_by['node_name'] == self.config['node_name']) and (backuped_by['rank'] < deficit):
-                    self.fetch_file(underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['digests'], underreplicated_file['fetch_path'])
+                    self.fetch_file(underreplicated_file['file_name'], underreplicated_file['packets'], underreplicated_file['packet_size'], underreplicated_file['fetch_path'])
 
     def claim(self):
         # TODO: possibility based on # active sessions and period
@@ -158,9 +158,9 @@ class MainLoop:
         self.svs.publishData(message.encode())
         self.logger.info(f"[MSG][STORE]*   nam={self.config['node_name']};fil={file_name}")
 
-    def fetch_file(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
-        aio.ensure_future(self.fetch_file_helper(file_name, packets, digests, fetch_path))
-    async def fetch_file_helper(self, file_name: str, packets: int, digests: List[bytes], fetch_path: str):
+    def fetch_file(self, file_name: str, packets: int, packet_size: int, fetch_path: str):
+        aio.ensure_future(self.fetch_file_helper(file_name, packets, packet_size, fetch_path))
+    async def fetch_file_helper(self, file_name: str, packets: int, packet_size: int, fetch_path: str):
         if file_name in self.fetching:
             return
         self.fetching.append(file_name)

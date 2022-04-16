@@ -124,7 +124,7 @@ class HydraNodeThread(Thread):
         app = NDNApp()
 
         # databases
-        data_storage = SqliteStorage(self.config['data_storage_path']) # version
+        data_storage = SqliteStorage(self.config['data_storage_path'])
         global_view = GlobalView(self.config['global_view_path'])
         svs_storage = SqliteStorage(self.config['svs_storage_path'])
         pb = PubSub(app)

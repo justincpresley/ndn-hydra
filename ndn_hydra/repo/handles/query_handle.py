@@ -81,7 +81,7 @@ class QueryHandle(object):
                 file = File()
                 file.file_name = files[index]["file_name"]
                 file.packets = files[index]["packets"]
-                file.digests = files[index]["digests"]
+                file.packet_size = files[index]["packet_size"]
                 file.size = files[index]["size"]
                 filelist.list.append(file)
             self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)
@@ -96,7 +96,7 @@ class QueryHandle(object):
                     file = File()
                     file.file_name = files[index]["file_name"]
                     file.packets = files[index]["packets"]
-                    file.digests = files[index]["digests"]
+                    file.packet_size = files[index]["packet_size"]
                     file.size = files[index]["size"]
                     filecontent = file.encode()
                     break
@@ -113,7 +113,7 @@ class QueryHandle(object):
                     file = File()
                     file.file_name = files[index]["file_name"]
                     file.packets = files[index]["packets"]
-                    file.digests = files[index]["digests"]
+                    file.packet_size = files[index]["packet_size"]
                     file.size = files[index]["size"]
                     filelist.list.append(file)
             self.app.put_data(int_name, content=filelist.encode(), freshness_period=3000, content_type=ContentType.BLOB)

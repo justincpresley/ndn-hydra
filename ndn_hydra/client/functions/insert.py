@@ -31,7 +31,6 @@ class HydraInsertClient(object):
       self.repo_prefix = repo_prefix
       self.pb = PubSub(self.app, self.client_prefix)
       self.packets = []
-      self.digests = []
 
     async def insert_file(self, file_name: FormalName, path: str) -> bool:
       """
@@ -50,9 +49,6 @@ class HydraInsertClient(object):
                                               final_block_id=Component.from_segment(seg_cnt - 1))
                         for i in range(seg_cnt)]
 
-        # self.digests = [bytes(blake2b(data[i*SEGMENT_SIZE:(i+1)*SEGMENT_SIZE]).digest()[:2]) for i in range(seg_cnt)]
-        # create a manifest (filled with digests) to limit signing
-
       print(f'Created {seg_cnt} chunks under name {Name.to_str(fetch_file_prefix)}')
 
       def on_interest(int_name, _int_param, _app_param):
@@ -65,15 +61,13 @@ class HydraInsertClient(object):
       file = File()
       file.file_name = file_name
       file.packets = seg_cnt
-      file.digests = self.digests
+      file.packet_size = SEGMENT_SIZE
       file.size = size
       cmd = InsertCommand()
       cmd.file = file
       cmd.fetch_path = fetch_file_prefix
       cmd_bytes = cmd.encode()
-      # what if the digests dont fit? support larger files
-      # look into implicit digests, FLICK
-
+      
       # publish msg to repo's insert topic
       await self.pb.wait_for_ready()
       is_success = await self.pb.publish(self.repo_prefix + ['insert'], cmd_bytes)

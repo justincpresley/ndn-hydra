@@ -59,7 +59,7 @@ class HydraQueryClient(object):
                      for file in filelist.list:
                          print(f'File {counter} meta-info')
                          print(f'\tfile_name: {Name.to_str(file.file_name)}')
-                         print(f'\tsize: {file.size}')
+                         print(f'\tsize: {file.size} | packets: {file.packets} | packet_size: {file.packet_size}')
                          counter = counter + 1
                  else:
                      print(f'No files inserted in the remote repo.')
@@ -69,7 +69,7 @@ class HydraQueryClient(object):
                      file = File.parse(content)
                      print(f'File Exists, File meta-info')
                      print(f'\tfile_name: {Name.to_str(file.file_name)}')
-                     print(f'\tsize: {file.size}')
+                     print(f'\tsize: {file.size} | packets: {file.packets} | packet_size: {file.packet_size}')
                  else:
                      print(f'File Does Not Exists in The Repo')
                  return
@@ -81,7 +81,7 @@ class HydraQueryClient(object):
                      for file in filelist.list:
                          print(f'File {counter} meta-info')
                          print(f'\tfile_name: {Name.to_str(file.file_name)}')
-                         print(f'\tsize: {file.size}')
+                         print(f'\tsize: {file.size} | packets: {file.packets} | packet_size: {file.packet_size}')
                          counter = counter + 1
                  else:
                      print(f'No files inserted in the remote repo with prefix {Name.to_str(query[1:])}.')

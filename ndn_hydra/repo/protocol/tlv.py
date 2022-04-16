@@ -14,7 +14,7 @@ class HydraTlvTypes:
     MESSAGE_TYPE = 201
     FILE = 202
     PACKETS = 203
-    DIGEST = 204
+    PACKET_SIZE = 204
     SIZE = 205
     STATUS_CODE = 206
     CMD_URI= 207

@@ -15,7 +15,7 @@ from ndn_hydra.repo.protocol.tlv import HydraTlvTypes
 class File(TlvModel):
     file_name = NameField()
     packets = UintField(HydraTlvTypes.PACKETS)
-    digests = RepeatedField(BytesField(HydraTlvTypes.DIGEST))
+    packet_size = UintField(HydraTlvTypes.PACKET_SIZE)
     size = UintField(HydraTlvTypes.SIZE)
 
 class FileList(TlvModel):

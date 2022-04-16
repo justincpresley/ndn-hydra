@@ -77,12 +77,10 @@ class InsertCommandHandle(ProtocolHandle):
         # print("receive INSERT command for file: {}".format(Name.to_str(cmd.file.file_name)))
         file_name = Name.to_str(cmd.file.file_name)
         packets = cmd.file.packets
-        digests = cmd.file.digests
+        packet_size = cmd.file.packet_size
         size = cmd.file.size
         fetch_path = cmd.fetch_path
         self.logger.info(f"[CMD][INSERT]   file {file_name}")
-
-        # TODO: check duplicate sequence number
 
         nodes = self.global_view.get_nodes()
         desired_copies = self.replication_degree
@@ -124,7 +122,7 @@ class InsertCommandHandle(ProtocolHandle):
         add_message.file = File()
         add_message.file.file_name = cmd.file.file_name
         add_message.file.packets = packets
-        add_message.file.digests = digests
+        add_message.file.packet_size = packet_size
         add_message.file.size = size
         add_message.desired_copies = desired_copies
         add_message.fetch_path = FetchPathTlv()
@@ -146,16 +144,16 @@ class InsertCommandHandle(ProtocolHandle):
             self.config['node_name'],
             Name.to_str(fetch_path),
             next_state_vector,
-            b''.join(digests),
+            packet_size,
             packets=packets,
             desired_copies=desired_copies
         )
         if pickself:
             # self.global_view.store_file(insertion_id, self.config['session_id'])
-            self.main_loop.fetch_file(file_name, packets, digests, Name.to_str(fetch_path))
+            self.main_loop.fetch_file(file_name, packets, packet_size, Name.to_str(fetch_path))
         self.global_view.set_backups(file_name, backup_list)
         self.main_loop.svs.publishData(message.encode())
         bak = ""
         for backup in backup_list:
             bak = bak + backup[0] + ","
-        self.logger.info(f"[MSG][ADD]*     nam={self.config['node_name']};fil={file_name};cop={desired_copies};pck={packets};siz={size};bak={bak}")
+        self.logger.info(f"[MSG][ADD]*     nam={self.config['node_name']};fil={file_name};cop={desired_copies};pck={packets};pck_size={packet_size};siz={size};bak={bak}")

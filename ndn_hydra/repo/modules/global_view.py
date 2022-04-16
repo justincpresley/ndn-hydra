@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS files (
     file_name TEXT PRIMARY KEY,
     desired_copies INTEGER NOT NULL DEFAULT 3,
     packets INTEGER NOT NULL DEFAULT 1,
-    digests BLOB NOT NULL DEFAULT 0,
+    packet_size INTEGER NOT NULL DEFAULT 8800,
     size INTEGER NOT NULL,
     origin_node_name TEXT NOT NULL,
     fetch_path TEXT NOT NULL,
@@ -224,7 +224,7 @@ class GlobalView:
     def get_file(self, file_name:str):
         sql = """
         SELECT DISTINCT
-            file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
+            file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, packet_size
         FROM files
         WHERE file_name = ?
         """
@@ -240,7 +240,7 @@ class GlobalView:
             'fetch_path': result[0][5],
             'state_vector': result[0][6],
             'is_deleted': False if (result[0][7] == 0) else True,
-            'digests': self.__split_digests(result[0][8], 2),
+            'packet_size': result[0][8],
             'stores': self.get_stores(result[0][0]),
             'backups': self.get_backups(result[0][0])
         }
@@ -249,13 +249,13 @@ class GlobalView:
         if including_deleted:
             sql = """
             SELECT DISTINCT
-                file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
+                file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, packet_size
             FROM files
             """
         else:
             sql = """
             SELECT DISTINCT
-                file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests
+                file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, packet_size
             FROM files
             WHERE is_deleted = 0
             """
@@ -271,7 +271,7 @@ class GlobalView:
                 'fetch_path': result[5],
                 'state_vector': result[6],
                 'is_deleted': False if (result[7] == 0) else True,
-                'digests': self.__split_digests(result[8], 2),
+                'packet_size': result[8],
                 'stores': self.get_stores(result[0]),
                 'backups': self.get_backups(result[0])
             })
@@ -293,14 +293,14 @@ class GlobalView:
                 backupable_files.append(file)
         return backupable_files
 
-    def add_file(self, file_name:str, size:int, origin_node_name:str, fetch_path:str, state_vector:int, digests:bytes, packets:int=1, desired_copies:int=3):
+    def add_file(self, file_name:str, size:int, origin_node_name:str, fetch_path:str, state_vector:int, packet_size:int, packets:int=1, desired_copies:int=3):
         sql = """
         INSERT OR IGNORE INTO files
-            (file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, digests)
+            (file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, is_deleted, packet_size)
         VALUES
             (?, ?, ?, ?, ?, ?, ?, 0, ?)
         """
-        self.__execute_sql_qmark(sql, (file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, digests))
+        self.__execute_sql_qmark(sql, (file_name, desired_copies, packets, size, origin_node_name, fetch_path, state_vector, packet_size))
 
     def delete_file(self, file_name:str):
         # stores

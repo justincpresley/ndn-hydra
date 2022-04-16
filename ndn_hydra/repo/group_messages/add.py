@@ -57,7 +57,7 @@ class AddMessage(SpecificMessage):
         file = self.message.file
         file_name = Name.to_str(file.file_name)
         packets = file.packets
-        digests = file.digests
+        packet_size = file.packet_size
         size = file.size
         desired_copies = self.message.desired_copies
         fetch_path = self.message.fetch_path.prefix
@@ -68,14 +68,14 @@ class AddMessage(SpecificMessage):
         for backup in backups:
             backup_list.append((backup.node_name.tobytes().decode(), backup.nonce.tobytes().decode()))
             bak = bak + backup.node_name.tobytes().decode() + ","
-        self.logger.info(f"[MSG][ADD]      nam={node_name};fil={file_name};cop={desired_copies};pck={packets};siz={size};bak={bak}")
+        self.logger.info(f"[MSG][ADD]      nam={node_name};fil={file_name};cop={desired_copies};pck={packets};pck_size={packet_size};siz={size};bak={bak}")
         global_view.add_file(
             file_name,
             size,
             node_name,
             Name.to_str(fetch_path),
             self.seqno,
-            b''.join(digests),
+            packet_size,
             packets=packets,
             desired_copies=desired_copies
         )
@@ -100,7 +100,7 @@ class AddMessage(SpecificMessage):
                 need_to_store = True
                 break
         if need_to_store == True:
-            fetch_file(file_name, packets, digests, Name.to_str(fetch_path))
+            fetch_file(file_name, packets, packet_size, Name.to_str(fetch_path))
 
             # from .message import MessageTlv, MessageTypes
             # # generate store msg and send
