@@ -74,7 +74,6 @@ class AddMessage(SpecificMessage):
             size,
             node_name,
             Name.to_str(fetch_path),
-            self.seqno,
             packet_size,
             packets=packets,
             desired_copies=desired_copies

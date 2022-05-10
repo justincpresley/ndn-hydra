@@ -143,7 +143,6 @@ class InsertCommandHandle(ProtocolHandle):
             size,
             self.config['node_name'],
             Name.to_str(fetch_path),
-            next_state_vector,
             packet_size,
             packets=packets,
             desired_copies=desired_copies
