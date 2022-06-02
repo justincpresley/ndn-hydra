@@ -16,6 +16,7 @@ from ndn.app import NDNApp
 from ndn.encoding import Name, FormalName
 import sys
 import os
+import time
 import pkg_resources
 from ndn_hydra.client.functions import *
 
@@ -80,6 +81,7 @@ def parse_hydra_cmd_opts() -> Namespace:
     insertsp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
     insertsp.add_argument("-f","--filename",action="store",dest="filename",required=True)
     insertsp.add_argument("-p","--path",action="store",dest="path",required=True)
+    insertsp.add_argument("-w","--wait",action="store",dest="wait",required=True)
 
     deletesp = subparsers.add_parser('delete',add_help=False)
     deletesp.add_argument("-r","--repoprefix",action="store",dest="repo",required=True)
@@ -136,20 +138,22 @@ async def run_hydra_client(app: NDNApp, args: Namespace) -> None:
   if args.function == "insert":
     await client.insert(filename, args.path)
     print("Client finished Insert Command!")
-    await asyncio.sleep(60)
-
+    await asyncio.sleep(float(args.wait))
   elif args.function == "delete":
+    tic = time.perf_counter()
     await client.delete(filename)
-    print("Client finished Delete Command!")
-
+    toc = time.perf_counter()
+    print("Client finished Delete Command! - total time (with disk): {toc - tic:0.4f} secs")
   elif args.function == "fetch":
+    tic = time.perf_counter()
     await client.fetch(filename, args.path, True)
-    print("Client finished Fetch Command!")
-
+    toc = time.perf_counter()
+    print(f"Client finished Fetch Command! - total time (with disk): {toc - tic:0.4f} secs")
   elif args.function == "query":
+    tic = time.perf_counter()
     await client.query(Name.from_str(str(args.query)), args.nodename)
-    print("Client finished Query Command!")
-
+    toc = time.perf_counter()
+    print(f"Client finished Query Command! - total time (with disk): {toc - tic:0.4f} secs")
   else:
     print("Not Implemented Yet / Unknown Command.")
 
