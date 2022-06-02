@@ -167,7 +167,6 @@ class MainLoop:
         self.logger.info(f"[ACT][FETCH]*   fil={file_name};pcks={packets};fetch_path={fetch_path}")
         start = time.time()
         async for (_, _, content, data_bytes, key) in concurrent_fetcher(self.app, fetch_path, file_name, 0, packets-1, aio.Semaphore(15)):
-            self.logger.info(f"[ACT][FETCH]*   one packet!")
             self.data_storage.put_packet(key, data_bytes) #TODO: check digest
         end = time.time()
         duration = end -start
