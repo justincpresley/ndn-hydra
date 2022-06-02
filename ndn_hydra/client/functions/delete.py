@@ -12,7 +12,7 @@
 import logging
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
-from ndn_hydra.repo.protocol.base_models import DeleteCommand
+from ndn_hydra.repo.protocol.command_models import DeleteCommand
 from ndn_hydra.repo.utils.pubsub import PubSub
 
 class HydraDeleteClient(object):

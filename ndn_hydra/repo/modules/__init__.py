@@ -7,6 +7,6 @@
 #  @Pip-Library:   https://pypi.org/project/ndn-hydra
 # -------------------------------------------------------------
 
-from .command_table import CommandTable, InsertCommandBlock, DeleteCommandBlock
+from .command_table import CommandTable, CommandBlock
 from .global_view import GlobalView
 from .heartbeat_tracker import HeartbeatTracker

@@ -1,6 +1,4 @@
 # -------------------------------------------------------------
-# NDN Hydra Query Handle
-# -------------------------------------------------------------
 #  @Project: NDN Hydra
 #  @Date:    2021-01-25
 #  @Authors: Please check AUTHORS.rst
@@ -9,53 +7,30 @@
 #  @Pip-Library:   https://pypi.org/project/ndn-hydra
 # -------------------------------------------------------------
 
-import asyncio as aio
 import logging
+from typing import Optional
 from ndn.app import NDNApp
-from ndn.encoding import Name, ContentType, Component
-from ndn.storage import Storage
+from ndn.encoding import Name, ContentType, FormalName, InterestParam, BinaryStr, SignaturePtrs, Component
+from ndn_hydra.repo.handles.handle import Handle
 from ndn_hydra.repo.modules.global_view import GlobalView
 from ndn_hydra.repo.protocol.base_models import FileList, File
 
-class QueryHandle(object):
-    """
-    QueryHandle processes query interests, and return informational data.
-    """
-    def __init__(self, app: NDNApp, global_view: GlobalView, config: dict):
-        """
-        :param app: NDNApp.
-        :param global_view: Global View.
-        :param config: All config Info.
-        """
+class QueryHandle(Handle):
+    def __init__(self, app:NDNApp, config:dict, global_view:GlobalView) -> None:
         self.app = app
         self.global_view = global_view
         self.node_name = config['node_name']
         self.repo_prefix = config['repo_prefix']
-
-        self.logger = logging.getLogger()
-
         self.command_comp = "/query"
         self.node_comp = "/node"
-
-        self.listen(Name.from_str(self.repo_prefix + self.command_comp))
-        self.listen(Name.from_str(self.repo_prefix + self.node_comp  + self.node_name + self.command_comp))
-
-    def listen(self, prefix):
-        """
-        This function needs to be called for prefix of all data stored.
-        :param prefix: NonStrictName.
-        """
-        self.app.route(prefix)(self._on_interest)
-        self.logger.info(f'Query handle: listening to {Name.to_str(prefix)}')
-
-    def unlisten(self, prefix):
-        """
-        :param name: NonStrictName.
-        """
-        aio.ensure_future(self.app.unregister(prefix))
-        self.logger.info(f'Query handle: stop listening to {Name.to_str(prefix)}')
-
-    def _on_interest(self, int_name, int_param, _app_param):
+        self.query_prefix = Name.from_str(self.repo_prefix + self.command_comp)
+        self.node_query_prefix = Name.from_str(self.repo_prefix + self.node_comp  + self.node_name + self.command_comp)
+    async def listen(self) -> None:
+        await self.app.register(self.query_prefix, self.onQueryInterest, need_sig_ptrs=True)
+        logging.info(f'QueryHandle: listening {Name.to_str(self.query_prefix)}')
+        await self.app.register(self.node_query_prefix, self.onQueryInterest, need_sig_ptrs=True)
+        logging.info(f'QueryHandle: listening {Name.to_str(self.node_query_prefix)}')
+    def onQueryInterest(self, int_name:FormalName, int_param:InterestParam, app_param:Optional[BinaryStr], sig_ptrs:SignaturePtrs) -> None:
         if not int_param.must_be_fresh or not int_param.can_be_prefix:
             return
         query = self._get_query_from_interest(Name.to_str(int_name))

@@ -1,6 +1,4 @@
 # -------------------------------------------------------------
-# NDN Hydra Favor Calculator
-# -------------------------------------------------------------
 #  @Project: NDN Hydra
 #  @Date:    2021-01-25
 #  @Authors: Please check AUTHORS.rst

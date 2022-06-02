@@ -1,6 +1,4 @@
 # -------------------------------------------------------------
-# NDN Hydra Query Tlv Models
-# -------------------------------------------------------------
 #  @Project: NDN Hydra
 #  @Date:    2021-01-25
 #  @Authors: Please check AUTHORS.rst

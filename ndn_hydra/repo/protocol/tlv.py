@@ -1,6 +1,4 @@
 # -------------------------------------------------------------
-# NDN Hydra Tlv Types
-# -------------------------------------------------------------
 #  @Project: NDN Hydra
 #  @Date:    2021-01-25
 #  @Authors: Please check AUTHORS.rst
@@ -10,11 +8,12 @@
 # -------------------------------------------------------------
 
 class HydraTlvTypes:
-    MESSAGE = 200
-    MESSAGE_TYPE = 201
-    FILE = 202
-    PACKETS = 203
-    PACKET_SIZE = 204
-    SIZE = 205
-    STATUS_CODE = 206
-    CMD_URI= 207
+    COMMAND = 200
+    COMMAND_TYPE = 201
+    MESSAGE = 202
+    MESSAGE_TYPE = 203
+    FILE = 204
+    PACKETS = 205
+    PACKET_SIZE = 206
+    SIZE = 207
+    STATUS_CODE = 208

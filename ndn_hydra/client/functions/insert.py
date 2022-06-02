@@ -13,7 +13,7 @@ import logging
 from hashlib import blake2b
 from ndn.app import NDNApp
 from ndn.encoding import Name, Component, FormalName
-from ndn_hydra.repo.protocol.base_models import InsertCommand, File
+from ndn_hydra.repo.protocol.command_models import InsertCommand, File
 from ndn_hydra.repo.utils.pubsub import PubSub
 
 SEGMENT_SIZE = 8192
@@ -67,7 +67,7 @@ class HydraInsertClient(object):
       cmd.file = file
       cmd.fetch_path = fetch_file_prefix
       cmd_bytes = cmd.encode()
-      
+
       # publish msg to repo's insert topic
       await self.pb.wait_for_ready()
       is_success = await self.pb.publish(self.repo_prefix + ['insert'], cmd_bytes)

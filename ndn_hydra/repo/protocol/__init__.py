@@ -7,6 +7,7 @@
 #  @Pip-Library:   https://pypi.org/project/ndn-hydra
 # -------------------------------------------------------------
 
-from .base_models import File, FileList, InsertCommand, DeleteCommand, CommandStatus
+from .base_models import File, FileList
+from .command_models import CommandTypes, Command, InsertCommand, DeleteCommand, FirstContact, Status
 from .status_code import StatusCode
 from .tlv import HydraTlvTypes

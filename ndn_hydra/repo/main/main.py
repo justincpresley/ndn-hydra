@@ -12,7 +12,7 @@
 from argparse import ArgumentParser
 import asyncio as aio
 import logging
-from typing import Dict
+from typing import Dict, List
 from threading import Thread
 import pkg_resources
 from ndn.app import NDNApp
@@ -68,7 +68,6 @@ def process_cmd_opts():
         interpret_help()
         # Getting all Arguments
         vars = parser.parse_args()
-
         # Process args
         args = {}
         args["repo_prefix"] = process_name(vars.repo_prefix)
@@ -86,19 +85,10 @@ def process_cmd_opts():
     args = parse_cmd_opts()
     return args
 
-async def listen(repo_prefix: Name, pb: PubSub, insert_handle: InsertCommandHandle, delete_handle: DeleteCommandHandle):
-    # pubsub
-    pb.set_publisher_prefix(repo_prefix)
-    await pb.wait_for_ready()
-    # protocol handle
-    await insert_handle.listen(repo_prefix)
-    await delete_handle.listen(repo_prefix)
-
 class HydraNodeThread(Thread):
-    def __init__(self, config: Dict):
+    def __init__(self, config:Dict):
         Thread.__init__(self)
         self.config = config
-
     def run(self) -> None:
         if len(os.path.dirname(self.config['logging_path'])) > 0 and not os.path.exists(os.path.dirname(self.config['logging_path'])):
             try:
@@ -127,25 +117,27 @@ class HydraNodeThread(Thread):
         data_storage = SqliteStorage(self.config['data_storage_path'])
         global_view = GlobalView(self.config['global_view_path'])
         svs_storage = SqliteStorage(self.config['svs_storage_path'])
-        pb = PubSub(app)
+        command_table = CommandTable()
 
         # main_loop (svs)
         main_loop = MainLoop(app, self.config, global_view, data_storage, svs_storage)
 
         # handles (reads, commands & queries)
-        read_handle = ReadHandle(app, data_storage, global_view, self.config)
-        insert_handle = InsertCommandHandle(app, data_storage, pb, self.config, main_loop, global_view)
-        delete_handle = DeleteCommandHandle(app, data_storage, pb, self.config, main_loop, global_view)
-        query_handle = QueryHandle(app, global_view, self.config)
+        handles = []
+        handles.append(QueryHandle(app, self.config, global_view))
+        handles.append(ReadHandle(app, self.config, global_view, data_storage))
+        handles.append(CommandHandle(app, self.config, global_view, data_storage, command_table, main_loop))
 
         # Post-start
-        async def start_main_loop():
-            await listen(Name.normalize(self.config['repo_prefix']), pb, insert_handle, delete_handle)
+        async def start_main_loop(handles:List[Handle]):
+            for h in handles:
+                await h.listen()
+                await aio.sleep(0.5)
             await main_loop.start()
 
         # start listening
         try:
-            app.run_forever(after_start=start_main_loop())
+            app.run_forever(after_start=start_main_loop(handles))
         except (FileNotFoundError, ConnectionRefusedError):
             print('Error: could not connect to NFD.')
             sys.exit()
@@ -170,7 +162,6 @@ def main() -> int:
     config.update(cmd_args)
     HydraNodeThread(config).start()
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())

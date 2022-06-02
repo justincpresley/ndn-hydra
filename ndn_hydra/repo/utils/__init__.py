@@ -7,5 +7,4 @@
 #  @Pip-Library:   https://pypi.org/project/ndn-hydra
 # -------------------------------------------------------------
 
-from .pubsub import PubSub
 from .concurrent_fetcher import concurrent_fetcher
