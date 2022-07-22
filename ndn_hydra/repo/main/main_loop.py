@@ -184,3 +184,4 @@ class MainLoop:
         hours_since_last_collection = (self.last_garbage_collect_t - current_time) / (60*60)
         if hours_since_last_collection >= 24:
             collect_db_garbage(self.global_view, self.svs, self.config, self.logger)
+            self.last_garbage_collect_t = time.time()
