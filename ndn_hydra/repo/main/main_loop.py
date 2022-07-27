@@ -181,7 +181,7 @@ class MainLoop:
         Checks for database garbage daily.
         """
         current_time = time.time()
-        hours_since_last_collection = (self.last_garbage_collect_t - current_time) / (60*60)
+        hours_since_last_collection = (current_time - self.last_garbage_collect_t) / (60*60)
         if hours_since_last_collection >= 24:
             collect_db_garbage(self.global_view, self.svs, self.config, self.logger)
             self.last_garbage_collect_t = time.time()

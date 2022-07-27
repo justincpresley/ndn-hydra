@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS files (
     size INTEGER NOT NULL,
     origin_node_name TEXT NOT NULL,
     fetch_path TEXT NOT NULL,
-    is_deleted INTEGER NOT NULL DEFAULT 0
-    last_accessed TEXT NOT NULL
+    is_deleted INTEGER NOT NULL DEFAULT 0,
+    last_accessed INTEGER NOT NULL
 );
 """ # remove origin_node_name, fetch_path, and is_deleted
 sql_create_stores_tables = """
@@ -299,7 +299,7 @@ class GlobalView:
         INSERT OR IGNORE INTO files
             (file_name, desired_copies, packets, size, origin_node_name, fetch_path, is_deleted, packet_size, last_accessed)
         VALUES
-            (?, ?, ?, ?, ?, ?, 0, ?, datetime('now'))
+            (?, ?, ?, ?, ?, ?, 0, ?, strftime ('%s', 'now'))
         """
         self.__execute_sql_qmark(sql, (file_name, desired_copies, packets, size, origin_node_name, fetch_path, packet_size))
 
@@ -362,7 +362,7 @@ class GlobalView:
     def update_file_timestamp(self, file_name:str) -> None:
         sql = """
         UPDATE files
-        SET last_accessed = datetime('now')
+        SET last_accessed = strftime ('%s', 'now')
         WHERE file_name = ?
         """
         self.__execute_sql_qmark(sql, (file_name,))
