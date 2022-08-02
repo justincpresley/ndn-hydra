@@ -24,6 +24,7 @@ class AddMessageTypes:
     DESIRED_COPIES = 92
     FETCH_PATH = 93
     IS_STORED_BY_ORIGIN = 94
+    EXPIRATION_DATE = 95
 
     BACKUP = 100
     BACKUP_NODE_NAME = 101
@@ -44,6 +45,7 @@ class AddMessageTlv(TlvModel):
     desired_copies = UintField(AddMessageTypes.DESIRED_COPIES)
     fetch_path = ModelField(AddMessageTypes.FETCH_PATH, FetchPathTlv)
     is_stored_by_origin = UintField(AddMessageTypes.IS_STORED_BY_ORIGIN)
+    expiration_time = UintField(AddMessageTypes.EXPIRATION_DATE)
     backup_list = RepeatedField(ModelField(AddMessageTypes.BACKUP, BackupTlv))
 
 class AddMessage(SpecificMessage):
@@ -62,13 +64,14 @@ class AddMessage(SpecificMessage):
         desired_copies = self.message.desired_copies
         fetch_path = self.message.fetch_path.prefix
         is_stored_by_origin = False if (self.message.is_stored_by_origin == 0) else True
+        expiration_time = self.message.expiration_time
         backups = self.message.backup_list
         backup_list = []
         bak = ""
         for backup in backups:
             backup_list.append((backup.node_name.tobytes().decode(), backup.nonce.tobytes().decode()))
             bak = bak + backup.node_name.tobytes().decode() + ","
-        self.logger.info(f"[MSG][ADD]      nam={node_name};fil={file_name};cop={desired_copies};pck={packets};pck_size={packet_size};siz={size};bak={bak}")
+        self.logger.info(f"[MSG][ADD]      nam={node_name};fil={file_name};cop={desired_copies};pck={packets};pck_size={packet_size};siz={size};bak={bak};exp={expiration_time}")
         global_view.add_file(
             file_name,
             size,
@@ -76,7 +79,8 @@ class AddMessage(SpecificMessage):
             Name.to_str(fetch_path),
             packet_size,
             packets=packets,
-            desired_copies=desired_copies
+            desired_copies=desired_copies,
+            expiration_time=expiration_time,
         )
 
         global_view.set_backups(file_name, backup_list)

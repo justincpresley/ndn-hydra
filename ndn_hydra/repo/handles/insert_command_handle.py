@@ -80,6 +80,10 @@ class InsertCommandHandle(ProtocolHandle):
         packet_size = cmd.file.packet_size
         size = cmd.file.size
         fetch_path = cmd.fetch_path
+        expiration_time = int(time.time() + (self.config['file_expiration'] * 60)) # convert hours to seconds
+        # Set file to not expire if file_expiration in config is set to 0
+        if self.config['file_expiration'] == 0:
+            expiration_time = 0
         self.logger.info(f"[CMD][INSERT]   file {file_name}")
 
         nodes = self.global_view.get_nodes()
@@ -128,6 +132,7 @@ class InsertCommandHandle(ProtocolHandle):
         add_message.fetch_path = FetchPathTlv()
         add_message.fetch_path.prefix = fetch_path
         add_message.is_stored_by_origin = 0
+        add_message.expiration_time = expiration_time
         add_message.backup_list = backups
         # add msg
         message = Message()
@@ -145,7 +150,8 @@ class InsertCommandHandle(ProtocolHandle):
             Name.to_str(fetch_path),
             packet_size,
             packets=packets,
-            desired_copies=desired_copies
+            desired_copies=desired_copies,
+            expiration_time=expiration_time,
         )
         if pickself:
             # self.global_view.store_file(insertion_id, self.config['session_id'])
@@ -155,4 +161,4 @@ class InsertCommandHandle(ProtocolHandle):
         bak = ""
         for backup in backup_list:
             bak = bak + backup[0] + ","
-        self.logger.info(f"[MSG][ADD]*     nam={self.config['node_name']};fil={file_name};cop={desired_copies};pck={packets};pck_size={packet_size};siz={size};bak={bak}")
+        self.logger.info(f"[MSG][ADD]*     nam={self.config['node_name']};fil={file_name};cop={desired_copies};pck={packets};pck_size={packet_size};siz={size};bak={bak};exp={expiration_time}")

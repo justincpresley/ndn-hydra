@@ -27,20 +27,6 @@ def collect_db_garbage(global_view: GlobalView, svs: SVSync, config: dict, logge
 
     # Remove files from storage
     for file_name in files_to_remove:
-        # Create RemoveMessage for SVS
-        favor = 1.85 # magic number grabbed from another file
-        remove_message = RemoveMessageTlv()
-        remove_message.node_name = config['node_name'].encode()
-        remove_message.favor = str(favor).encode()
-        remove_message.file_name = file_name
-        # Create Message
-        message = Message()
-        message.type = MessageTypes.REMOVE
-        message.value = remove_message.encode()
-        # Send message
-        logger.info(f"[MSG][REMOVE]*\tfil={file_name}")
-        svs.publishData(message.encode())
-
         # Delete from global view
         global_view.delete_file(file_name)
         logger.info(f"GARBAGE COLLECTOR: Removed {file_name} from global view.")

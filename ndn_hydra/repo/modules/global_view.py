@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS files (
     origin_node_name TEXT NOT NULL,
     fetch_path TEXT NOT NULL,
     is_deleted INTEGER NOT NULL DEFAULT 0,
-    last_accessed INTEGER NOT NULL
+    expiration_time INTEGER NOT NULL
 );
 """ # remove origin_node_name, fetch_path, and is_deleted
 sql_create_stores_tables = """
@@ -224,12 +224,11 @@ class GlobalView:
     def get_file(self, file_name:str):
         sql = """
         SELECT DISTINCT
-            file_name, desired_copies, packets, size, origin_node_name, fetch_path, is_deleted, packet_size, last_accessed
+            file_name, desired_copies, packets, size, origin_node_name, fetch_path, is_deleted, packet_size, expiration_time
         FROM files
         WHERE file_name = ?
         """
         result = self.__execute_sql_qmark(sql, (file_name,))
-        self.update_file_timestamp(file_name)
         if len(result) != 1:
             return None
         return {
@@ -243,20 +242,20 @@ class GlobalView:
             'packet_size': result[0][7],
             'stores': self.get_stores(result[0][0]),
             'backups': self.get_backups(result[0][0]),
-            'last_accessed': result[0][8],
+            'expiration_time': result[0][8],
         }
 
     def get_files(self, including_deleted:bool=False):
         if including_deleted:
             sql = """
             SELECT DISTINCT
-                file_name, desired_copies, packets, size, origin_node_name, fetch_path, is_deleted, packet_size, last_accessed
+                file_name, desired_copies, packets, size, origin_node_name, fetch_path, is_deleted, packet_size, expiration_time
             FROM files
             """
         else:
             sql = """
             SELECT DISTINCT
-                file_name, desired_copies, packets, size, origin_node_name, fetch_path, is_deleted, packet_size, last_accessed
+                file_name, desired_copies, packets, size, origin_node_name, fetch_path, is_deleted, packet_size, expiration_time
             FROM files
             WHERE is_deleted = 0
             """
@@ -274,7 +273,7 @@ class GlobalView:
                 'packet_size': result[7],
                 'stores': self.get_stores(result[0]),
                 'backups': self.get_backups(result[0]),
-                'last_accessed': result[8],
+                'expiration_time': result[8],
             })
         return files
 
@@ -294,14 +293,14 @@ class GlobalView:
                 backupable_files.append(file)
         return backupable_files
 
-    def add_file(self, file_name:str, size:int, origin_node_name:str, fetch_path:str, packet_size:int, packets:int, desired_copies:int):
+    def add_file(self, file_name:str, size:int, origin_node_name:str, fetch_path:str, packet_size:int, packets:int, desired_copies:int, expiration_time:int):
         sql = """
         INSERT OR IGNORE INTO files
-            (file_name, desired_copies, packets, size, origin_node_name, fetch_path, is_deleted, packet_size, last_accessed)
+            (file_name, desired_copies, packets, size, origin_node_name, fetch_path, is_deleted, packet_size, expiration_time)
         VALUES
-            (?, ?, ?, ?, ?, ?, 0, ?, strftime ('%s', 'now'))
+            (?, ?, ?, ?, ?, ?, 0, ?, ?)
         """
-        self.__execute_sql_qmark(sql, (file_name, desired_copies, packets, size, origin_node_name, fetch_path, packet_size))
+        self.__execute_sql_qmark(sql, (file_name, desired_copies, packets, size, origin_node_name, fetch_path, packet_size, expiration_time))
 
     def delete_file(self, file_name:str):
         # stores
@@ -358,14 +357,6 @@ class GlobalView:
             (?, ?)
         """
         self.__execute_sql_qmark(sql, (file_name, node_name))
-
-    def update_file_timestamp(self, file_name:str) -> None:
-        sql = """
-        UPDATE files
-        SET last_accessed = strftime ('%s', 'now')
-        WHERE file_name = ?
-        """
-        self.__execute_sql_qmark(sql, (file_name,))
 
     def set_backups(self, file_name:str, backup_list:List[Tuple[str, str]]):
         # remove previous backups
