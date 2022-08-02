@@ -10,26 +10,20 @@ def collect_db_garbage(global_view: GlobalView, svs: SVSync, config: dict, logge
     """
     Removes files that have not been accessed in the last month from a node's databases.
     """
-    logger.info("GARBAGE COLLECTOR: Collecting DB garbage...")
-
-    ONE_MONTH = 60*60*24*30 # seconds in one month
+    logger.info("GARBAGE COLLECTOR: Collecting DB garbage...")    
+    
     current_time = time.time()
 
     # Find files that have not been accessed in the last month
     all_files = global_view.get_files()
     files_to_remove = []
     for file in all_files:
-        last_accessed = int(file['last_accessed'])
-        if current_time - last_accessed > ONE_MONTH:
+        expire_time = int(file['expiration_time'])
+        # If expire_time is 0, file is set to not expire
+        if current_time >= expire_time and expire_time != 0:
             files_to_remove.append(file['file_name'])
 
     # TODO: Implement logger. Check if files were accessed by another node before deleting.
-    # Check logger to see if another node has accessed any files
-    # for file_name in files_to_remove:
-    #     last_accessed = LOG.get_file(file_name)['last_accessed']
-    #     # Delete file from removal list if it has been accessed by another node
-    #     if current_time - last_accessed < ONE_MONTH:
-    #         files_to_remove.remove(file_name)
 
     # Remove files from storage
     for file_name in files_to_remove:
