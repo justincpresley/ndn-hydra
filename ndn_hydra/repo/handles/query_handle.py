@@ -57,9 +57,14 @@ class QueryHandle(object):
 
     def _on_interest(self, int_name, int_param, _app_param):
         if not int_param.must_be_fresh or not int_param.can_be_prefix:
+            return 
+        if not _app_param:
+            self.logger.info('Query handle: No querytype')
             return
+
         query = self._get_query_from_interest(Name.to_str(int_name))
-        querytype = Component.to_str(Name.from_str(query)[0])
+        querytype = Component.to_str(_app_param)        
+
         if querytype == "nodes":
             self.logger.info(f'[CMD][QUERY]    query received: nodes')
             nodes = self.global_view.get_nodes()
