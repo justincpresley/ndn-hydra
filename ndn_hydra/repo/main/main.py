@@ -163,7 +163,8 @@ def main() -> int:
         'heartbeat_rate': 20000,
         'beats_to_renew': 3,
         'beats_to_fail': 3,
-        'replication_degree': 2
+        'replication_degree': 2,
+        'file_expiration': 0, # in hours, 0 = never expire
     }
     cmd_args = process_cmd_opts()
     config = default_config.copy()

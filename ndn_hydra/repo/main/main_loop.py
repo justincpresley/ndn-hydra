@@ -22,6 +22,7 @@ from ndn.svs import SVSync
 from ndn.storage import Storage, SqliteStorage
 from ndn_hydra.repo.modules import *
 from ndn_hydra.repo.group_messages import *
+from ndn_hydra.repo.utils.garbage_collector import collect_db_garbage
 from ndn_hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
 
 class MainLoop:
@@ -36,6 +37,7 @@ class MainLoop:
         self.node_name = self.config['node_name']
         self.tracker = HeartbeatTracker(self.node_name, global_view, config['loop_period'], config['heartbeat_rate'], config['tracker_rate'], config['beats_to_fail'], config['beats_to_renew'])
         self.fetching = []
+        self.last_garbage_collect_t = time.time() # time in seconds
 
     async def start(self):
         self.svs = SVSync(self.app, Name.normalize(self.config['repo_prefix'] + "/group"), Name.normalize(self.node_name), self.svs_missing_callback, storage=self.svs_storage)
@@ -51,6 +53,7 @@ class MainLoop:
             self.tracker.reset(self.node_name)
         self.backup_list_check()
         self.claim()
+        self.check_garbage()
 
     def svs_missing_callback(self, missing_list):
         aio.ensure_future(self.on_missing_svs_messages(missing_list))
@@ -172,3 +175,13 @@ class MainLoop:
         duration = end -start
         self.logger.info(f"[ACT][FETCHED]* pcks={packets};duration={duration}")
         self.store(file_name)
+
+    def check_garbage(self):
+        """
+        Checks for database garbage daily.
+        """
+        current_time = time.time()
+        hours_since_last_collection = (current_time - self.last_garbage_collect_t) / (60*60)
+        if hours_since_last_collection >= 24:
+            collect_db_garbage(self.global_view, self.svs, self.config, self.logger)
+            self.last_garbage_collect_t = time.time()
