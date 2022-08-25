@@ -7,6 +7,8 @@
 #  @Pip-Library:   https://pypi.org/project/ndn-hydra
 # -------------------------------------------------------------
 
+from __future__ import annotations
+
 from typing import Union
 from ndn.encoding import TlvModel, ModelField, NameField, NameField, UintField, BytesField
 from ndn_hydra.repo.protocol.base_models import File
@@ -34,6 +36,18 @@ class Command(TlvModel):
             return RemoveMessage.parse(command_bytes)
         else:
             return None
+    @staticmethod
+    def from_insert(val:InsertCommand) -> Command:
+        cmd = Command()
+        cmd.type = CommandTypes.INSERT
+        cmd.value = val.encode()
+        return cmd
+    @staticmethod
+    def from_delete(val:DeleteCommand) -> Command:
+        cmd = Command()
+        cmd.type = CommandTypes.DELETE
+        cmd.value = val
+        return cmd
 
 class FirstContact(TlvModel):
     prefix = NameField()

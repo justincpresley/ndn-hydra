@@ -27,6 +27,7 @@ class StatusCode(Enum):
     BAD_REQUEST = 406       # request was not parsed correctly
     BAD_COMMAND = 407       # command is incorrectly filled out
     BAD_FILE = 408          # provided file is inconsistent or unacceptable
+    GHOST_FILE = 409        # file does not exist
     # Server Error
     RESOURCE_LIMIT = 500    # storage likely is filled, contact admin
     TRAFFIC_OVERLOAD = 501  # contact at another time and/or contact admin

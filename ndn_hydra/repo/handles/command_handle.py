@@ -36,6 +36,7 @@ class CommandHandle(Handle):
         self.replication_degree = config['replication_degree']
         self.request_prefix = self.repo_prefix + [Component.from_str("request")]
         self.status_prefix = self.repo_prefix + [Component.from_str("status")]
+        self.node_request_prefix = self.node_name + self.repo_prefix + [Component.from_str("request")]
         self.node_status_prefix = self.node_name + self.repo_prefix + [Component.from_str("status")]
     async def listen(self) -> None:
         await self.app.register(self.status_prefix, self.onStatusInterest, need_sig_ptrs=True)
@@ -44,6 +45,8 @@ class CommandHandle(Handle):
         logging.info(f'ComandHandle: listening {Name.to_str(self.node_status_prefix)}')
         await self.app.register(self.request_prefix, self.onRequestInterest, need_sig_ptrs=True)
         logging.info(f'ComandHandle: listening {Name.to_str(self.request_prefix)}')
+        await self.app.register(self.node_request_prefix, self.onRequestInterest, need_sig_ptrs=True)
+        logging.info(f'ComandHandle: listening {Name.to_str(self.node_request_prefix)}')
     def onRequestInterest(self, int_name:FormalName, int_param:InterestParam, app_param:Optional[BinaryStr], sig_ptrs:SignaturePtrs) -> None:
         # if unauthenticated
         # if unauthorized to do commands
@@ -110,11 +113,10 @@ class CommandHandle(Handle):
 
     def _process_delete(self, curi:str, cmd:DeleteCommand):
         file_name = Name.to_str(cmd.file_name)
-        file = self.global_view.get_file(file_name)
-        if file == None:
-            logging.debug("file does not exist")
+        if self.global_view.get_file(file_name) == None:
+            self.command_table.set(curi, StatusCode.GHOST_FILE, Command.from_delete(cmd))
             return
-        favor = 1.85
+        favor = 1.85 # change to FavorCalculator
         remove_message = RemoveMessageTlv()
         remove_message.node_name = Name.to_str(self.node_name).encode()
         remove_message.favor = str(favor).encode()
@@ -124,12 +126,11 @@ class CommandHandle(Handle):
         message.value = remove_message.encode()
         self.global_view.delete_file(file_name)
         self.main_loop.svs.publishData(message.encode())
+        self.command_table.set(curi, StatusCode.FULFILLED, Command.from_delete(cmd))
         logging.info(f"[MSG][REMOVE]*  fil={file_name}")
-        self.command_table.set(curi, StatusCode.FULFILLED, cmd)
 
     def _process_insert(self, curi:str, cmd:InsertCommand):
-        # print("Process Insert Command for File: ")
-        # print("receive INSERT command for file: {}".format(Name.to_str(cmd.file.file_name)))
+        # work on insert cmd
         file_name = Name.to_str(cmd.file.name)
         packets = cmd.file.packets
         packet_size = cmd.file.packet_size
@@ -209,5 +210,6 @@ class CommandHandle(Handle):
         bak = ""
         for backup in backup_list:
             bak = bak + backup[0] + ","
+
+        self.command_table.set(Name.to_str(contact.curi), StatusCode.FULFILLED, Command.from_insert(cmd))
         logging.info(f"[MSG][ADD]*     nam={self.config['node_name']};fil={file_name};cop={desired_copies};pck={packets};pck_size={packet_size};siz={size};bak={bak}")
-        self.command_table.set(Name.to_str(contact.curi), StatusCode.FULFILLED, cmd)
