@@ -22,6 +22,7 @@ from ndn.svs import SVSync
 from ndn.storage import Storage, SqliteStorage
 from ndn_hydra.repo.modules import *
 from ndn_hydra.repo.group_messages import *
+from ndn_hydra.repo.modules.file_fetcher import FileFetcher
 from ndn_hydra.repo.utils.garbage_collector import collect_db_garbage
 from ndn_hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
 
@@ -36,7 +37,7 @@ class MainLoop:
         self.logger = logging.getLogger()
         self.node_name = self.config['node_name']
         self.tracker = HeartbeatTracker(self.node_name, global_view, config['loop_period'], config['heartbeat_rate'], config['tracker_rate'], config['beats_to_fail'], config['beats_to_renew'])
-        self.fetching = []
+        self.file_fetcher = FileFetcher(self, app, global_view, data_storage, config)
         self.last_garbage_collect_t = time.time() # time in seconds
 
     async def start(self):
@@ -162,19 +163,7 @@ class MainLoop:
         self.logger.info(f"[MSG][STORE]*   nam={self.config['node_name']};fil={file_name}")
 
     def fetch_file(self, file_name: str, packets: int, packet_size: int, fetch_path: str):
-        aio.ensure_future(self.fetch_file_helper(file_name, packets, packet_size, fetch_path))
-    async def fetch_file_helper(self, file_name: str, packets: int, packet_size: int, fetch_path: str):
-        if file_name in self.fetching:
-            return
-        self.fetching.append(file_name)
-        self.logger.info(f"[ACT][FETCH]*   fil={file_name};pcks={packets};fetch_path={fetch_path}")
-        start = time.time()
-        async for (_, _, content, data_bytes, key) in concurrent_fetcher(self.app, fetch_path, file_name, 0, packets-1, aio.Semaphore(15)):
-            self.data_storage.put_packet(key, data_bytes) #TODO: check digest
-        end = time.time()
-        duration = end -start
-        self.logger.info(f"[ACT][FETCHED]* pcks={packets};duration={duration}")
-        self.store(file_name)
+        return self.file_fetcher.fetch_file_from_client(file_name, packets, packet_size, fetch_path)
 
     def check_garbage(self):
         """
