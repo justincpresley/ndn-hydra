@@ -30,7 +30,7 @@ class FileFetcher:
         self.config = config
         self.repo_prefix = config['repo_prefix']
         self.logger = logging.getLogger()
-        self.store_func = None
+        self.store_func = None # This function must be initialized to store properly store
         self.fetching = []
 
     def fetch_file_from_client(self, file_name: str, packets: int, packet_size: int, fetch_path: str):
