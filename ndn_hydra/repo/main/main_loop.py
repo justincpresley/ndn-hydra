@@ -27,17 +27,18 @@ from ndn_hydra.repo.utils.garbage_collector import collect_db_garbage
 from ndn_hydra.repo.utils.concurrent_fetcher import concurrent_fetcher
 
 class MainLoop:
-    def __init__(self, app:NDNApp, config:Dict, global_view:GlobalView, data_storage:Storage, svs_storage:Storage):
+    def __init__(self, app:NDNApp, config:Dict, global_view:GlobalView, data_storage:Storage, svs_storage:Storage, file_fetcher:FileFetcher):
         self.app = app
         self.config = config
         self.global_view = global_view
         self.data_storage = data_storage
         self.svs_storage = svs_storage
+        self.file_fetcher = file_fetcher
+        self.file_fetcher.store_func = self.store
         self.svs = None
         self.logger = logging.getLogger()
         self.node_name = self.config['node_name']
         self.tracker = HeartbeatTracker(self.node_name, global_view, config['loop_period'], config['heartbeat_rate'], config['tracker_rate'], config['beats_to_fail'], config['beats_to_renew'])
-        self.file_fetcher = FileFetcher(self, app, global_view, data_storage, config)
         self.last_garbage_collect_t = time.time() # time in seconds
 
     async def start(self):

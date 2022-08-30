@@ -23,24 +23,27 @@ class FileFetcher:
     """
     A class to abstract client-to-node and node-to-node fetching.
     """
-    def __init__(self, main_loop, app: NDNApp, global_view: GlobalView, data_storage: Storage, config: dict) -> None:
-        self.main_loop = main_loop
-        self.global_view = global_view
+    def __init__(self, app: NDNApp, global_view: GlobalView, data_storage: Storage, config: dict) -> None:
         self.app = app
+        self.global_view = global_view
         self.data_storage = data_storage
         self.config = config
         self.repo_prefix = config['repo_prefix']
         self.logger = logging.getLogger()
+        self.store_func = None
         self.fetching = []
 
     def fetch_file_from_client(self, file_name: str, packets: int, packet_size: int, fetch_path: str):
         aio.ensure_future(self._fetch_file_helper(file_name, packets, packet_size, fetch_path))
     
     def fetch_file_from_node(self, file_name: str, packets: int, packet_size: int):
+        if file_name in self.fetching:
+            return
         # Randomly select a node to fetch file from
         file_info = self.global_view.get_file(file_name)
         on_list = file_info["stores"]
         if file_info["is_deleted"] == True or not on_list:
+            self.logger.info("FileFetcher: File is deleted or not in stores")
             return
         active_nodes = set([node['node_name'] for node in self.global_view.get_nodes()])
         on_list = [x for x in on_list if x in active_nodes]
@@ -52,7 +55,11 @@ class FileFetcher:
         aio.ensure_future(self._fetch_file_helper(file_name, packets, packet_size, fetch_path))
 
     async def _fetch_file_helper(self, file_name: str, packets: int, packet_size: int, fetch_path: str):
+        if not self.store_func:
+            self.logger.info("FileFetcher: No storage function defined")
+            return
         if file_name in self.fetching:
+            self.logger.info("FileFetcher: Already fetching")
             return
         self.fetching.append(file_name)
         self.logger.info(f"[ACT][FETCH]*   fil={file_name};pcks={packets};fetch_path={fetch_path}")
@@ -62,7 +69,7 @@ class FileFetcher:
         end = time.time()
         duration = end - start
         self.logger.info(f"[ACT][FETCHED]* pcks={packets};duration={duration}")
-        self.main_loop.store(file_name)
+        self.store_func(file_name)
         try:
             self.fetching.remove(file_name)
         except:
