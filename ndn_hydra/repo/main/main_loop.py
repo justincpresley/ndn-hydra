@@ -74,10 +74,10 @@ class MainLoop:
                 i.lowSeqno = i.lowSeqno + 1
 
     def send_heartbeat(self):
-        favor = 1.85
         heartbeat_message = HeartbeatMessageTlv()
         heartbeat_message.node_name = self.config['node_name'].encode()
-        heartbeat_message.favor = str(favor).encode()
+        heartbeat_message.latitude = str(self.config['latitude']).encode()
+        heartbeat_message.longitude = str(self.config['longitude']).encode()
         message = Message()
         message.type = MessageTypes.HEARTBEAT
         message.value = heartbeat_message.encode()
@@ -85,6 +85,9 @@ class MainLoop:
             next_state_vector = self.svs.getCore().getStateTable().getSeqno(Name.to_str(Name.from_str(self.config['node_name']))) + 1
         except TypeError:
             next_state_vector = 0
+        # TODO: Calculate a node's self favor
+        # favor = FavorCalculator.self_favor()
+        favor = 1.00
         self.global_view.update_node(self.config['node_name'], favor, next_state_vector)
         self.svs.publishData(message.encode())
 
