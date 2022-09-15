@@ -35,8 +35,7 @@ class HydraQueryClient(object):
         named_query = self.repo_prefix + [Component.from_str("query")]
       else:
         named_query = self.repo_prefix + [Component.from_str("node")] + [Component.from_str(node_name)] + [Component.from_str("query")]
-      querytype = query[0]
-      app_param = querytype
+      app_param = query[0]
       
       try:
           data_name, meta_info, content = await self.app.express_interest(named_query, app_param, can_be_prefix=True, must_be_fresh=True, lifetime=3000)
