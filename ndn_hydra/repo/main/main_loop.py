@@ -164,7 +164,7 @@ class MainLoop:
         self.logger.info(f"[MSG][STORE]*   nam={self.config['node_name']};fil={file_name}")
 
     def fetch_file(self, file_name: str, packets: int, packet_size: int, fetch_path: str):
-        return self.file_fetcher.fetch_file_from_client(file_name, packets, packet_size, fetch_path)
+        self.file_fetcher.fetch_file_from_client(file_name, packets, packet_size, fetch_path)
 
     def check_garbage(self):
         """
