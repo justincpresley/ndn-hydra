@@ -76,8 +76,9 @@ class MainLoop:
     def send_heartbeat(self):
         heartbeat_message = HeartbeatMessageTlv()
         heartbeat_message.node_name = self.config['node_name'].encode()
-        heartbeat_message.latitude = str(self.config['latitude']).encode()
-        heartbeat_message.longitude = str(self.config['longitude']).encode()
+        heartbeat_message.favor_parameters = FavorParameters()
+        heartbeat_message.favor_parameters.latitude = str(self.config['latitude']).encode()
+        heartbeat_message.favor_parameters.longitude = str(self.config['longitude']).encode()
         message = Message()
         message.type = MessageTypes.HEARTBEAT
         message.value = heartbeat_message.encode()

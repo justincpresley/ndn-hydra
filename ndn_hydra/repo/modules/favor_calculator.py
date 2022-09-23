@@ -11,6 +11,15 @@
 
 import logging
 import numpy as np
+from ndn.encoding import *
+
+class FavorParameterTypes:
+    LATITUDE = 100
+    LONGITUDE = 101
+class FavorParameters(TlvModel):
+    latitude = BytesField(FavorParameterTypes.LATITUDE)
+    longitude = BytesField(FavorParameterTypes.LONGITUDE)
+    
 
 class FavorCalculator:
     """
