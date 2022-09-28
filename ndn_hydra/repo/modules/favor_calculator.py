@@ -14,37 +14,33 @@ import numpy as np
 from ndn.encoding import *
 
 class FavorParameterTypes:
-    LATITUDE = 100
-    LONGITUDE = 101
+    RTT = 100
+    NUM_USERS = 101
+    BANDWIDTH = 102
+    NETWORK_COST = 103
+    STORAGE_COST = 104
+    REMAINING_STORAGE = 105
+
 class FavorParameters(TlvModel):
-    latitude = BytesField(FavorParameterTypes.LATITUDE)
-    longitude = BytesField(FavorParameterTypes.LONGITUDE)
+    rtt = BytesField(FavorParameterTypes.RTT)
+    num_users = BytesField(FavorParameterTypes.NUM_USERS)
+    bandwidth = BytesField(FavorParameterTypes.BANDWIDTH)
+    network_cost = BytesField(FavorParameterTypes.NETWORK_COST)
+    storage_cost = BytesField(FavorParameterTypes.STORAGE_COST)
+    remaining_storage = BytesField(FavorParameterTypes.REMAINING_STORAGE)
     
 
 class FavorCalculator:
     """
     A class for abstracting favor calculations between two nodes.
     """
-    def distance_based_favor(self, latA: float, lonA: float, latB: float, lonB: float) -> float:
-        """
-        Generate favor for a node based on distance.
-        """
-        def sphere_dist(latA: float, lonA: float, latB: float, lonB: float) -> float:
-            R = 6378.137 # earth radius
-            # convert to radians
-            latA = latA * (np.pi/180)
-            lonA = lonA * (np.pi/180)
-            latB = latB * (np.pi/180)
-            lonB = lonB * (np.pi/180)
-            # calculate distance
-            DeltaS = np.arccos(
-                np.sin(latA) * np.sin(latB) + \
-                np.cos(latA) * np.cos(latB) * np.cos(lonA-lonB)
-            )
-            distance = R * DeltaS
-            return distance
+    def calculate_favor(self, favor_parameters: FavorParameters) -> float:
+        favor = 0
+        for param, val in favor_parameters.asdict().items():
+            # print(param, ':', val)
+            favor += int(val)
+        # print('favor:', favor)
+        return favor
 
-        favor = sphere_dist(latA, lonA, latB, lonB)
-        return round(favor, 2)
 
     

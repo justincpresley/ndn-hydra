@@ -11,6 +11,7 @@
 
 from argparse import ArgumentParser
 import asyncio as aio
+import random
 import logging
 from typing import Dict
 from threading import Thread
@@ -63,8 +64,6 @@ def process_cmd_opts():
         parser.add_argument("-v","--version",action="store_true",dest="version",default=False,required=False)
         parser.add_argument("-rp","--repoprefix",action="store",dest="repo_prefix",required=True)
         parser.add_argument("-n","--nodename",action="store",dest="node_name",required=True)
-        parser.add_argument("-c", "--coordinates",help="Latitude and longitude of node", action="store",
-                            dest="coordinates",nargs=2,required=False)
         # Interpret Informational Arguments
         interpret_version()
         interpret_help()
@@ -75,8 +74,6 @@ def process_cmd_opts():
         args = {}
         args["repo_prefix"] = process_name(vars.repo_prefix)
         args["node_name"] = process_name(vars.node_name)
-        args["latitude"] = vars.coordinates[0]
-        args["longitude"] = vars.coordinates[1]
         workpath = "{home}/.ndn/repo{repo_prefix}/{node_name}".format(
             home=os.path.expanduser("~"),
             repo_prefix=args["repo_prefix"],
@@ -169,8 +166,12 @@ def main() -> int:
         'beats_to_fail': 3,
         'replication_degree': 2,
         'file_expiration': 0, # in hours, 0 = never expire
-        'latitude': 00.00,
-        'longitude': 00.00,
+        'rtt': random.randint(0, 100),
+        'num_users': random.randint(0, 10),
+        'bandwidth': random.randint(10, 500),
+        'network_cost': random.randint(1, 100),
+        'storage_cost': random.randint(1, 100),
+        'remaining_storage': random.randint(0, 1000),
     }
     cmd_args = process_cmd_opts()
     config = default_config.copy()

@@ -30,11 +30,6 @@ class HeartbeatMessage(SpecificMessage):
 
     async def apply(self, global_view, fetch_file, svs, config):
         node_name = self.message.node_name.tobytes().decode()
-        favor = FavorCalculator().distance_based_favor(
-            latA = float(config['latitude']), 
-            lonA = float(config['longitude']),
-            latB = float(self.message.favor_parameters.latitude.tobytes().decode()),
-            lonB = float(self.message.favor_parameters.longitude.tobytes().decode()),
-        )
+        favor = FavorCalculator().calculate_favor(self.message.favor_parameters)
         self.logger.debug(f"[MSG][HB]   nam={node_name};fav={favor}")
         global_view.update_node(node_name, favor, self.seqno)
