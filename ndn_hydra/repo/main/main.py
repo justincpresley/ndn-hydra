@@ -22,6 +22,7 @@ from ndn.storage import SqliteStorage
 import sys, os
 from ndn.svs import SVSyncLogger
 from ndn_hydra.repo import *
+from ndn_hydra.repo.modules.file_fetcher import FileFetcher
 
 
 def process_cmd_opts():
@@ -129,8 +130,11 @@ class HydraNodeThread(Thread):
         svs_storage = SqliteStorage(self.config['svs_storage_path'])
         pb = PubSub(app)
 
+        # file fetcher module
+        file_fetcher = FileFetcher(app, global_view, data_storage, self.config)
+
         # main_loop (svs)
-        main_loop = MainLoop(app, self.config, global_view, data_storage, svs_storage)
+        main_loop = MainLoop(app, self.config, global_view, data_storage, svs_storage, file_fetcher)
 
         # handles (reads, commands & queries)
         read_handle = ReadHandle(app, data_storage, global_view, self.config)
