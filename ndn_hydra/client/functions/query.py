@@ -35,10 +35,9 @@ class HydraQueryClient(object):
         named_query = self.repo_prefix + [Component.from_str("query")]
       else:
         named_query = self.repo_prefix + [Component.from_str("node")] + [Component.from_str(node_name)] + [Component.from_str("query")]
-      app_param = query[0]
       
       try:
-          data_name, meta_info, content = await self.app.express_interest(named_query, app_param, can_be_prefix=True, must_be_fresh=True, lifetime=3000)
+          data_name, meta_info, content = await self.app.express_interest(named_query, query, can_be_prefix=True, must_be_fresh=True, lifetime=3000)
           if meta_info.content_type == ContentType.NACK:
              print("Distributed Repo does not know that query.")
              return
