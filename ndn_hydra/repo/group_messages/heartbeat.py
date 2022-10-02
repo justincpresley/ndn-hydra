@@ -13,14 +13,15 @@ from typing import Callable
 from ndn.encoding import *
 import json
 from ndn_hydra.repo.modules.global_view import GlobalView
+from ndn_hydra.repo.modules.favor_calculator import FavorCalculator, FavorParameters
 from ndn_hydra.repo.group_messages.specific_message import SpecificMessage
 
 class HeartbeatMessageTypes:
     NODE_NAME = 84
-    FAVOR = 86
+    FAVOR_PARAMETERS = 85
 class HeartbeatMessageTlv(TlvModel):
     node_name = BytesField(HeartbeatMessageTypes.NODE_NAME)
-    favor = BytesField(HeartbeatMessageTypes.FAVOR)
+    favor_parameters = ModelField(HeartbeatMessageTypes.FAVOR_PARAMETERS, FavorParameters)
 
 class HeartbeatMessage(SpecificMessage):
     def __init__(self, nid:str, seqno:int, raw_bytes:bytes):
@@ -29,5 +30,6 @@ class HeartbeatMessage(SpecificMessage):
 
     async def apply(self, global_view, fetch_file, svs, config):
         node_name = self.message.node_name.tobytes().decode()
-        self.logger.debug(f"[MSG][HB]       nam={node_name}")
-        global_view.update_node(node_name, float(self.message.favor.tobytes().decode()), self.seqno)
+        favor = FavorCalculator().calculate_favor(self.message.favor_parameters)
+        self.logger.debug(f"[MSG][HB]   nam={node_name};fav={favor}")
+        global_view.update_node(node_name, favor, self.seqno)

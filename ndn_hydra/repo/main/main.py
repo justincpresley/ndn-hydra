@@ -11,6 +11,7 @@
 
 from argparse import ArgumentParser
 import asyncio as aio
+import random
 import logging
 from typing import Dict
 from threading import Thread
@@ -169,6 +170,12 @@ def main() -> int:
         'beats_to_fail': 3,
         'replication_degree': 2,
         'file_expiration': 0, # in hours, 0 = never expire
+        'rtt': random.randint(0, 100),
+        'num_users': random.randint(0, 10),
+        'bandwidth': random.randint(10, 500),
+        'network_cost': random.randint(1, 100),
+        'storage_cost': random.randint(1, 100),
+        'remaining_storage': random.randint(0, 1000),
     }
     cmd_args = process_cmd_opts()
     config = default_config.copy()
