@@ -62,8 +62,9 @@ class QueryHandle(object):
             self.logger.info('Query handle: No querytype')
             return
 
-        query = _app_param
-        querytype = Component.to_str(query[0])        
+        query = Name.from_bytes(_app_param)
+        querytype = Component.to_str(query[0])
+        query = Name.to_str(query)
 
         if querytype == "nodes":
             self.logger.info(f'[CMD][QUERY]    query received: nodes')
