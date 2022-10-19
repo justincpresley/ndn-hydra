@@ -57,9 +57,15 @@ class QueryHandle(object):
 
     def _on_interest(self, int_name, int_param, _app_param):
         if not int_param.must_be_fresh or not int_param.can_be_prefix:
+            return 
+        if not _app_param:
+            self.logger.info('Query handle: No querytype')
             return
-        query = self._get_query_from_interest(Name.to_str(int_name))
-        querytype = Component.to_str(Name.from_str(query)[0])
+
+        query = Name.from_bytes(_app_param)
+        querytype = Component.to_str(query[0])
+        query = Name.to_str(query)
+
         if querytype == "nodes":
             self.logger.info(f'[CMD][QUERY]    query received: nodes')
             nodes = self.global_view.get_nodes()
@@ -122,10 +128,3 @@ class QueryHandle(object):
             self.logger.info(f'[CMD][QUERY]    unknown query received')
             self.app.put_data(int_name, content=None, freshness_period=3000, content_type=ContentType.NACK)
             return
-
-    def _get_query_from_interest(self, int_name):
-        query = int_name[len(self.repo_prefix):]
-        if query[0:len(self.node_comp)] == self.node_comp:
-            return query[(len(self.node_comp)+len(self.node_name)+len(self.command_comp)):]
-        else:
-            return query[(len(self.command_comp)):]
